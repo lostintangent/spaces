@@ -1,6 +1,6 @@
 {
-	"name": "vscode-can",
-	"displayName": "vscode-can",
+	"name": "vsls-can",
+	"displayName": "vsls-can",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
@@ -16,10 +16,40 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.helloWorld",
-				"title": "Hello World"
+				"command": "vsls-can.joinNetwork",
+				"category": "Live Share CAN",
+				"title": "Join Network"
+			},
+			{
+				"command": "vsls-can.leaveNetwork",
+				"category": "Live Share CAN",
+				"title": "Leave Network"
+			},
+			{
+				"command": "vsls-can.refresh",
+				"category": "Live Share CAN",
+				"title": "Refresh"
 			}
-		]
+		],
+		"views": {
+			"liveshare": [
+				{
+					"id": "vsls-can.contacts",
+					"name": "Collaboration Area Network"
+				}
+			]
+		},
+		"configuration": {
+			"type": "object",
+			"title": "Live Share CAN",
+			"properties": {
+				"vsls-can.showSuggestedContacts": {
+					"default": true,
+					"type": "boolean",
+					"description": "Specifies whether to show CAN-discovered contacts in the Live Share Suggested Contacts tree."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -40,6 +70,8 @@
 		"vscode-test": "^1.0.0-next.0"
 	},
 	"dependencies": {
+		"redux": "^4.0.4",
+		"redux-thunk": "^2.3.0",
 		"vsls": "^0.3.1291"
 	}
 }

@@ -83,6 +83,10 @@ export function loadNetworksAsync() {
 						{
 							name: "Jonathan Carter",
 							email: "jc@trl.mx"
+						},
+						{
+							name: "Arjun Artam",
+							email: "foo@bar.com"
 						}
 					]
 				},

@@ -1,36 +1,44 @@
+import * as R from "ramda";
 import { Store } from "redux";
 import { CancellationToken, Event, EventEmitter } from "vscode";
 import { LiveShare } from "vsls";
 import { Contact, ContactsNotification, ContactServiceProvider, Methods, NotifyContactServiceEventArgs } from "vsls/vsls-contactprotocol";
 import { config } from "./config";
-import { IContact, INetwork } from "./store/model";
+import { IStore, IContact } from "./store/model";
 
 const PROVIDER_NAME = "CAN";
 
-class CanSuggestionProvider implements ContactServiceProvider {
-	sentEmails: string[] = [];
+function toContact(contact: any): Contact {
+	return {
+		id: contact.email,
+		displayName: contact.name,
+		email: contact.email,
+	};
+}
+
+const flatMap = R.pipe(
+	R.pluck("contacts"),
+	R.flatten,
+	R.map(toContact)
+);
+
+const dedupe = R.pipe(
+	R.sortBy(R.prop("email")),
+	R.dropRepeats
+);
+
+class ContactProvider implements ContactServiceProvider {
+	private readonly onNotifiedEventEmitter = new EventEmitter<NotifyContactServiceEventArgs>();
 
 	constructor(private store: Store) {
 		this.store.subscribe(() => {
-			const { networks } = this.store.getState();
-			const contacts = networks.reduce((accumulation: IContact[], current: INetwork) => {
-				const con = current.contacts.map((contact) => ({
-					displayName: contact.name,
-					email: contact.email,
-					id: contact.email
-				}))
-				return [ ...accumulation, ...con ]
-			}, []);
-			
 			if (config.showSuggestedContacts) {
+				const { networks } = <IStore>this.store.getState();
+				const contacts = <Contact[]>R.pipe(flatMap, dedupe)(networks);
 				this.notifySuggestedContacts(contacts);
 			}
-
-			// TODO: De-dupe the list of contacts
 		});
 	}
-
-	private readonly onNotifiedEventEmitter = new EventEmitter<NotifyContactServiceEventArgs>();
 
 	public get onNotified(): Event<NotifyContactServiceEventArgs> {
 		return this.onNotifiedEventEmitter.event;
@@ -55,17 +63,13 @@ class CanSuggestionProvider implements ContactServiceProvider {
 	}
 
 	private async notifySuggestedContacts(contacts: Contact[]) {
-		const newContacts = contacts.filter((c) => this.sentEmails.indexOf(c.email!) < 0)
-
 		this.onNotifiedEventEmitter.fire({
 			type: Methods.NotifySuggestedUsersName,
-			body: <ContactsNotification>{ contacts: newContacts }
+			body: <ContactsNotification>{ contacts: contacts }
 		});
-
-		this.sentEmails.concat(newContacts.map(c => c.email!));
 	}
 }
 
 export function registerContactProvider(api: LiveShare, store: Store) {
-	api.registerContactServiceProvider(PROVIDER_NAME, new CanSuggestionProvider(store));
+	api.registerContactServiceProvider(PROVIDER_NAME, new ContactProvider(store));
 }

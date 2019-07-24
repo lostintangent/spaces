@@ -6,14 +6,14 @@ import {
 	ACTION_LOAD_NETWORKS, ACTION_LOAD_NETWORKS_COMPLETED
 } from "./actions";
 
+import * as R from "ramda";
+
 const initialState: IStore = {
 	isLoading: true,
 	networks: []
 }
 
-const sorted = (array: any[], sortProperty: string = "name") => {
-	return array.sort((a, b) => a[sortProperty].localeCompare(b[sortProperty]))
-}
+const sorted = R.sortBy(R.prop("name"));
 
 const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 	switch(action.type) {
@@ -76,7 +76,7 @@ const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 		case ACTION_LOAD_NETWORKS_COMPLETED:
 			return {
 				isLoading: false,
-				networks: sorted(action.networks)
+				networks: sorted(action.networks) // TODO: Sort contacts as well
 			};
 
 		default:

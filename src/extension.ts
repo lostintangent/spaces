@@ -1,4 +1,4 @@
-import { ExtensionContext, commands, window } from 'vscode';
+import { ExtensionContext, commands, window, DocumentHighlight } from "vscode";
 import * as redux from "redux";
 import thunk from "redux-thunk";
 import * as vsls from "vsls";

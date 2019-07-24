@@ -25,7 +25,10 @@ defmodule LiveShareCAN.MixProject do
       {:cowboy, "~> 1.1"},
       {:plug, "~> 1.3"},
       {:poison, "~> 3.0"},
-      {:plug_cowboy, "~> 1.0"}
+      {:plug_cowboy, "~> 1.0"},
+
+      # distillery to create release
+      {:distillery, "~> 2.1"}
     ]
   end
 end

@@ -19,10 +19,18 @@ Mix 1.8.1 (compiled with Erlang/OTP 21)
 mix deps.get
 ```
 
-### Run the service
+### Run the service for development
 
 ```
 iex -S mix
 ```
 
 Open http://localhost:4000
+
+### Release
+
+```
+mix distillery.release
+```
+
+See commands in printed out to run service in foreground.

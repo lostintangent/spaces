@@ -1,4 +1,4 @@
-# Live Share Collaboration Area Networks
+# Live Share Communities
 
 This hosts the code for the service, written in Elixir.
 

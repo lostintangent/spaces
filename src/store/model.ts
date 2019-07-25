@@ -1,16 +1,24 @@
 export interface IStore {
 	isLoading: boolean;
-	networks: INetwork[]
+	communities: ICommunity[]
 }
 
-export interface IContact {
+export interface IMember {
 	name: string;
-	email: string
+	email: string;
+	status: Status;
 }
 
-export interface INetwork {
+export interface ICommunity {
     isLoading?: boolean;
     isLeaving?: boolean;
 	name: string;
-	contacts: IContact[]
+	members: IMember[]
 }
+
+export enum Status {
+	available = "available",
+	away = "away",
+	doNotDisturb = "doNotDisturb",
+	offline = "offline"
+};

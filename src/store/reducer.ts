@@ -1,82 +1,94 @@
 import * as redux from "redux";
-import { IStore, IContact, INetwork } from "./model";
-import { 
-    ACTION_JOIN_NETWORK, ACTION_JOIN_NETWORK_COMPLETED,
-	ACTION_LEAVE_NETWORK, ACTION_LEAVE_NETWORK_COMPLETED,
-	ACTION_LOAD_NETWORKS, ACTION_LOAD_NETWORKS_COMPLETED
-} from "./actions";
-
 import * as R from "ramda";
+import { IStore, IMember, ICommunity } from "./model";
+import { 
+    ACTION_JOIN_COMMUNITY, ACTION_JOIN_COMMUNITY_COMPLETED,
+	ACTION_LEAVE_COMMUNITY, ACTION_LEAVE_COMMUNITY_COMPLETED,
+	ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED
+} from "./actions";
 
 const initialState: IStore = {
 	isLoading: true,
-	networks: []
+	communities: []
 }
 
 const sorted = R.sortBy(R.prop("name"));
 
 const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 	switch(action.type) {
-		case ACTION_JOIN_NETWORK:
+		case ACTION_JOIN_COMMUNITY:
 			return {
 				...state,
-				networks: sorted([
-					...state.networks,
+				communities: sorted([
+					...state.communities,
 					{
 						name: action.name,
-						contacts: [],
+						members: [],
 						isLoading: true,
 						isLeaving: false
 					}
 				])
 			};
 
-		case ACTION_JOIN_NETWORK_COMPLETED:
+		case ACTION_JOIN_COMMUNITY_COMPLETED:
 			return {
 				...state,
-				networks: state.networks.map(network => {
-					if (network.name === action.name) {
+				communities: state.communities.map(community => {
+					if (community.name === action.name) {
 						return { 
-							...network,
+							...community,
 							isLoading: false,
-							contacts: sorted(action.contacts)
+							members: sorted(action.members)
 						}
 					} else {
-						return network
+						return community
 					}
 				})
 			}
 
-		case ACTION_LEAVE_NETWORK:
+		case ACTION_LEAVE_COMMUNITY:
 			return {
 				...state,
-				networks: state.networks.filter(network => {
-					if (network.name === action.name) {
+				communities: state.communities.filter(community => {
+					if (community.name === action.name) {
 						return {
-							...network,
+							...community,
 							isLeaving: true 
 						}
 					} else {
-						return network
+						return community
 					}
 				})
 			}
 
-		case ACTION_LEAVE_NETWORK_COMPLETED:
+		case ACTION_LEAVE_COMMUNITY_COMPLETED:
 			return {
 				...state,
-				networks: state.networks.filter(network => 
-					network.name !== action.name
+				communities: state.communities.filter(community => 
+					community.name !== action.name
 				)
 			}
 
-		case ACTION_LOAD_NETWORKS:
+		case ACTION_LOAD_COMMUNITIES:
 			return initialState;
 
-		case ACTION_LOAD_NETWORKS_COMPLETED:
+		case ACTION_LOAD_COMMUNITIES_COMPLETED:
+			const memberSorter = (c: ICommunity) => ({...c, members: sorted(c.members)});
+
+			// R.
+			// const memberSorter = c => R.merge(R.identity(c), sorted(R.pluck("members", c)))
+
+			// R.map(
+			// 	c => {
+			// 		return R.merge(c, {members: sorted(c.members)})
+			// 	},
+
+			// 	sorted(action.communities)
+			// )
+
 			return {
 				isLoading: false,
-				networks: sorted(action.networks) // TODO: Sort contacts as well
+				communities: R.map(memberSorter, sorted(action.communities))
 			};
 
 		default:

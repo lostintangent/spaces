@@ -4,20 +4,20 @@ import { CancellationToken, Event, EventEmitter } from "vscode";
 import { LiveShare } from "vsls";
 import { Contact, ContactsNotification, ContactServiceProvider, Methods, NotifyContactServiceEventArgs } from "vsls/vsls-contactprotocol";
 import { config } from "./config";
-import { IStore, IContact } from "./store/model";
+import { IStore } from "./store/model";
 
-const PROVIDER_NAME = "CAN";
+const PROVIDER_NAME = "Communities";
 
-function toContact(contact: any): Contact {
+function toContact(member: any): Contact {
 	return {
-		id: contact.email,
-		displayName: contact.name,
-		email: contact.email,
+		id: member.email,
+		displayName: member.name,
+		email: member.email,
 	};
 }
 
 const flatMap = R.pipe(
-	R.pluck("contacts"),
+	R.pluck("members"),
 	R.flatten,
 	R.map(toContact)
 );
@@ -33,8 +33,8 @@ class ContactProvider implements ContactServiceProvider {
 	constructor(private store: Store) {
 		this.store.subscribe(() => {
 			if (config.showSuggestedContacts) {
-				const { networks } = <IStore>this.store.getState();
-				const contacts = <Contact[]>R.pipe(flatMap, dedupe)(networks);
+				const { communities } = <IStore>this.store.getState();
+				const contacts = <Contact[]>R.pipe(flatMap, dedupe)(communities);
 				this.notifySuggestedContacts(contacts);
 			}
 		});
@@ -48,7 +48,7 @@ class ContactProvider implements ContactServiceProvider {
 		switch (type) {
 			case Methods.RequestInitializeName:
 				return {
-					description: "Collaboration Area Network",
+					description: "Live Share Communities",
 					capabilities: {
 						supportsDispose: false,
 						supportsInviteLink: false,

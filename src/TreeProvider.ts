@@ -1,55 +1,65 @@
 import * as vscode from "vscode";
 import * as redux from "redux";
-import { IStore } from "./store/model";
+import { IStore, Status } from "./store/model";
+import { LiveShare } from "vsls";
+import * as path from "path";
 
 interface TreeNode {
     name: string;
 }
 
-interface NetworkNode extends TreeNode { }
+interface CommunityNode extends TreeNode { }
 
-interface ContactNode extends TreeNode {
+interface MemberNode extends TreeNode {
     email: string;
+    status: Status;
 }
 
 interface LoadingNode extends TreeNode { }
 
-class CanTreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.Disposable {
+function statusToIconPath(status: Status, extensionPath: string) {
+    return path.join(extensionPath, `images/${status.toString()}.svg`);
+}
+
+class CommunitiesTreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.Disposable {
     private _disposables: vscode.Disposable[] = [];
 
     private _onDidChangeTreeData = new vscode.EventEmitter<TreeNode>();
     public readonly onDidChangeTreeData: vscode.Event<TreeNode> = this._onDidChangeTreeData.event;
 
-    constructor(private store: redux.Store) {
-        vscode.window.registerTreeDataProvider("vsls-can.contacts", this);
+    constructor(private store: redux.Store, private extensionPath: string) {
+        vscode.window.registerTreeDataProvider("vsls-communities.communities", this);
         
         this.store.subscribe(() => {
-            // TODO: Only fire new contacts
             this._onDidChangeTreeData.fire();
         });
     }
     
     getTreeItem(element: any): vscode.TreeItem | Thenable<vscode.TreeItem> {
-        const collapsibleState = element.email ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Expanded;
-        return { label: element.name, collapsibleState };
+        const isMember = element.email;
+        const collapsibleState = isMember ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Expanded;
+        const tooltip = isMember ? `${element.name} (${element.email})` : element.name;
+        const iconPath = isMember ? statusToIconPath(element.status || Status.offline, this.extensionPath): undefined;
+
+        return { label: element.name, collapsibleState, iconPath, tooltip };
     }
 
     getChildren(element?: TreeNode): vscode.ProviderResult<TreeNode[]> {
         const state: IStore = this.store.getState()
 
         if (!element) {
-            return state.networks.map(network => ({
-                name: network.name
+            return state.communities.map(community => ({
+                name: community.name
             }))
         } else {
             const { name } = element;
-            const network = state.networks.find(network => network.name === name)
+            const community = state.communities.find(community => community.name === name)
 
-            if (network) {
-                // TODO: Sort the contact names
-                return network.contacts.map(contact => ({
-                    name: contact.name,
-                    email: contact.email
+            if (community) {
+                return community.members.map(member => ({
+                    name: member.name,
+                    email: member.email,
+                    status: member.status
                 }))
             }
         }
@@ -60,6 +70,6 @@ class CanTreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.Dispo
     }
 }
 
-export function registerTreeProvider(store: redux.Store) {
-    new CanTreeProvider(store);
+export function registerTreeProvider(api: LiveShare, store: redux.Store, extensionPath: string) {
+    new CommunitiesTreeProvider(store, extensionPath);
 }

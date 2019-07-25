@@ -1,101 +1,105 @@
 import * as redux from "redux";
-import { IContact, INetwork } from "./model";
+import { IMember, ICommunity, Status } from "./model";
 
-export const ACTION_JOIN_NETWORK = "JOIN_NETWORK";
-export const ACTION_JOIN_NETWORK_COMPLETED = "JOIN_NETWORK_COMPLETED";
-export const ACTION_LEAVE_NETWORK = "LEAVE_NETWORK";
-export const ACTION_LEAVE_NETWORK_COMPLETED = "LEAVE_NETWORK_COMPLETED";
-export const ACTION_LOAD_NETWORKS = "LOAD_NETWORKS";
-export const ACTION_LOAD_NETWORKS_COMPLETED = "LOAD_NETWORKS_COMPLETED";
+export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
+export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
+export const ACTION_LEAVE_COMMUNITY = "LEAVE_COMMUNITY";
+export const ACTION_LEAVE_COMMUNITY_COMPLETED = "LEAVE_COMMUNITY_COMPLETED";
+export const ACTION_LOAD_COMMUNITIES = "LOAD_COMMUNITIES";
+export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
 
-function joinNetwork(name: string) {
+function joinCommunity(name: string) {
 	return { 
-		type: ACTION_JOIN_NETWORK,
+		type: ACTION_JOIN_COMMUNITY,
 		name
 	}
 }
 
-function joinNetworkCompleted(name: string, contacts: IContact[]) {
+function joinCommunityCompleted(name: string, members: IMember[]) {
 	return { 
-		type: ACTION_JOIN_NETWORK_COMPLETED,
+		type: ACTION_JOIN_COMMUNITY_COMPLETED,
 		name,
-		contacts
+		members
 	}
 }
 
-export function joinNetworkAsync(name: string) {
+export function joinCommunityAsync(name: string) {
 	return (dispatch: redux.Dispatch) => {
-		dispatch(joinNetwork(name));
+		dispatch(joinCommunity(name));
 
-		const contacts: IContact[] = [{
+		const members: IMember[] = [{
 			name: "Derek Bekoe",
-			email: "dbekoe@microsoft.com"
+			email: "dbekoe@microsoft.com",
+			status: Status.away
 		}];
 		// Call the service
 
-		dispatch(joinNetworkCompleted(name, contacts));
+		dispatch(joinCommunityCompleted(name, members));
 	}
 }
 
-function leaveNetwork(name: string) {
+function leaveCommunity(name: string) {
 	return {
-		type: ACTION_LEAVE_NETWORK,
+		type: ACTION_LEAVE_COMMUNITY,
 		name
 	}
 }
 
-function leaveNetworkCompleted(name: string) {
+function leaveCommunityCompleted(name: string) {
 	return { 
-		type: ACTION_LEAVE_NETWORK_COMPLETED,
+		type: ACTION_LEAVE_COMMUNITY_COMPLETED,
 		name
 	}
 }
 
 export function leaveNetworkAsync(name: string) {
 	return (dispatch: redux.Dispatch) => {
-		dispatch(leaveNetwork(name));
-		dispatch(leaveNetworkCompleted(name));
+		dispatch(leaveCommunity(name));
+		dispatch(leaveCommunityCompleted(name));
 	}
 }
 
-export function loadNetworks() {
+export function loadCommunities() {
 	return { 
-		type: ACTION_LOAD_NETWORKS
+		type: ACTION_LOAD_COMMUNITIES
 	}
 }
 
-export function loadNetworksCompleted(networks: INetwork[]) {
+export function loadCommunitiesCompleted(communities: ICommunity[]) {
 	return {
-		type: ACTION_LOAD_NETWORKS_COMPLETED,
-		networks
+		type: ACTION_LOAD_COMMUNITIES_COMPLETED,
+		communities
 	}
 }
 
-export function loadNetworksAsync() {
+export function loadCommunitiesAsync() {
 	return (dispatch: redux.Dispatch) => {
-		dispatch(loadNetworks());
+		dispatch(loadCommunities());
 
 		setTimeout(() => {
-			dispatch(loadNetworksCompleted([
+			dispatch(loadCommunitiesCompleted([
 				{
 					name: "hackweek2019",
-					contacts: [
+					members: [
 						{
 							name: "Jonathan Carter",
-							email: "jc@trl.mx"
+							email: "jc@trl.mx",
+							status: Status.away
 						},
 						{
 							name: "Arjun Artam",
-							email: "foo@bar.com"
+							email: "foo@bar.com",
+							status: Status.available
 						}
 					]
 				},
 				{
 					name: "vssaas",
-					contacts: [
+					members: [
 						{
 							name: "Arjun Artam",
-							email: "foo@bar.com"
+							email: "foo@bar.com",
+							status: Status.available
 						}
 					]
 				}

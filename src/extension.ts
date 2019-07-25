@@ -6,7 +6,9 @@ import { registerContactProvider } from "./ContactProvider";
 import { registerTreeProvider } from "./TreeProvider";
 import { IStore } from "./store/model";
 import reducer from "./store/reducer";
-import { joinNetworkAsync, leaveNetworkAsync, loadNetworksAsync } from "./store/actions";
+import { joinCommunityAsync, leaveNetworkAsync, loadCommunitiesAsync } from "./store/actions";
+
+const EXTENSION_NAME = "vsls-communities";
 
 export async function activate(context: ExtensionContext) {
 	const store = redux.createStore(
@@ -17,22 +19,22 @@ export async function activate(context: ExtensionContext) {
 	const api = await vsls.getApi();
 
 	registerContactProvider(api!, store);
-	registerTreeProvider(store);
+	registerTreeProvider(api!, store, context.extensionPath);
 
-	commands.registerCommand("vsls-can.joinNetwork", async () => {
-		const network = await window.showInputBox({ placeHolder: "Specify the network you'd like to join" });
-		network && store.dispatch(<any>joinNetworkAsync(network));
+	commands.registerCommand(`${EXTENSION_NAME}.joinCommunity`, async () => {
+		const community = await window.showInputBox({ placeHolder: "Specify the community you'd like to join" });
+		community && store.dispatch(<any>joinCommunityAsync(community));
 	});
 
-	commands.registerCommand("vsls-can.leaveNetwork", async () => {	
-		const { networks } = <IStore>store.getState();
-		const network = await window.showQuickPick(networks.map((n) => n.name, { placeHolder: "Select the network to leave"}));
-		network && store.dispatch(<any>leaveNetworkAsync(network));
+	commands.registerCommand(`${EXTENSION_NAME}.leaveCommunity`, async () => {	
+		const { communities } = <IStore>store.getState();
+		const community = await window.showQuickPick(communities.map((n) => n.name, { placeHolder: "Select the community to leave"}));
+		community && store.dispatch(<any>leaveNetworkAsync(community));
 	});
 
-	commands.registerCommand("vsls-can.refresh", async () => {	
-		store.dispatch(<any>loadNetworksAsync());	
+	commands.registerCommand(`${EXTENSION_NAME}.refreshCommunities`, async () => {	
+		store.dispatch(<any>loadCommunitiesAsync());	
 	});
 
-	store.dispatch(<any>loadNetworksAsync());
+	store.dispatch(<any>loadCommunitiesAsync());
 }

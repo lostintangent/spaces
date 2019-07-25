@@ -1,6 +1,6 @@
 {
-	"name": "vsls-can",
-	"displayName": "vsls-can",
+	"name": "vsls-communities",
+	"displayName": "vsls-communities",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
@@ -16,37 +16,37 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "vsls-can.joinNetwork",
-				"category": "Live Share CAN",
-				"title": "Join Network"
+				"command": "vsls-communities.joinCommunity",
+				"category": "Live Share Communities",
+				"title": "Join Community"
 			},
 			{
-				"command": "vsls-can.leaveNetwork",
-				"category": "Live Share CAN",
-				"title": "Leave Network"
+				"command": "vsls-communities.leaveCommunity",
+				"category": "Live Share Communities",
+				"title": "Leave Community"
 			},
 			{
-				"command": "vsls-can.refresh",
-				"category": "Live Share CAN",
-				"title": "Refresh"
+				"command": "vsls-communities.refresh",
+				"category": "Live Share Communities",
+				"title": "Refresh Communities"
 			}
 		],
 		"views": {
 			"liveshare": [
 				{
-					"id": "vsls-can.contacts",
-					"name": "Collaboration Area Network"
+					"id": "vsls-communities.communities",
+					"name": "Communities"
 				}
 			]
 		},
 		"configuration": {
 			"type": "object",
-			"title": "Live Share CAN",
+			"title": "Live Share Communities",
 			"properties": {
-				"vsls-can.showSuggestedContacts": {
+				"vsls-communities.showSuggestedContacts": {
 					"default": true,
 					"type": "boolean",
-					"description": "Specifies whether to show CAN-discovered contacts in the Live Share Suggested Contacts tree."
+					"description": "Specifies whether to show community contacts in the Live Share Suggested Contacts tree."
 				}
 			}
 		}

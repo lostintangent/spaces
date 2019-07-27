@@ -1,10 +1,12 @@
 import * as redux from "redux";
 import * as R from "ramda";
-import { IStore, IMember, ICommunity } from "./model";
+import { IStore, IMember, ICommunity, Status } from "./model";
 import { 
     ACTION_JOIN_COMMUNITY, ACTION_JOIN_COMMUNITY_COMPLETED,
 	ACTION_LEAVE_COMMUNITY, ACTION_LEAVE_COMMUNITY_COMPLETED,
-	ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED
+	ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED,
+	ACTION_STATUSES_UPDATED,
+	IMemberStatus
 } from "./actions";
 
 const initialState: IStore = {
@@ -13,6 +15,8 @@ const initialState: IStore = {
 }
 
 const sorted = R.sortBy(R.prop("name"));
+
+const setDefaultStatus = (m: IMember) => ({...m, status: Status.offline})
 
 const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 	switch(action.type) {
@@ -38,7 +42,7 @@ const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 						return { 
 							...community,
 							isLoading: false,
-							members: sorted(action.members)
+							members: sorted(action.members.map(setDefaultStatus))
 						}
 					} else {
 						return community
@@ -73,24 +77,34 @@ const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 			return initialState;
 
 		case ACTION_LOAD_COMMUNITIES_COMPLETED:
-			const memberSorter = (c: ICommunity) => ({...c, members: sorted(c.members)});
-
-			// R.
-			// const memberSorter = c => R.merge(R.identity(c), sorted(R.pluck("members", c)))
-
-			// R.map(
-			// 	c => {
-			// 		return R.merge(c, {members: sorted(c.members)})
-			// 	},
-
-			// 	sorted(action.communities)
-			// )
-
+			// memberSorter sorts members and adds the default status value
+			const memberSorter = (c: ICommunity) => ({
+				...c, members: sorted(c.members.map(setDefaultStatus))
+			});
 			return {
 				isLoading: false,
 				communities: R.map(memberSorter, sorted(action.communities))
 			};
 
+		case ACTION_STATUSES_UPDATED:
+			return {
+				...state,
+				communities: R.map(
+					(community: ICommunity) => ({
+						...community,
+						members: community.members.map(m => {
+							const memberStatus = action.statuses.find(
+								({email}: IMemberStatus) => email === m.email
+							)
+							return {
+								...m,
+								status: memberStatus ? memberStatus.status : m.status
+							}
+						})
+					}),
+					state.communities)
+			}
+			
 		default:
 			return state;
 	}

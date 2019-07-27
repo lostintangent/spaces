@@ -1,6 +1,6 @@
 import { workspace } from "vscode";
 
-const configSection = workspace.getConfiguration("vsls-communities");
+const configSection = workspace.getConfiguration("liveshare.communities");
 
 export const config = {
     get showSuggestedContacts() {

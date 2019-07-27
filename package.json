@@ -16,25 +16,52 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "vsls-communities.joinCommunity",
+				"command": "liveshare.joinCommunity",
 				"category": "Live Share Communities",
-				"title": "Join Community"
+				"title": "Join Community",
+				"icon": {
+					"dark": "images/dark/add.svg",
+					"light": "images/light/add.svg"
+				}
 			},
 			{
-				"command": "vsls-communities.leaveCommunity",
+				"command": "liveshare.leaveCommunity",
 				"category": "Live Share Communities",
-				"title": "Leave Community"
+				"title": "Leave Community",
+				"icon": "images/leave.svg"
 			},
 			{
-				"command": "vsls-communities.refresh",
+				"command": "liveshare.refreshCommunities",
 				"category": "Live Share Communities",
-				"title": "Refresh Communities"
+				"title": "Refresh Communities",
+				"icon": {
+					"dark": "images/dark/refresh.svg",
+					"light": "images/light/refresh.svg"
+				}
+			},
+			{
+				"command": "liveshare.inviteMember",
+				"category": "Live Share Communities",
+				"title": "Invite Member",
+				"icon": {
+					"dark": "images/dark/invite.svg",
+					"light": "images/light/invite.svg"
+				}
+			},
+			{
+				"command": "liveshare.inviteMemberByEmail",
+				"category": "Live Share Communities",
+				"title": "Invite Member By E-mail",
+				"icon": {
+					"dark": "images/dark/email.svg",
+					"light": "images/light/email.svg"
+				}
 			}
 		],
 		"views": {
 			"liveshare": [
 				{
-					"id": "vsls-communities.communities",
+					"id": "liveshare.communities",
 					"name": "Communities"
 				}
 			]
@@ -43,12 +70,57 @@
 			"type": "object",
 			"title": "Live Share Communities",
 			"properties": {
-				"vsls-communities.showSuggestedContacts": {
+				"liveshare.communities.showSuggestedContacts": {
 					"default": true,
 					"type": "boolean",
 					"description": "Specifies whether to show community contacts in the Live Share Suggested Contacts tree."
 				}
 			}
+		},
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "liveshare.leaveCommunity",
+					"when": "view == liveshare.communities && viewItem == community"
+				},
+				{
+					"command": "liveshare.leaveCommunity",
+					"when": "view == liveshare.communities && viewItem == community",
+					"group": "inline"
+				},
+				{
+					"command": "liveshare.inviteMemberByEmail",
+					"when": "view == liveshare.communities && viewItem =~ /^member/",
+					"group": "inline@1"
+				},
+				{
+					"command": "liveshare.inviteMember",
+					"when": "view == liveshare.communities && viewItem == member.online",
+					"group": "inline@2"
+				}
+			],
+			"view/title": [
+				{
+					"command": "liveshare.joinCommunity",
+					"when": "view == liveshare.communities",
+					"group": "navigation@1"
+				},
+				{
+					"command": "liveshare.refreshCommunities",
+					"when": "view == liveshare.communities",
+					"group": "navigation@2"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "liveshare.inviteMember",
+					"when": "false"
+				},
+				{
+					"command": "liveshare.inviteMemberByEmail",
+					"when": "false"
+				}
+			]
 		}
 	},
 	"scripts": {
@@ -71,6 +143,7 @@
 		"vscode-test": "^1.0.0-next.0"
 	},
 	"dependencies": {
+		"axios": "^0.19.0",
 		"ramda": "^0.26.1",
 		"redux": "^4.0.4",
 		"redux-thunk": "^2.3.0",

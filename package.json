@@ -71,7 +71,7 @@
 			"title": "Live Share Communities",
 			"properties": {
 				"liveshare.communities.showSuggestedContacts": {
-					"default": true,
+					"default": false,
 					"type": "boolean",
 					"description": "Specifies whether to show community contacts in the Live Share Suggested Contacts tree."
 				}

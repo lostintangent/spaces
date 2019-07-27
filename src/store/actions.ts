@@ -1,9 +1,9 @@
 import * as redux from "redux";
 import * as vsls from "vsls";
 import { IMember, ICommunity, Status } from "./model";
-import { LocalStorage } from "../LocalStorage";
+import { LocalStorage } from "../storage/LocalStorage";
 import * as api from "./api";
-import * as cm from "../ContactManager";
+import * as cm from "../contacts/contactManager";
 
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
@@ -28,13 +28,15 @@ function joinCommunityCompleted(name: string, members: IMember[]) {
 	}
 }
 
-export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo: vsls.UserInfo) {
+export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo: vsls.UserInfo, vslsApi: vsls.LiveShare, store: redux.Store) {
 	return async (dispatch: redux.Dispatch) => {
 		storage.joinCommunity(name);
 		dispatch(joinCommunity(name));
 
 		const response = await api.joinCommunity(name, userInfo.displayName, userInfo.emailAddress!);
 		dispatch(joinCommunityCompleted(name, response));
+
+		cm.rebuildContacts(vslsApi, store);	
 	}
 }
 
@@ -52,13 +54,15 @@ function leaveCommunityCompleted(name: string) {
 	}
 }
 
-export function leaveNetworkAsync(name: string, storage: LocalStorage, userInfo: vsls.UserInfo) {
+export function leaveCommunityAsync(name: string, storage: LocalStorage, vslsApi: vsls.LiveShare, store: redux.Store) {
 	return async (dispatch: redux.Dispatch) => {
 		storage.leaveCommunity(name);
 		dispatch(leaveCommunity(name));
 		
-		await api.leaveCommunity(name, userInfo.displayName, userInfo.emailAddress!);
+		await api.leaveCommunity(name, vslsApi.session.user!.displayName, vslsApi.session.user!.emailAddress!);
 		dispatch(leaveCommunityCompleted(name));
+
+		cm.rebuildContacts(vslsApi, store);	
 	}
 }
 
@@ -87,9 +91,7 @@ export function loadCommunitiesAsync(storage: LocalStorage, vslsApi: vsls.LiveSh
 
 		dispatch(loadCommunitiesCompleted(response));
 
-		setTimeout(() => {
-			cm.rebuildContacts(vslsApi, store);
-		}, 4000);	
+		cm.rebuildContacts(vslsApi, store);	
 	}
 }
 

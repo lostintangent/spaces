@@ -18,7 +18,7 @@ const sorted = R.sortBy(R.prop("name"));
 
 const setDefaultStatus = (m: IMember) => ({...m, status: Status.offline})
 
-const reducer: redux.Reducer = (state: IStore = initialState, action) => {
+export const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 	switch(action.type) {
 		case ACTION_JOIN_COMMUNITY:
 			return {
@@ -109,5 +109,3 @@ const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 			return state;
 	}
 }
-
-export default reducer;

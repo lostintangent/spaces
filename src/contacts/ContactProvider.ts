@@ -1,42 +1,20 @@
-import * as R from "ramda";
 import { Store } from "redux";
 import { CancellationToken, Event, EventEmitter } from "vscode";
 import { LiveShare } from "vsls";
-import { Contact, ContactsNotification, ContactServiceProvider, Methods, NotifyContactServiceEventArgs } from "vsls/vsls-contactprotocol";
-import { config } from "./config";
-import { IStore } from "./store/model";
+import { Contact, ContactServiceProvider, ContactsNotification, Methods, NotifyContactServiceEventArgs } from "vsls/vsls-contactprotocol";
+import { IStore } from "../store/model";
+import { uniqueMemberContacts } from "../utils";
 
 const PROVIDER_NAME = "Communities";
-
-function toContact(member: any): Contact {
-	return {
-		id: member.email,
-		displayName: member.name,
-		email: member.email,
-	};
-}
-
-const flatMap = R.pipe(
-	R.pluck("members"),
-	R.flatten,
-	R.map(toContact)
-);
-
-const dedupe = R.pipe(
-	R.sortBy(R.prop("email")),
-	R.dropRepeats
-);
 
 class ContactProvider implements ContactServiceProvider {
 	private readonly onNotifiedEventEmitter = new EventEmitter<NotifyContactServiceEventArgs>();
 
 	constructor(private store: Store) {
 		this.store.subscribe(() => {
-			if (config.showSuggestedContacts) {
-				const { communities } = <IStore>this.store.getState();
-				const contacts = <Contact[]>R.pipe(flatMap, dedupe)(communities);
-				this.notifySuggestedContacts(contacts);
-			}
+			const { communities } = <IStore>this.store.getState();
+			const contacts = <Contact[]>uniqueMemberContacts(communities);
+			this.notifySuggestedContacts(contacts);
 		});
 	}
 

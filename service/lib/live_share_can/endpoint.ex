@@ -3,7 +3,6 @@ defmodule LiveShareCAN.Endpoint do
   require Logger
 
   plug(Plug.Logger)
-  # NOTE: The line below is only necessary if you care about parsing JSON
   plug(Plug.Parsers, parsers: [:json], json_decoder: Poison)
   plug(:match)
   plug(:dispatch)
@@ -13,16 +12,25 @@ defmodule LiveShareCAN.Endpoint do
   end
 
   def start_link do
-    # NOTE: This starts Cowboy listening on the default port of 4000
+    # This starts Cowboy listening on the default port of 4000
     {:ok, _} = Plug.Adapters.Cowboy.http(__MODULE__, [])
+    {:ok, _} = Agent.start_link(fn -> [] end, name: :store)
   end
 
   get "/" do
+    # Agent.update(:store, fn list -> ["test" | list] end)
+    # Agent.get(:store, fn list -> list end)
+
     conn
     |> send_resp(
       200,
       "<a href=\"https://github.com/vsls-contrib/communities\">Live Share Communities</a>"
     )
+  end
+
+  def init do
+    # Map with key as community name and value as list of members in the community
+    %{}
   end
 
   def member(name, email) do
@@ -43,7 +51,7 @@ defmodule LiveShareCAN.Endpoint do
 
     result =
       names
-      |> Enum.map(fn x -> community(x) end)
+      |> Enum.map(&community(&1))
 
     conn
     |> send_resp(200, Poison.encode!(result))

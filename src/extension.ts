@@ -21,7 +21,7 @@ export async function activate(context: ExtensionContext) {
 	registerTreeProvider(api, store, context.extensionPath);
 
 	const storage = new LocalStorage(context.globalState);
-	registerCommands(api, store, storage);
+	registerCommands(api, store, storage, context.extensionPath);
 
 	store.dispatch(<any>loadCommunitiesAsync(storage, api, store));
 }

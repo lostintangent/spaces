@@ -56,6 +56,11 @@
 					"dark": "images/dark/email.svg",
 					"light": "images/light/email.svg"
 				}
+			},
+			{
+				"command": "liveshare.viewCommunityDetails",
+				"category": "Live Share Communities",
+				"title": "View Details"
 			}
 		],
 		"views": {
@@ -125,7 +130,8 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
+		"compile": "npm run compile-webview && tsc -p ./",
+		"compile-webview": "cd webView && elm make Main.elm --output ../src/webView/static/Main.js",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile",
 		"test": "node ./out/test/runTest.js"
@@ -144,6 +150,7 @@
 	},
 	"dependencies": {
 		"axios": "^0.19.0",
+		"elm": "^0.19.0-no-deps",
 		"ramda": "^0.26.1",
 		"redux": "^4.0.4",
 		"redux-thunk": "^2.3.0",

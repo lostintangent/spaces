@@ -1,14 +1,15 @@
 import { Store } from "redux";
-import { commands, window } from "vscode";
+import { commands, window, WebviewPanel } from "vscode";
 import { LiveShare } from "vsls";
 import { LocalStorage } from "./storage/LocalStorage";
 import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync } from "./store/actions";
 import { IStore } from "./store/model";
 import { CommunityNode, MemberNode } from "./tree/nodes";
+import { createWebView } from "./webView";
 
 const EXTENSION_NAME = "liveshare";
 
-export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage) {
+export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage, extensionPath: string) {
     commands.registerCommand(`${EXTENSION_NAME}.joinCommunity`, async () => {
         const community = await window.showInputBox({ placeHolder: "Specify the community you'd like to join" });
         const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
@@ -53,5 +54,15 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
 
     commands.registerCommand(`${EXTENSION_NAME}.refreshCommunities`, async () => {	
         store.dispatch(<any>loadCommunitiesAsync(storage, api, store));	
+    });
+
+    let webViewPanel: WebviewPanel | null;
+    commands.registerCommand(`${EXTENSION_NAME}.viewCommunityDetails`, async () => {
+        if (!webViewPanel) {
+            webViewPanel = createWebView(extensionPath);
+            webViewPanel.onDidDispose(() => webViewPanel = null);
+        } else {
+            webViewPanel.reveal();
+        }
     });
 }

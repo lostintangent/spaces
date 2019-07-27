@@ -46,3 +46,9 @@ For the created container id, run it with the exposed port.
 ```
 docker run -it -p 4000:4000 8149677643a1
 ```
+
+## Deployment
+
+```
+sh deploy.sh
+```

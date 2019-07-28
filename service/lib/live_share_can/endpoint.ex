@@ -57,12 +57,17 @@ defmodule LiveShareCAN.Endpoint do
 
   get "/v0/load" do
     conn = Plug.Conn.fetch_query_params(conn)
-    names = String.split(conn.params["names"], ",")
-    # TODO: if names is empty, we return empty string crap.
 
     result =
-      names
-      |> Enum.map(fn x -> community(x, Agent.get(:store, fn y -> Map.get(y, x, []) end)) end)
+      if Map.has_key?(conn.params, "names") do
+        conn.params
+        |> Map.get("names")
+        |> String.split(",")
+        |> Enum.filter(fn x -> String.length(x) > 0 end)
+        |> Enum.map(fn x -> community(x, Agent.get(:store, fn y -> Map.get(y, x, []) end)) end)
+      else
+        []
+      end
 
     conn
     |> send_resp(200, Poison.encode!(result))

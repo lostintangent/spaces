@@ -17,4 +17,4 @@ EXPOSE 4000
 ENV REPLACE_OS_VARS=true \
     PORT=4000
 
-CMD trap 'exit' INT; _build/prod/rel/live_share_can/bin/live_share_can foreground
+CMD trap 'exit' INT; _build/prod/rel/communities/bin/communities foreground

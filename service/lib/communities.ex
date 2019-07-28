@@ -1,5 +1,5 @@
-defmodule LiveShareCAN do
-  @moduledoc "The main OTP application for LiveShareCAN"
+defmodule LiveShareCommunities do
+  @moduledoc "The main OTP application for LiveShareCommunities"
 
   use Application
 
@@ -7,7 +7,7 @@ defmodule LiveShareCAN do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(LiveShareCAN.Endpoint, [])
+      worker(LiveShareCommunities.Endpoint, [])
     ]
 
     opts = [strategy: :one_for_one, name: HexVersion.Supervisor]

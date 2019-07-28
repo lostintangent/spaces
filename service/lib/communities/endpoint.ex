@@ -1,4 +1,4 @@
-defmodule LiveShareCAN.Endpoint do
+defmodule LiveShareCommunities.Endpoint do
   use Plug.Router
   require Logger
 
@@ -18,9 +18,6 @@ defmodule LiveShareCAN.Endpoint do
   end
 
   get "/" do
-    # Agent.update(:store, fn list -> ["test" | list] end)
-    # Agent.get(:store, fn list -> list end)
-
     conn
     |> send_resp(
       200,

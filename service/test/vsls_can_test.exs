@@ -1,8 +1,8 @@
-defmodule LiveShareCANTest do
+defmodule LiveShareCommunitiesTest do
   use ExUnit.Case
-  doctest LiveShareCAN
+  doctest LiveShareCommunities
 
   test "greets the world" do
-    assert LiveShareCAN.hello() == :world
+    assert LiveShareCommunities.hello() == :world
   end
 end

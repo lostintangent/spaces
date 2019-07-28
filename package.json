@@ -1,11 +1,16 @@
 {
 	"name": "vsls-communities",
 	"displayName": "vsls-communities",
+	"publisher": "lostintangent",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.36.0"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vsls-contrib/communities"
+	  },
 	"categories": [
 		"Other"
 	],
@@ -95,6 +100,14 @@
 				},
 				{
 					"command": "liveshare.inviteMemberByEmail",
+					"when": "view == liveshare.communities && viewItem =~ /^member/"
+				},
+				{
+					"command": "liveshare.inviteMember",
+					"when": "view == liveshare.communities && viewItem == member.online"
+				},
+				{
+					"command": "liveshare.inviteMemberByEmail",
 					"when": "view == liveshare.communities && viewItem =~ /^member/",
 					"group": "inline@1"
 				},
@@ -131,7 +144,7 @@
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "npm run compile-webview && tsc -p ./",
-		"compile-webview": "cd webView && elm make Main.elm --output ../src/webView/static/Main.js",
+		"compile-webview": "cd webView && elm make Main.elm --output static/Main.js",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile",
 		"test": "node ./out/test/runTest.js"

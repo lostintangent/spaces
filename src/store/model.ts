@@ -9,11 +9,21 @@ export interface IMember {
 	status: Status;
 }
 
+export interface ISession {
+	host: IMember,
+	startTime: Date,
+	category: string,
+	description: string,
+	url: string
+}
+
 export interface ICommunity {
     isLoading?: boolean;
     isLeaving?: boolean;
 	name: string;
-	members: IMember[]
+	members: IMember[],
+	helpRequests: ISession[],
+	broadcasts: ISession[]
 }
 
 export enum Status {

@@ -2,7 +2,7 @@ import * as path from "path";
 import { window, WebviewPanel, Uri, ViewColumn } from "vscode";
 
 export function createWebView(extensionPath: string): WebviewPanel {
-  const staticResourcePath = path.join(extensionPath, "src/webView/static");
+  const staticResourcePath = path.join(extensionPath, "webView/static");
   const webViewBaseUri = Uri.file(staticResourcePath).with({
     scheme: "vscode-resource"
   });

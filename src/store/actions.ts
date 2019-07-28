@@ -4,6 +4,7 @@ import * as api from "../api";
 import * as cm from "../contacts/contactManager";
 import { LocalStorage } from "../storage/LocalStorage";
 import { ICommunity, IMember, Status } from "./model";
+
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
 export const ACTION_LEAVE_COMMUNITY = "LEAVE_COMMUNITY";

@@ -3,7 +3,7 @@ import * as redux from "redux";
 import { Disposable, Event, EventEmitter, ProviderResult, TreeDataProvider, TreeItem, window } from "vscode";
 import { LiveShare } from "vsls";
 import { IStore } from "../store/model";
-import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode } from "./nodes";
+import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode, CommunityMembersNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, SessionNode } from "./nodes";
 
 class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
     private _disposables: Disposable[] = [];
@@ -12,9 +12,7 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
     public readonly onDidChangeTreeData: Event<TreeNode> = this._onDidChangeTreeData.event;
 
     constructor(private store: redux.Store, private extensionPath: string) {    
-        this.store.subscribe(() => {
-            this._onDidChangeTreeData.fire();
-        });
+        this.store.subscribe(() => { this._onDidChangeTreeData.fire(); });
     }
     
     getTreeItem = <(node: TreeNode) => TreeItem>R.identity;
@@ -29,14 +27,21 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
                 return [new NoCommunitiesNode()];
             } else {
                 return state.communities.map(community =>
-                    new CommunityNode(community.name, community.members.length));
+                    new CommunityNode(community));
             }
         } else {
-            const community = state.communities.find(community => community.name === (<CommunityNode>element).name)
-
-            if (community) {
-                return community.members.map(({ name, email, status }) =>
-                    new MemberNode(name, email, status, this.extensionPath));
+            if (element instanceof CommunityNode) {
+                return [
+                    new CommunityMembersNode(element.community, this.extensionPath),
+                    new CommunityHelpRequestsNode(element.community, this.extensionPath),
+                    new CommunityBroadcastsNode(element.community, this.extensionPath)
+                ];
+            } else if (element instanceof CommunityMembersNode) {
+                return element.community.members.map(member => new MemberNode(member, this.extensionPath));
+            } else if (element instanceof CommunityHelpRequestsNode) {
+                return element.community.helpRequests.map(request => new SessionNode(request));
+            } else if (element instanceof CommunityBroadcastsNode) {
+                return element.community.broadcasts.map(request => new SessionNode(request));
             }
         }
     }

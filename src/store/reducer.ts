@@ -28,6 +28,8 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 					{
 						name: action.name,
 						members: [],
+						broadcasts: [],
+						helpRequests: [],
 						isLoading: true,
 						isLeaving: false
 					}
@@ -42,7 +44,9 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 						return { 
 							...community,
 							isLoading: false,
-							members: sorted(action.members.map(setDefaultStatus))
+							members: sorted(action.members.map(setDefaultStatus)),
+							helpRequests: [],
+							broadcasts: []
 						}
 					} else {
 						return community
@@ -79,7 +83,10 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 		case ACTION_LOAD_COMMUNITIES_COMPLETED:
 			// memberSorter sorts members and adds the default status value
 			const memberSorter = (c: ICommunity) => ({
-				...c, members: sorted(c.members.map(setDefaultStatus))
+				...c,
+				members: sorted(c.members.map(setDefaultStatus)),
+				broadcasts: [],
+				helpRequests: []
 			});
 			return {
 				isLoading: false,

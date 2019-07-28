@@ -7,7 +7,12 @@ defmodule LiveShareCommunities do
     import Supervisor.Spec, warn: false
 
     children = [
-      Plug.Cowboy.child_spec(:http, LiveShareCommunities.HTTP, [], dispatch: dispatch()),
+      {Plug.Cowboy,
+       scheme: :http, plug: LiveShareCommunities.HTTP, options: [dispatch: dispatch()]},
+      Registry.child_spec(
+        keys: :duplicate,
+        name: Registry.LiveShareCommunities
+      ),
       worker(LiveShareCommunities.Store, [])
     ]
 
@@ -20,7 +25,7 @@ defmodule LiveShareCommunities do
       {:_,
        [
          {"/ws", LiveShareCommunities.Websocket, []},
-         {:_, Plug.Adapters.Cowboy.Handler, {LiveShareCommunities.HTTP, []}}
+         {:_, Plug.Cowboy.Handler, {LiveShareCommunities.HTTP, []}}
        ]}
     ]
   end

@@ -22,10 +22,10 @@ defmodule LiveShareCommunities.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowboy, "~> 1.1"},
+      {:cowboy, "~> 2.4"},
       {:plug, "~> 1.3"},
+      {:plug_cowboy, "~> 2.0"},
       {:poison, "~> 3.0"},
-      {:plug_cowboy, "~> 1.0"},
 
       # distillery to create release
       {:distillery, "~> 2.1"}

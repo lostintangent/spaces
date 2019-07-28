@@ -25,7 +25,7 @@ defmodule LiveShareCommunities.MixProject do
       {:cowboy, "~> 2.4"},
       {:plug, "~> 1.3"},
       {:plug_cowboy, "~> 2.0"},
-      {:poison, "~> 3.0"},
+      {:poison, "~> 4.0.1"},
 
       # distillery to create release
       {:distillery, "~> 2.1"}

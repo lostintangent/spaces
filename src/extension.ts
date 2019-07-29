@@ -6,7 +6,7 @@ import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
 import { LocalStorage } from "./storage/LocalStorage";
-import { loadCommunitiesAsync } from "./store/actions";
+import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
 import * as ws from './ws';
@@ -31,7 +31,10 @@ export async function activate(context: ExtensionContext) {
 		const vslsUser = api.session.user;
 
 		if (vslsUser && vslsUser.emailAddress) {
-			ws.init(vslsUser.emailAddress);
+			ws.init(vslsUser.emailAddress, (data: any) => {
+				const {name, members} = data;
+				store.dispatch(<any>updateCommunityAsync(name, members))
+			});
 		}
 	}, 5000);
 }

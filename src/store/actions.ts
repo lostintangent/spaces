@@ -40,6 +40,12 @@ export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo
 	}
 }
 
+export function updateCommunityAsync(name: string, members: IMember[]) {
+	return async (dispatch: redux.Dispatch) => {
+		dispatch(joinCommunityCompleted(name, members));
+	}
+}
+
 function leaveCommunity(name: string) {
 	return {
 		type: ACTION_LEAVE_COMMUNITY,

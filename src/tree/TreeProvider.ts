@@ -34,8 +34,8 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
                 return [
                     new CommunityMembersNode(element.community, this.extensionPath),
                     new CommunityHelpRequestsNode(element.community, this.extensionPath),
-                    new CommunityCodeReviewsNode(element.community, this.extensionPath),
-                    new CommunityBroadcastsNode(element.community, this.extensionPath)
+                    new CommunityBroadcastsNode(element.community, this.extensionPath),
+                    new CommunityCodeReviewsNode(element.community, this.extensionPath)
                 ];
             } else if (element instanceof CommunityMembersNode) {
                 return element.community.members.map(member => new MemberNode(member, this.extensionPath));

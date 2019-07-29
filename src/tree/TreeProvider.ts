@@ -3,7 +3,7 @@ import * as redux from "redux";
 import { Disposable, Event, EventEmitter, ProviderResult, TreeDataProvider, TreeItem, window } from "vscode";
 import { LiveShare } from "vsls";
 import { IStore } from "../store/model";
-import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode, CommunityMembersNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, SessionNode } from "./nodes";
+import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode, CommunityMembersNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, SessionNode, CommunityCodeReviewsNode } from "./nodes";
 
 class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
     private _disposables: Disposable[] = [];
@@ -34,6 +34,7 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
                 return [
                     new CommunityMembersNode(element.community, this.extensionPath),
                     new CommunityHelpRequestsNode(element.community, this.extensionPath),
+                    new CommunityCodeReviewsNode(element.community, this.extensionPath),
                     new CommunityBroadcastsNode(element.community, this.extensionPath)
                 ];
             } else if (element instanceof CommunityMembersNode) {

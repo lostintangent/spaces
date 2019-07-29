@@ -12,7 +12,6 @@ export interface IMember {
 export interface ISession {
 	host: IMember,
 	startTime: Date,
-	category: string,
 	description: string,
 	url: string
 }
@@ -23,6 +22,7 @@ export interface ICommunity {
 	name: string;
 	members: IMember[],
 	helpRequests: ISession[],
+	codeReviews: ISession[],
 	broadcasts: ISession[]
 }
 

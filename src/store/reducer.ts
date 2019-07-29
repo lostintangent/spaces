@@ -30,6 +30,7 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 						members: [],
 						broadcasts: [],
 						helpRequests: [],
+						codeReviews: [],
 						isLoading: true,
 						isLeaving: false
 					}
@@ -46,6 +47,7 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 							isLoading: false,
 							members: sorted(action.members.map(setDefaultStatus)),
 							helpRequests: [],
+							codeReviews: [],
 							broadcasts: []
 						}
 					} else {
@@ -86,6 +88,7 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 				...c,
 				members: sorted(c.members.map(setDefaultStatus)),
 				broadcasts: [],
+				codeReviews: [],
 				helpRequests: []
 			});
 			return {

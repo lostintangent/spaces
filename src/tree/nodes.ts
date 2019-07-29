@@ -52,6 +52,18 @@ export class CommunityHelpRequestsNode extends TreeNode {
     }
 }
 
+
+export class CommunityCodeReviewsNode extends TreeNode {
+    constructor(public community: ICommunity, extensionPath: string) {
+        super(`Code Reviews (${community.codeReviews.length})`, TreeItemCollapsibleState.Collapsed);
+
+        this.iconPath = {
+            dark: path.join(extensionPath, `images/dark/review.svg`),
+            light: path.join(extensionPath, `images/light/review.svg`)
+        };
+    }
+}
+
 export class CommunityBroadcastsNode extends TreeNode {
     constructor(public community: ICommunity, extensionPath: string) {
         super(`Broadcasts (${community.broadcasts.length})`, TreeItemCollapsibleState.Collapsed);

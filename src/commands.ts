@@ -65,4 +65,16 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
             webViewPanel.reveal();
         }
     });
+
+    commands.registerCommand(`${EXTENSION_NAME}.createHelpRequest`, async () => {	
+        
+    });
+
+    commands.registerCommand(`${EXTENSION_NAME}.startBroadcast`, async () => {	
+        
+    });
+
+    commands.registerCommand(`${EXTENSION_NAME}.createCodeReview`, async () => {	
+        
+    });
 }

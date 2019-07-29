@@ -45,6 +45,8 @@ export class CommunityHelpRequestsNode extends TreeNode {
     constructor(public community: ICommunity, extensionPath: string) {
         super(`Help Requests (${community.helpRequests.length})`, TreeItemCollapsibleState.Collapsed);
 
+        this.contextValue = "helpRequests";
+
         this.iconPath = {
             dark: path.join(extensionPath, `images/dark/help.svg`),
             light: path.join(extensionPath, `images/light/help.svg`)
@@ -57,6 +59,8 @@ export class CommunityCodeReviewsNode extends TreeNode {
     constructor(public community: ICommunity, extensionPath: string) {
         super(`Code Reviews (${community.codeReviews.length})`, TreeItemCollapsibleState.Collapsed);
 
+        this.contextValue = "codeReviews";
+
         this.iconPath = {
             dark: path.join(extensionPath, `images/dark/review.svg`),
             light: path.join(extensionPath, `images/light/review.svg`)
@@ -68,9 +72,22 @@ export class CommunityBroadcastsNode extends TreeNode {
     constructor(public community: ICommunity, extensionPath: string) {
         super(`Broadcasts (${community.broadcasts.length})`, TreeItemCollapsibleState.Collapsed);
 
+        this.contextValue = "broadcasts";
+
         this.iconPath = {
             dark: path.join(extensionPath, `images/dark/broadcast.svg`),
             light: path.join(extensionPath, `images/light/broadcast.svg`)
+        };
+    }
+}
+
+export class CreateSessionNode extends TreeNode {
+    constructor(label: string, command: string) {
+        super(label);
+
+        this.command = {
+            command,
+            title: label
         };
     }
 }

@@ -63,6 +63,33 @@
 				}
 			},
 			{
+				"command": "liveshare.createHelpRequest",
+				"category": "Live Share Communities",
+				"title": "Create Help Request...",
+				"icon": {
+					"dark": "images/dark/add.svg",
+					"light": "images/light/add.svg"
+				}
+			},
+			{
+				"command": "liveshare.startBroadcast",
+				"category": "Live Share Communities",
+				"title": "Start Broadcast...",
+				"icon": {
+					"dark": "images/dark/add.svg",
+					"light": "images/light/add.svg"
+				}
+			},
+			{
+				"command": "liveshare.createCodeReview",
+				"category": "Live Share Communities",
+				"title": "Create Code Review...",
+				"icon": {
+					"dark": "images/dark/add.svg",
+					"light": "images/light/add.svg"
+				}
+			},
+			{
 				"command": "liveshare.viewCommunityDetails",
 				"category": "Live Share Communities",
 				"title": "View Details"
@@ -115,6 +142,33 @@
 					"command": "liveshare.inviteMember",
 					"when": "view == liveshare.communities && viewItem == member.online",
 					"group": "inline@2"
+				},
+				{
+					"command": "liveshare.createHelpRequest",
+					"when": "view == liveshare.communities && viewItem == helpRequests"
+				},
+				{
+					"command": "liveshare.createHelpRequest",
+					"when": "view == liveshare.communities && viewItem == helpRequests",
+					"group": "inline"
+				},
+				{
+					"command": "liveshare.startBroadcast",
+					"when": "view == liveshare.communities && viewItem == broadcasts"
+				},
+				{
+					"command": "liveshare.startBroadcast",
+					"when": "view == liveshare.communities && viewItem == broadcasts",
+					"group": "inline"
+				},
+				{
+					"command": "liveshare.createCodeReview",
+					"when": "view == liveshare.communities && viewItem == codeReviews"
+				},
+				{
+					"command": "liveshare.createCodeReview",
+					"when": "view == liveshare.communities && viewItem == codeReviews",
+					"group": "inline"
 				}
 			],
 			"view/title": [

@@ -3,7 +3,7 @@ import * as redux from "redux";
 import { Disposable, Event, EventEmitter, ProviderResult, TreeDataProvider, TreeItem, window } from "vscode";
 import { LiveShare } from "vsls";
 import { IStore } from "../store/model";
-import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode, CommunityMembersNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, SessionNode, CommunityCodeReviewsNode } from "./nodes";
+import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode, CommunityMembersNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, SessionNode, CommunityCodeReviewsNode, CreateSessionNode } from "./nodes";
 
 class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
     private _disposables: Disposable[] = [];
@@ -40,9 +40,23 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
             } else if (element instanceof CommunityMembersNode) {
                 return element.community.members.map(member => new MemberNode(member, this.extensionPath));
             } else if (element instanceof CommunityHelpRequestsNode) {
-                return element.community.helpRequests.map(request => new SessionNode(request));
+                if (element.community.helpRequests.length > 0) {
+                    return element.community.helpRequests.map(request => new SessionNode(request));
+                } else {
+                    return [new CreateSessionNode("Create help request...", "liveshare.createHelpRequest")];
+                }
             } else if (element instanceof CommunityBroadcastsNode) {
-                return element.community.broadcasts.map(request => new SessionNode(request));
+                if (element.community.broadcasts.length > 0) {
+                    return element.community.broadcasts.map(request => new SessionNode(request));
+                } else {
+                    return [new CreateSessionNode("Start broadcast...", "liveshare.startBroadcast")];
+                }
+            } else if (element instanceof CommunityCodeReviewsNode) {
+                if (element.community.codeReviews.length > 0) {
+                    return element.community.codeReviews.map(request => new SessionNode(request));
+                } else {
+                    return [new CreateSessionNode("Create code review request...", "liveshare.createCodeReview")];
+                }
             }
         }
     }

@@ -20,7 +20,7 @@ export async function activate(context: ExtensionContext) {
 		registerContactProvider(api, store);
 	}
 
-	intializeSessionManager(api);
+	intializeSessionManager(api, store);
 	
 	registerTreeProvider(api, store, context.extensionPath);
 

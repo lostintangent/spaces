@@ -14,6 +14,7 @@ export const ACTION_LOAD_COMMUNITIES = "LOAD_COMMUNITIES";
 export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
 export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
 export const ACTION_SESSION_CREATED = "SESSION_CREATED";
+export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
 
 function joinCommunity(name: string) {
 	return { 
@@ -136,6 +137,24 @@ export function createSessionAsync(community: string, type: SessionType, descrip
 		dispatch(createSession(community, type, description));
 
 		const sessionUrl = await api.share();
+
+		// Call the API
+	}
+}
+
+export function endActiveSession() {
+	return {
+		type: ACTION_ACTIVE_SESSION_ENDED
+	}
+}
+
+export function endActiveSessionAsync(api: vsls.LiveShare) {
+	return async (dispatch: redux.Dispatch) => {
+		dispatch(endActiveSession());
+
+		if (api.session.id) {
+			await api.end();
+		}
 
 		// Call the API
 	}

@@ -1,3 +1,5 @@
+import { SessionType } from "./actions";
+
 export interface IStore {
 	isLoading: boolean;
 	activeSession?: ISession;
@@ -14,7 +16,8 @@ export interface ISession {
 	host: IMember,
 	startTime: Date,
 	description: string,
-	url: string
+	url: string;
+	type: SessionType
 }
 
 export interface ICommunity {

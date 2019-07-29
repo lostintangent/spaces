@@ -8,7 +8,8 @@ import {
 	ACTION_STATUSES_UPDATED,
 	IMemberStatus,
 	ACTION_SESSION_CREATED,
-	SessionType
+	SessionType,
+	ACTION_ACTIVE_SESSION_ENDED
 } from "./actions";
 
 const initialState: IStore = {
@@ -117,10 +118,12 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 					state.communities)
 			}
 
-		case ACTION_SESSION_CREATED:
+		case ACTION_SESSION_CREATED: {
 			const type = action.sessionType;
 			const session = {
-				description: action.description
+				description: action.description,
+				community: action.community,
+				type
 			};
 			let sessionType: string = "helpRequests";
 			if (type === SessionType.Broadcast) {
@@ -131,21 +134,50 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 
 			return {
 				...state,
-					communities: state.communities.map(community => {
-					if (community.name === action.community) {
-						return {
-							...community,
-							[sessionType]: [
-								// @ts-ignore
-								...community[sessionType],
-								session
-							]
-						};
-					} else {
-						return community;
-					}
-				})
+				activeSession: session,
+				communities: state.communities.map(community => {
+				if (community.name === action.community) {
+					return {
+						...community,
+						[sessionType]: [
+							// @ts-ignore
+							...community[sessionType],
+							session
+						]
+					};
+				} else {
+					return community;
+				}
+			})
 			}
+		}
+		
+		case ACTION_ACTIVE_SESSION_ENDED: {
+			const session = state.activeSession!;
+			let sessionType: string = "helpRequests";
+			if (session.type === SessionType.Broadcast) {
+				sessionType = "broadcasts";
+			} else if (session.type === SessionType.CodeReview) {
+				sessionType = "codeReviews";
+			}
+
+			return {
+				...state,
+				activeSession: null,
+				communities: state.communities.map(community => {
+				if (community.name === (<any>session).community) {
+					return {
+						...community,
+						// @ts-ignore
+						[sessionType]: community[sessionType].filter((s: ISession) => s.description !== session.description)
+					};
+				} else {
+					return community;
+				}
+			})
+			}
+		}
+
 			
 		default:
 			return state;

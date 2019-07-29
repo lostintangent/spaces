@@ -1,9 +1,9 @@
-defmodule LiveShareCAN.MixProject do
+defmodule LiveShareCommunities.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :live_share_can,
+      app: :communities,
       version: "0.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
@@ -15,17 +15,17 @@ defmodule LiveShareCAN.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {LiveShareCAN, []}
+      mod: {LiveShareCommunities, []}
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowboy, "~> 1.1"},
+      {:cowboy, "~> 2.4"},
       {:plug, "~> 1.3"},
-      {:poison, "~> 3.0"},
-      {:plug_cowboy, "~> 1.0"},
+      {:plug_cowboy, "~> 2.0"},
+      {:poison, "~> 4.0.1"},
 
       # distillery to create release
       {:distillery, "~> 2.1"}

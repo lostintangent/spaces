@@ -9,6 +9,7 @@ import { LocalStorage } from "./storage/LocalStorage";
 import { loadCommunitiesAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
+import * as ws from './ws';
 
 export async function activate(context: ExtensionContext) {
 	const api = (await getVslsApi())!;
@@ -24,4 +25,13 @@ export async function activate(context: ExtensionContext) {
 	registerCommands(api, store, storage, context.extensionPath);
 
 	store.dispatch(<any>loadCommunitiesAsync(storage, api, store));
+
+	// Wait 5 secs for vsls to get activated
+	setTimeout(() => {
+		const vslsUser = api.session.user;
+
+		if (vslsUser && vslsUser.emailAddress) {
+			ws.init(vslsUser.emailAddress);
+		}
+	}, 5000);
 }

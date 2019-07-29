@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ICommunity, IMember } from "./store/model";
 
-const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0"
+const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0";
 
 export async function loadCommunities(communities: string[]): Promise<ICommunity[]> {
     const { data } = await axios.get(`${BASE_URL}/load?names=${communities.join(',')}`);

@@ -7,13 +7,16 @@ defmodule LiveShareCommunities do
     import Supervisor.Spec, warn: false
 
     children = [
-      {Plug.Cowboy,
-       scheme: :http, plug: LiveShareCommunities.HTTP, options: [dispatch: dispatch()]},
+      Plug.Cowboy.child_spec(
+        scheme: :http,
+        plug: LiveShareCommunities.HTTP,
+        options: [dispatch: dispatch()]
+      ),
       Registry.child_spec(
         keys: :duplicate,
         name: Registry.LiveShareCommunities
       ),
-      worker(LiveShareCommunities.Store, [])
+      LiveShareCommunities.Store
     ]
 
     opts = [strategy: :one_for_one, name: HexVersion.Supervisor]

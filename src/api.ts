@@ -5,6 +5,7 @@ const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0";
 
 export async function loadCommunities(communities: string[]): Promise<ICommunity[]> {
     const { data } = await axios.get(`${BASE_URL}/load?names=${communities.join(',')}`);
+    // TODO: the API returns array of sessions, which will need to be split into the different types
     return data;
 }
 

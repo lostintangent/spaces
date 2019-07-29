@@ -15,13 +15,13 @@ defmodule LiveShareCommunities.Store do
   end
 
   defp inform_subscribers(community_name) do
-    Agent.get(:store, &Map.get(&1, community_name, []))
+    members_of(community_name)
     |> Enum.map(&Map.get(&1, "email"))
     |> Enum.map(fn x ->
       Registry.LiveShareCommunities
       |> Registry.dispatch(x, fn entries ->
         for {pid, _} <- entries do
-          # Send the community with its updated members to the subscriber
+          # Send the community with its updated members/sessions to the subscriber
           Process.send(pid, Poison.encode!(community(community_name)), [])
         end
       end)
@@ -29,21 +29,32 @@ defmodule LiveShareCommunities.Store do
   end
 
   def community(name) do
-    %{"name" => name, "members" => members_of(name)}
+    %{"name" => name, "members" => members_of(name), "sessions" => sessions_of(name)}
   end
 
   def members_of(name) do
-    Agent.get(:store, &Map.get(&1, name, []))
+    Agent.get(:store, &Map.get(&1, name, %{}))
+    |> Map.get("members", [])
+  end
+
+  def sessions_of(name) do
+    Agent.get(:store, &Map.get(&1, name, %{}))
+    |> Map.get("sessions", [])
   end
 
   defp add_member_helper(communities, community_name, member) do
-    members =
+    community =
       communities
-      |> Map.get(community_name, [])
+      |> Map.get(community_name, %{})
+
+    members =
+      community
+      |> Map.get("members", [])
       |> Enum.filter(fn x -> x["email"] != member["email"] end)
+      |> Enum.concat([member])
 
     communities
-    |> Map.merge(%{community_name => Enum.concat(members, [member])})
+    |> Map.merge(%{community_name => Map.merge(community, %{"members" => members})})
   end
 
   def add_member(name, member) do
@@ -51,17 +62,54 @@ defmodule LiveShareCommunities.Store do
   end
 
   defp remove_member_helper(communities, community_name, member) do
-    members = Map.get(communities, community_name, [])
+    community =
+      communities
+      |> Map.get(community_name, %{})
 
-    Map.merge(
-      communities,
-      %{
-        community_name => Enum.filter(members, fn x -> x["email"] != member["email"] end)
-      }
-    )
+    members =
+      Map.get(community, "members", [])
+      |> Enum.filter(fn x -> x["email"] != member["email"] end)
+
+    communities
+    |> Map.merge(%{community_name => Map.merge(community, %{"members" => members})})
   end
 
   def remove_member(name, member) do
     update(name, &remove_member_helper(&1, name, member))
+  end
+
+  defp add_session_helper(communities, community_name, session) do
+    community =
+      communities
+      |> Map.get(community_name, %{})
+
+    sessions =
+      community
+      |> Map.get("sessions", [])
+      |> Enum.concat([session])
+
+    communities
+    |> Map.merge(%{community_name => Map.merge(community, %{"sessions" => sessions})})
+  end
+
+  def add_session(name, session) do
+    update(name, &add_session_helper(&1, name, session))
+  end
+
+  defp remove_session_helper(communities, community_name, session) do
+    community =
+      communities
+      |> Map.get(community_name, %{})
+
+    sessions =
+      Map.get(community, "sessions", [])
+      |> Enum.filter(fn x -> x["id"] != session["id"] end)
+
+    communities
+    |> Map.merge(%{community_name => Map.merge(community, %{"sessions" => sessions})})
+  end
+
+  def remove_session(name, session) do
+    update(name, &remove_session_helper(&1, name, session))
   end
 end

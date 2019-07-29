@@ -59,6 +59,22 @@ defmodule LiveShareCommunities.HTTP do
     send_resp(conn, 200, Poison.encode!(%{}))
   end
 
+  post "/v0/community/:name/session" do
+    session = conn.body_params["session"]
+    community_name = conn.body_params["name"]
+
+    LiveShareCommunities.Store.add_session(community_name, session)
+    send_resp(conn, 200, Poison.encode!(session))
+  end
+
+  delete "v0/community/:name/session" do
+    session = conn.body_params["session"]
+    community_name = conn.body_params["name"]
+
+    LiveShareCommunities.Store.remove_session(community_name, session)
+    send_resp(conn, 200, Poison.encode!(%{}))
+  end
+
   get "/v0/debug" do
     store = LiveShareCommunities.Store.everything()
     send_resp(conn, 200, Poison.encode!(store))

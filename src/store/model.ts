@@ -1,5 +1,6 @@
 export interface IStore {
 	isLoading: boolean;
+	activeSession?: ISession;
 	communities: ICommunity[]
 }
 

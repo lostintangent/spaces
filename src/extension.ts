@@ -5,6 +5,7 @@ import { getApi as getVslsApi } from "vsls";
 import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
+import { intializeSessionManager } from "./sessionManager";
 import { LocalStorage } from "./storage/LocalStorage";
 import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
@@ -19,6 +20,8 @@ export async function activate(context: ExtensionContext) {
 		registerContactProvider(api, store);
 	}
 
+	intializeSessionManager(api);
+	
 	registerTreeProvider(api, store, context.extensionPath);
 
 	const storage = new LocalStorage(context.globalState);

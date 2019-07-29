@@ -6,7 +6,9 @@ import {
 	ACTION_LEAVE_COMMUNITY, ACTION_LEAVE_COMMUNITY_COMPLETED,
 	ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED,
 	ACTION_STATUSES_UPDATED,
-	IMemberStatus
+	IMemberStatus,
+	ACTION_SESSION_CREATED,
+	SessionType
 } from "./actions";
 
 const initialState: IStore = {
@@ -113,6 +115,36 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 						})
 					}),
 					state.communities)
+			}
+
+		case ACTION_SESSION_CREATED:
+			const type = action.sessionType;
+			const session = {
+				description: action.description
+			};
+			let sessionType: string = "helpRequests";
+			if (type === SessionType.Broadcast) {
+				sessionType = "broadcasts";
+			} else if (type === SessionType.CodeReview) {
+				sessionType = "codeReviews";
+			}
+
+			return {
+				...state,
+					communities: state.communities.map(community => {
+					if (community.name === action.community) {
+						return {
+							...community,
+							[sessionType]: [
+								// @ts-ignore
+								...community[sessionType],
+								session
+							]
+						};
+					} else {
+						return community;
+					}
+				})
 			}
 			
 		default:

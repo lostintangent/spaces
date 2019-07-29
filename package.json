@@ -145,29 +145,29 @@
 				},
 				{
 					"command": "liveshare.createHelpRequest",
-					"when": "view == liveshare.communities && viewItem == helpRequests"
+					"when": "view == liveshare.communities && viewItem == helpRequests && communities:inSession == false"
 				},
 				{
 					"command": "liveshare.createHelpRequest",
-					"when": "view == liveshare.communities && viewItem == helpRequests",
+					"when": "view == liveshare.communities && viewItem == helpRequests && communities:inSession == false",
 					"group": "inline"
 				},
 				{
 					"command": "liveshare.startBroadcast",
-					"when": "view == liveshare.communities && viewItem == broadcasts"
+					"when": "view == liveshare.communities && viewItem == broadcasts && communities:inSession == false"
 				},
 				{
 					"command": "liveshare.startBroadcast",
-					"when": "view == liveshare.communities && viewItem == broadcasts",
+					"when": "view == liveshare.communities && viewItem == broadcasts && communities:inSession == false",
 					"group": "inline"
 				},
 				{
 					"command": "liveshare.createCodeReview",
-					"when": "view == liveshare.communities && viewItem == codeReviews"
+					"when": "view == liveshare.communities && viewItem == codeReviews && communities:inSession == false"
 				},
 				{
 					"command": "liveshare.createCodeReview",
-					"when": "view == liveshare.communities && viewItem == codeReviews",
+					"when": "view == liveshare.communities && viewItem == codeReviews && communities:inSession == false",
 					"group": "inline"
 				}
 			],

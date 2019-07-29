@@ -4,6 +4,7 @@ import * as api from "../api";
 import * as cm from "../contacts/contactManager";
 import { LocalStorage } from "../storage/LocalStorage";
 import { ICommunity, IMember, Status } from "./model";
+import { create } from "domain";
 
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
@@ -11,7 +12,8 @@ export const ACTION_LEAVE_COMMUNITY = "LEAVE_COMMUNITY";
 export const ACTION_LEAVE_COMMUNITY_COMPLETED = "LEAVE_COMMUNITY_COMPLETED";
 export const ACTION_LOAD_COMMUNITIES = "LOAD_COMMUNITIES";
 export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
-export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED"
+export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
+export const ACTION_SESSION_CREATED = "SESSION_CREATED";
 
 function joinCommunity(name: string) {
 	return { 
@@ -108,9 +110,33 @@ export interface IMemberStatus {
 	status: Status;
 }
 
+export enum SessionType {
+	Broadcast,
+	CodeReview,
+	HelpRequest
+}
+
 export function statusesUpdated(statuses: IMemberStatus[]) {
 	return {
 		type: ACTION_STATUSES_UPDATED,
 		statuses
+	}
+}
+
+export function createSession(community: string, type: SessionType, description: string) {
+	return {
+		type: ACTION_SESSION_CREATED,
+		description,
+		sessionType: type,
+		community
+	}
+}
+export function createSessionAsync(community: string, type: SessionType, description: string, api: vsls.LiveShare) {
+	return async (dispatch: redux.Dispatch) => {
+		dispatch(createSession(community, type, description));
+
+		const sessionUrl = await api.share();
+
+		// Call the API
 	}
 }

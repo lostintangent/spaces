@@ -40,6 +40,14 @@ export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo
 	}
 }
 
+export function updateCommunityAsync(name: string, members: IMember[], vslsApi: vsls.LiveShare, store: redux.Store) {
+	return async (dispatch: redux.Dispatch) => {
+		dispatch(joinCommunityCompleted(name, members));
+
+		cm.rebuildContacts(vslsApi, store);
+	}
+}
+
 function leaveCommunity(name: string) {
 	return {
 		type: ACTION_LEAVE_COMMUNITY,
@@ -62,7 +70,7 @@ export function leaveCommunityAsync(name: string, storage: LocalStorage, vslsApi
 		await api.leaveCommunity(name, vslsApi.session.user!.displayName, vslsApi.session.user!.emailAddress!);
 		dispatch(leaveCommunityCompleted(name));
 
-		cm.rebuildContacts(vslsApi, store);	
+		cm.rebuildContacts(vslsApi, store);
 	}
 }
 

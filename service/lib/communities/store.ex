@@ -21,7 +21,8 @@ defmodule LiveShareCommunities.Store do
       Registry.LiveShareCommunities
       |> Registry.dispatch(x, fn entries ->
         for {pid, _} <- entries do
-          Process.send(pid, community_name, [])
+          # Send the community with its updated members to the subscriber
+          Process.send(pid, Poison.encode!(community(community_name)), [])
         end
       end)
     end)

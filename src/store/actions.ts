@@ -3,7 +3,7 @@ import * as vsls from "vsls";
 import * as api from "../api";
 import * as cm from "../contacts/contactManager";
 import { LocalStorage } from "../storage/LocalStorage";
-import { ICommunity, IMember, Status, ISession } from "./model";
+import { ICommunity, IMember, Status } from "./model";
 
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
@@ -11,9 +11,9 @@ export const ACTION_LEAVE_COMMUNITY = "LEAVE_COMMUNITY";
 export const ACTION_LEAVE_COMMUNITY_COMPLETED = "LEAVE_COMMUNITY_COMPLETED";
 export const ACTION_LOAD_COMMUNITIES = "LOAD_COMMUNITIES";
 export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
-export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED"
-export const ACTION_CREATE_SESSION = "CREATE_SESSION"
-export const ACTION_CREATE_SESSION_COMPLETED = "CREATE_SESSION_COMPLETED"
+export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
+export const ACTION_SESSION_CREATED = "SESSION_CREATED";
+export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
 
 function joinCommunity(name: string) {
 	return { 
@@ -110,6 +110,12 @@ export interface IMemberStatus {
 	status: Status;
 }
 
+export enum SessionType {
+	Broadcast,
+	CodeReview,
+	HelpRequest
+}
+
 export function statusesUpdated(statuses: IMemberStatus[]) {
 	return {
 		type: ACTION_STATUSES_UPDATED,
@@ -117,23 +123,39 @@ export function statusesUpdated(statuses: IMemberStatus[]) {
 	}
 }
 
-function createSession(name: string) {
-	return { 
-		type: ACTION_CREATE_SESSION,
-		name
+export function createSession(community: string, type: SessionType, description: string) {
+	return {
+		type: ACTION_SESSION_CREATED,
+		description,
+		sessionType: type,
+		community
 	}
 }
 
-export function createSessionAsync(name: string, userInfo: vsls.UserInfo, sessionType: string) {
-	const session = {
-		id: "asd",
-		type: sessionType,
-		host: {
-			name: userInfo.displayName,
-			email: userInfo.emailAddress!
-		},
-		startTime: (new Date()).toISOString(),
-		description: "",
-		url: ""
+export function createSessionAsync(community: string, type: SessionType, description: string, api: vsls.LiveShare) {
+	return async (dispatch: redux.Dispatch) => {
+		dispatch(createSession(community, type, description));
+
+		const sessionUrl = await api.share();
+
+		// Call the API
+	}
+}
+
+export function endActiveSession() {
+	return {
+		type: ACTION_ACTIVE_SESSION_ENDED
+	}
+}
+
+export function endActiveSessionAsync(api: vsls.LiveShare) {
+	return async (dispatch: redux.Dispatch) => {
+		dispatch(endActiveSession());
+
+		if (api.session.id) {
+			await api.end();
+		}
+
+		// Call the API
 	}
 }

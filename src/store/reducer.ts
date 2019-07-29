@@ -6,7 +6,10 @@ import {
 	ACTION_LEAVE_COMMUNITY, ACTION_LEAVE_COMMUNITY_COMPLETED,
 	ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED,
 	ACTION_STATUSES_UPDATED,
-	IMemberStatus
+	IMemberStatus,
+	ACTION_SESSION_CREATED,
+	SessionType,
+	ACTION_ACTIVE_SESSION_ENDED
 } from "./actions";
 
 const initialState: IStore = {
@@ -114,6 +117,67 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 					}),
 					state.communities)
 			}
+
+		case ACTION_SESSION_CREATED: {
+			const type = action.sessionType;
+			const session = {
+				description: action.description,
+				community: action.community,
+				type
+			};
+			let sessionType: string = "helpRequests";
+			if (type === SessionType.Broadcast) {
+				sessionType = "broadcasts";
+			} else if (type === SessionType.CodeReview) {
+				sessionType = "codeReviews";
+			}
+
+			return {
+				...state,
+				activeSession: session,
+				communities: state.communities.map(community => {
+				if (community.name === action.community) {
+					return {
+						...community,
+						[sessionType]: [
+							// @ts-ignore
+							...community[sessionType],
+							session
+						]
+					};
+				} else {
+					return community;
+				}
+			})
+			}
+		}
+		
+		case ACTION_ACTIVE_SESSION_ENDED: {
+			const session = state.activeSession!;
+			let sessionType: string = "helpRequests";
+			if (session.type === SessionType.Broadcast) {
+				sessionType = "broadcasts";
+			} else if (session.type === SessionType.CodeReview) {
+				sessionType = "codeReviews";
+			}
+
+			return {
+				...state,
+				activeSession: null,
+				communities: state.communities.map(community => {
+				if (community.name === (<any>session).community) {
+					return {
+						...community,
+						// @ts-ignore
+						[sessionType]: community[sessionType].filter((s: ISession) => s.description !== session.description)
+					};
+				} else {
+					return community;
+				}
+			})
+			}
+		}
+
 			
 		default:
 			return state;

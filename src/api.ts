@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ICommunity, IMember } from "./store/model";
+import { ICommunity, IMember, ISession } from "./store/model";
 
 const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0";
 
@@ -16,6 +16,14 @@ export async function joinCommunity(community: string, name: string, email: stri
 
 export async function leaveCommunity(community: string, name: string, email: string) {
     return await axios.post(`${BASE_URL}/leave`, createCommunityRequest(community, name, email));
+}
+
+export async function createSession(community: string, session: ISession) {
+    return await axios.post(`${BASE_URL}/community/${community}/session`, session)
+}
+
+export async function deleteSession(community: string, session: ISession) {
+    return await axios.delete(`${BASE_URL}/community/${community}/session`, session)
 }
 
 function createCommunityRequest(communityName: string, memberName: string, memberEmail: string) {

@@ -2,7 +2,7 @@ import { Store } from "redux";
 import { commands, window, WebviewPanel } from "vscode";
 import { LiveShare } from "vsls";
 import { LocalStorage } from "./storage/LocalStorage";
-import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync } from "./store/actions";
+import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, createSessionAsync } from "./store/actions";
 import { IStore } from "./store/model";
 import { CommunityNode, MemberNode } from "./tree/nodes";
 import { createWebView } from "./webView";
@@ -66,8 +66,14 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         }
     });
 
-    commands.registerCommand(`${EXTENSION_NAME}.createHelpRequest`, async () => {	
-        
+    commands.registerCommand(`${EXTENSION_NAME}.createHelpRequest`, async () => {
+        // TODO: Get community via tree view item?
+        const community = await window.showInputBox({ placeHolder: "Specify the community" });
+        const userInfo = api.session.user;
+
+        if (community && userInfo && userInfo.emailAddress) {}
+            store.dispatch(<any>createSessionAsync(community, userInfo, "helpRequest"))
+        }
     });
 
     commands.registerCommand(`${EXTENSION_NAME}.startBroadcast`, async () => {	

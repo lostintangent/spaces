@@ -3,7 +3,7 @@ import * as vsls from "vsls";
 import * as api from "../api";
 import * as cm from "../contacts/contactManager";
 import { LocalStorage } from "../storage/LocalStorage";
-import { ICommunity, IMember, Status } from "./model";
+import { ICommunity, IMember, Status, ISession } from "./model";
 
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
@@ -12,6 +12,8 @@ export const ACTION_LEAVE_COMMUNITY_COMPLETED = "LEAVE_COMMUNITY_COMPLETED";
 export const ACTION_LOAD_COMMUNITIES = "LOAD_COMMUNITIES";
 export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
 export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED"
+export const ACTION_CREATE_SESSION = "CREATE_SESSION"
+export const ACTION_CREATE_SESSION_COMPLETED = "CREATE_SESSION_COMPLETED"
 
 function joinCommunity(name: string) {
 	return { 
@@ -112,5 +114,26 @@ export function statusesUpdated(statuses: IMemberStatus[]) {
 	return {
 		type: ACTION_STATUSES_UPDATED,
 		statuses
+	}
+}
+
+function createSession(name: string) {
+	return { 
+		type: ACTION_CREATE_SESSION,
+		name
+	}
+}
+
+export function createSessionAsync(name: string, userInfo: vsls.UserInfo, sessionType: string) {
+	const session = {
+		id: "asd",
+		type: sessionType,
+		host: {
+			name: userInfo.displayName,
+			email: userInfo.emailAddress!
+		},
+		startTime: (new Date()).toISOString(),
+		description: "",
+		url: ""
 	}
 }

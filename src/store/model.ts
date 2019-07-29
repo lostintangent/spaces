@@ -10,6 +10,8 @@ export interface IMember {
 }
 
 export interface ISession {
+	id: string;
+	type: string;
 	host: IMember,
 	startTime: Date,
 	description: string,

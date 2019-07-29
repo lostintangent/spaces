@@ -2,29 +2,53 @@ import * as WebSocket from "ws";
 
 const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net";
 
-let isAlive = false;
+export class WebsocketClient {
+  wsUrl: string;
+  ws: WebSocket | undefined;
+  isAlive: boolean = false;
+  pingTimer: NodeJS.Timer | undefined;
 
-export function init(userEmail: string, callback: any) {
-  const ws = new WebSocket(`${BASE_URL}/ws?${userEmail}`);
+  constructor(userEmail: string, private callback: any) {
+    this.wsUrl = `${BASE_URL}/ws?${userEmail}`;
+  }
 
-  ws.on("open", () => {
-    isAlive = true;
-  });
+  init() {
+    console.log("Websocket connecting");
+    this.ws = new WebSocket(this.wsUrl);
+    this.ws.on("open", () => this.receivedHeartbeat())
+    this.ws.on("pong", () => this.receivedHeartbeat())
+    this.ws.on("close", (code, reason) => {
+      console.log("Websocket closed")
+      this.initiateReconnection();
+    });
 
-  ws.on("pong", () => {
-    isAlive = true;
-  });
+    this.pingTimer = setInterval(() => {
+      if (!this.isAlive) {
+        console.log("Websocket disconnected");
+        this.initiateReconnection();
+      }
 
-  setInterval(() => {
-    if (!isAlive) {
-      // TODO: Reconnection logic
+      this.isAlive = false;
+      this.ws!.send("ping"); // We are sending a ping as a message
+    }, 5000)
+
+    this.ws.on("message", (data: any) => {
+      this.callback(JSON.parse(data));
+      this.receivedHeartbeat();
+    })
+  }
+
+  receivedHeartbeat() {
+    this.isAlive = true;
+  }
+
+  initiateReconnection() {
+    if (this.pingTimer) {
+      clearInterval(this.pingTimer)
     }
 
-    isAlive = false;
-    ws.ping("{}");
-  }, 10000);
-  
-  ws.on("message", function incoming(data: any) {
-    callback(JSON.parse(data));
-  });
+    setTimeout(() => {
+      this.init()
+    }, 5000)
+  }
 }

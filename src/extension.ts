@@ -9,7 +9,7 @@ import { LocalStorage } from "./storage/LocalStorage";
 import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
-import * as ws from './ws';
+import { WebsocketClient } from './ws';
 
 export async function activate(context: ExtensionContext) {
 	const api = (await getVslsApi())!;
@@ -27,14 +27,16 @@ export async function activate(context: ExtensionContext) {
 	store.dispatch(<any>loadCommunitiesAsync(storage, api, store));
 
 	// Wait 5 secs for vsls to get activated
+	// TODO: If the user is not logged in, we will never initiate the ws
 	setTimeout(() => {
 		const vslsUser = api.session.user;
 
 		if (vslsUser && vslsUser.emailAddress) {
-			ws.init(vslsUser.emailAddress, (data: any) => {
+			const ws = new WebsocketClient(vslsUser.emailAddress, (data: any) => {
 				const {name, members} = data;
-				store.dispatch(<any>updateCommunityAsync(name, members))
+				store.dispatch(<any>updateCommunityAsync(name, members, api, store))
 			});
+			ws.init();
 		}
 	}, 5000);
 }

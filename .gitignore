@@ -3,3 +3,4 @@ out
 *.DS_Store
 elm-stuff
 Main.js
+*.vsix

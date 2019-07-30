@@ -117,6 +117,8 @@ export class MemberNode extends TreeNode {
 export class SessionNode extends TreeNode {
     constructor(public session: ISession) {
         super(session.description);
+
+        this.contextValue = "session";
     }
 }
 

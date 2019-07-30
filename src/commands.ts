@@ -1,10 +1,10 @@
 import { Store } from "redux";
-import { commands, window, WebviewPanel } from "vscode";
+import { commands, Uri, window, WebviewPanel } from "vscode";
 import { LiveShare } from "vsls";
 import { LocalStorage } from "./storage/LocalStorage";
 import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, createSessionAsync, SessionType } from "./store/actions";
 import { IStore, ICommunity } from "./store/model";
-import { CommunityNode, MemberNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, CommunityCodeReviewsNode } from "./tree/nodes";
+import { CommunityNode, MemberNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, CommunityCodeReviewsNode, SessionNode } from "./tree/nodes";
 import { createWebView } from "./webView";
 
 const EXTENSION_NAME = "liveshare";
@@ -93,5 +93,9 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
 
     commands.registerCommand(`${EXTENSION_NAME}.createCodeReview`, async (node?: CommunityCodeReviewsNode) => {	
         createSession(SessionType.CodeReview, node);
+    });
+
+    commands.registerCommand(`${EXTENSION_NAME}.joinCommunitySession`, async (node: SessionNode) => {	
+        api.join(Uri.parse(node.session.url));
     });
 }

@@ -90,6 +90,15 @@
 				}
 			},
 			{
+				"command": "liveshare.joinCommunitySession",
+				"category": "Live Share Communities",
+				"title": "Join Community Session",
+				"icon": {
+					"dark": "images/dark/join.svg",
+					"light": "images/light/join.svg"
+				}
+			},
+			{
 				"command": "liveshare.viewCommunityDetails",
 				"category": "Live Share Communities",
 				"title": "View Details"
@@ -169,6 +178,15 @@
 					"command": "liveshare.createCodeReview",
 					"when": "view == liveshare.communities && viewItem == codeReviews && communities:inSession == false",
 					"group": "inline"
+				},
+				{
+					"command": "liveshare.joinCommunitySession",
+					"when": "view == liveshare.communities && viewItem == session"
+				},
+				{
+					"command": "liveshare.joinCommunitySession",
+					"when": "view == liveshare.communities && viewItem == session",
+					"group": "inline"
 				}
 			],
 			"view/title": [
@@ -190,6 +208,10 @@
 				},
 				{
 					"command": "liveshare.inviteMemberByEmail",
+					"when": "false"
+				},
+				{
+					"command": "liveshare.joinCommunitySession",
 					"when": "false"
 				}
 			]

@@ -37,7 +37,7 @@ export async function activate(context: ExtensionContext) {
 		if (vslsUser && vslsUser.emailAddress) {
 			const ws = new WebsocketClient(vslsUser.emailAddress, (data: any) => {
 				const { name, members, sessions } = data;
-				store.dispatch(<any>updateCommunityAsync(name, members, api, store))
+				store.dispatch(<any>updateCommunityAsync(name, members, sessions, api, store))
 			});
 			ws.init();
 		}

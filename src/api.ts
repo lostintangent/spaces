@@ -9,9 +9,9 @@ export async function loadCommunities(communities: string[]): Promise<ICommunity
     return data;
 }
 
-export async function joinCommunity(community: string, name: string, email: string): Promise<IMember[]> {
-    const { data } = await axios.post(`${BASE_URL}/join`, createCommunityRequest(community, name, email));
-    return data;
+export async function joinCommunity(community: string, name: string, email: string): Promise<any> {
+    const { members, sessions } = await axios.post(`${BASE_URL}/join`, createCommunityRequest(community, name, email));
+    return { members, sessions };
 }
 
 export async function leaveCommunity(community: string, name: string, email: string) {

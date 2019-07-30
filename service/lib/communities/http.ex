@@ -47,8 +47,8 @@ defmodule LiveShareCommunities.HTTP do
     community_name = conn.body_params["name"]
 
     LiveShareCommunities.Store.add_member(community_name, member)
-    members = LiveShareCommunities.Store.members_of(community_name)
-    send_resp(conn, 200, Poison.encode!(members))
+    community = LiveShareCommunities.Store.community(community_name)
+    send_resp(conn, 200, Poison.encode!(community))
   end
 
   post "/v0/leave" do

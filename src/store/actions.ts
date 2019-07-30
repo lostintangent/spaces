@@ -22,11 +22,12 @@ function joinCommunity(name: string) {
 	}
 }
 
-function joinCommunityCompleted(name: string, members: IMember[]) {
+function joinCommunityCompleted(name: string, members: any, sessions: any) {
 	return { 
 		type: ACTION_JOIN_COMMUNITY_COMPLETED,
 		name,
-		members
+		members,
+		sessions
 	}
 }
 
@@ -35,16 +36,16 @@ export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo
 		storage.joinCommunity(name);
 		dispatch(joinCommunity(name));
 
-		const response = await api.joinCommunity(name, userInfo.displayName, userInfo.emailAddress!);
-		dispatch(joinCommunityCompleted(name, response));
+		const { members, sessions } = await api.joinCommunity(name, userInfo.displayName, userInfo.emailAddress!);
+		dispatch(joinCommunityCompleted(name, members, sessions));
 
 		cm.rebuildContacts(vslsApi, store);	
 	}
 }
 
-export function updateCommunityAsync(name: string, members: IMember[], vslsApi: vsls.LiveShare, store: redux.Store) {
+export function updateCommunityAsync(name: string, members: IMember[], sessions: any, vslsApi: vsls.LiveShare, store: redux.Store) {
 	return async (dispatch: redux.Dispatch) => {
-		dispatch(joinCommunityCompleted(name, members));
+		dispatch(joinCommunityCompleted(name, members, sessions));
 
 		cm.rebuildContacts(vslsApi, store);
 	}

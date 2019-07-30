@@ -92,7 +92,7 @@
 			{
 				"command": "liveshare.joinCommunitySession",
 				"category": "Live Share Communities",
-				"title": "Join Community Session",
+				"title": "Join Session",
 				"icon": {
 					"dark": "images/dark/join.svg",
 					"light": "images/light/join.svg"

@@ -124,9 +124,10 @@ export function statusesUpdated(statuses: IMemberStatus[]) {
 	}
 }
 
-export function createSession(community: string, type: SessionType, description: string) {
+export function createSession(community: string, id: string, type: SessionType, description: string) {
 	return {
 		type: ACTION_SESSION_CREATED,
+		id,
 		description,
 		sessionType: type,
 		community
@@ -135,11 +136,13 @@ export function createSession(community: string, type: SessionType, description:
 
 export function createSessionAsync(community: string, type: SessionType, description: string, vslsApi: vsls.LiveShare) {
 	return async (dispatch: redux.Dispatch) => {
-		dispatch(createSession(community, type, description));
 		const sessionUrl = await vslsApi.share();
 		const userInfo = vslsApi.session.user;
-
-		if (sessionUrl && userInfo) {
+		const sessionId = vslsApi.session.id;
+		
+		if (sessionUrl && userInfo && sessionId) {
+			dispatch(createSession(community, sessionId, type, description));
+			
 			const session = {
 				id: vslsApi.session.id,
 				host: {
@@ -164,15 +167,10 @@ export function endActiveSession() {
 
 export function endActiveSessionAsync(vslsApi: vsls.LiveShare, store: redux.Store) {
 	return async (dispatch: redux.Dispatch) => {
+		const { activeSession } = store.getState()
 		dispatch(endActiveSession());
-	
-		if (vslsApi.session.id) {
-			await vslsApi.end();
 
-			const { activeSession: { community } } = store.getState();
-			await api.deleteSession(community, {
-				id: vslsApi.session.id
-			})
-		}
+		const { community, id } = activeSession;
+		await api.deleteSession(community, id)
 	}
 }

@@ -96,20 +96,20 @@ defmodule LiveShareCommunities.Store do
     update(name, &add_session_helper(&1, name, session))
   end
 
-  defp remove_session_helper(communities, community_name, session) do
+  defp remove_session_helper(communities, community_name, session_id) do
     community =
       communities
       |> Map.get(community_name, %{})
 
     sessions =
       Map.get(community, "sessions", [])
-      |> Enum.filter(fn x -> x["id"] != session["id"] end)
+      |> Enum.filter(fn x -> x["id"] != session_id end)
 
     communities
     |> Map.merge(%{community_name => Map.merge(community, %{"sessions" => sessions})})
   end
 
-  def remove_session(name, session) do
-    update(name, &remove_session_helper(&1, name, session))
+  def remove_session(name, session_id) do
+    update(name, &remove_session_helper(&1, name, session_id))
   end
 end

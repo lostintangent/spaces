@@ -64,8 +64,8 @@ defmodule LiveShareCommunities.HTTP do
     send_resp(conn, 200, Poison.encode!(conn.body_params))
   end
 
-  delete "v0/community/:name/session" do
-    LiveShareCommunities.Store.remove_session(name, conn.body_params)
+  delete "v0/community/:name/session/:session_id" do
+    LiveShareCommunities.Store.remove_session(name, session_id)
     send_resp(conn, 200, Poison.encode!(%{}))
   end
 

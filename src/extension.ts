@@ -31,15 +31,15 @@ export async function activate(context: ExtensionContext) {
 
 	// Wait 5 secs for vsls to get activated
 	// TODO: If the user is not logged in, we will never initiate the ws
-	setTimeout(() => {
-		const vslsUser = api.session.user;
+	// setTimeout(() => {
+	// 	const vslsUser = api.session.user;
 
-		if (vslsUser && vslsUser.emailAddress) {
-			const ws = new WebsocketClient(vslsUser.emailAddress, (data: any) => {
-				const { name, members, sessions } = data;
-				store.dispatch(<any>updateCommunityAsync(name, members, sessions, api, store))
-			});
-			ws.init();
-		}
-	}, 5000);
+	// 	if (vslsUser && vslsUser.emailAddress) {
+	// 		const ws = new WebsocketClient(vslsUser.emailAddress, (data: any) => {
+	// 			const { name, members, sessions } = data;
+	// 			store.dispatch(<any>updateCommunityAsync(name, members, sessions, api, store))
+	// 		});
+	// 		ws.init();
+	// 	}
+	// }, 5000);
 }

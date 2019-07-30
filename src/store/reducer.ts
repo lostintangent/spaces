@@ -121,6 +121,7 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 		case ACTION_SESSION_CREATED: {
 			const type = action.sessionType;
 			const session = {
+				id: action.id,
 				description: action.description,
 				community: action.community,
 				type

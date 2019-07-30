@@ -14,12 +14,11 @@ export interface IMember {
 
 export interface ISession {
 	id: string;
-	type: string;
-	host: IMember,
-	startTime: Date,
-	description: string,
+	host: IMember;
+	startTime: Date;
+	description: string;
 	url: string;
-	type: SessionType
+	type: SessionType;
 }
 
 export interface ICommunity {

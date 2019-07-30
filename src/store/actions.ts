@@ -132,13 +132,26 @@ export function createSession(community: string, type: SessionType, description:
 	}
 }
 
-export function createSessionAsync(community: string, type: SessionType, description: string, api: vsls.LiveShare) {
+export function createSessionAsync(community: string, type: SessionType, description: string, vslsApi: vsls.LiveShare) {
 	return async (dispatch: redux.Dispatch) => {
 		dispatch(createSession(community, type, description));
+		const sessionUrl = await vslsApi.share();
+		const userInfo = vslsApi.session.user;
 
-		const sessionUrl = await api.share();
-
-		// Call the API
+		if (sessionUrl && userInfo) {
+			const session = {
+				id: vslsApi.session.id,
+				host: {
+					name: userInfo.displayName,
+					email: userInfo.emailAddress
+				},
+				startTime: (new Date()).toISOString(),
+				description,
+				type,
+				url: sessionUrl.toString()			
+			};
+			await api.createSession(community, session);
+		}
 	}
 }
 
@@ -148,14 +161,17 @@ export function endActiveSession() {
 	}
 }
 
-export function endActiveSessionAsync(api: vsls.LiveShare) {
+export function endActiveSessionAsync(vslsApi: vsls.LiveShare, store: redux.Store) {
 	return async (dispatch: redux.Dispatch) => {
 		dispatch(endActiveSession());
+	
+		if (vslsApi.session.id) {
+			await vslsApi.end();
 
-		if (api.session.id) {
-			await api.end();
+			const { activeSession: { community } } = store.getState();
+			await api.deleteSession(community, {
+				id: vslsApi.session.id
+			})
 		}
-
-		// Call the API
 	}
 }

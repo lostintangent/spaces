@@ -49,9 +49,9 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 							...community,
 							isLoading: false,
 							members: sorted(action.members.map(setDefaultStatus)),
-							helpRequests: [],
-							codeReviews: [],
-							broadcasts: []
+							helpRequests: action.sessions.filter((s: any) => s.type === SessionType.HelpRequest),
+							codeReviews: action.sessions.filter((s: any) => s.type === SessionType.CodeReview),
+							broadcasts: action.sessions.filter((s: any) => s.type === SessionType.Broadcast),
 						}
 					} else {
 						return community
@@ -87,12 +87,12 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 
 		case ACTION_LOAD_COMMUNITIES_COMPLETED:
 			// memberSorter sorts members and adds the default status value
-			const memberSorter = (c: ICommunity) => ({
+			const memberSorter = (c: any) => ({
 				...c,
 				members: sorted(c.members.map(setDefaultStatus)),
-				broadcasts: [],
-				codeReviews: [],
-				helpRequests: []
+				broadcasts: c.sessions.filter((s: any) => s.type === SessionType.Broadcast),
+				codeReviews: c.sessions.filter((s: any) => s.type === SessionType.CodeReview),
+				helpRequests: action.sessions.filter((s: any) => s.type === SessionType.HelpRequest)
 			});
 			return {
 				isLoading: false,
@@ -136,19 +136,19 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 				...state,
 				activeSession: session,
 				communities: state.communities.map(community => {
-				if (community.name === action.community) {
-					return {
-						...community,
-						[sessionType]: [
-							// @ts-ignore
-							...community[sessionType],
-							session
-						]
-					};
-				} else {
-					return community;
-				}
-			})
+					if (community.name === action.community) {
+						return {
+							...community,
+							[sessionType]: [
+								// @ts-ignore
+								...community[sessionType],
+								session
+							]
+						};
+					} else {
+						return community;
+					}
+				})
 			}
 		}
 		

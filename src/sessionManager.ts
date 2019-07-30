@@ -12,7 +12,7 @@ export function intializeSessionManager(api: LiveShare, store: Store) {
 		} else {
 			commands.executeCommand("setContext", "communities:inSession", false);
 
-			store.dispatch(<any>endActiveSessionAsync(api));
+			store.dispatch(<any>endActiveSessionAsync(api, store));
 		}
 	})
 };

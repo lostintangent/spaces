@@ -18,11 +18,11 @@ export async function leaveCommunity(community: string, name: string, email: str
     return await axios.post(`${BASE_URL}/leave`, createCommunityRequest(community, name, email));
 }
 
-export async function createSession(community: string, session: ISession) {
+export async function createSession(community: string, session: any) {
     return await axios.post(`${BASE_URL}/community/${community}/session`, session)
 }
 
-export async function deleteSession(community: string, session: ISession) {
+export async function deleteSession(community: string, session: any) {
     return await axios.delete(`${BASE_URL}/community/${community}/session`, session)
 }
 

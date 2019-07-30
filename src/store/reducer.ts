@@ -92,7 +92,7 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 				members: sorted(c.members.map(setDefaultStatus)),
 				broadcasts: c.sessions.filter((s: any) => s.type === SessionType.Broadcast),
 				codeReviews: c.sessions.filter((s: any) => s.type === SessionType.CodeReview),
-				helpRequests: action.sessions.filter((s: any) => s.type === SessionType.HelpRequest)
+				helpRequests: c.sessions.filter((s: any) => s.type === SessionType.HelpRequest)
 			});
 			return {
 				isLoading: false,

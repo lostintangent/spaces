@@ -122,6 +122,7 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 			const type = action.sessionType;
 			const session = {
 				id: action.id,
+				host: action.host,
 				description: action.description,
 				community: action.community,
 				type

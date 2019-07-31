@@ -14,7 +14,7 @@ export interface IMember {
 
 export interface ISession {
 	id: string;
-	host: IMember;
+	host: string;
 	startTime: Date;
 	description: string;
 	url: string;

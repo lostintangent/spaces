@@ -11,7 +11,7 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
     private _onDidChangeTreeData = new EventEmitter<TreeNode>();
     public readonly onDidChangeTreeData: Event<TreeNode> = this._onDidChangeTreeData.event;
 
-    constructor(private store: redux.Store, private extensionPath: string) {    
+    constructor(private store: redux.Store, private extensionPath: string, private api: LiveShare) {    
         this.store.subscribe(() => { this._onDidChangeTreeData.fire(); });
     }
     
@@ -41,19 +41,19 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
                 return element.community.members.map(member => new MemberNode(member, this.extensionPath));
             } else if (element instanceof CommunityHelpRequestsNode) {
                 if (element.community.helpRequests.length > 0) {
-                    return element.community.helpRequests.map(request => new SessionNode(request));
+                    return element.community.helpRequests.map(request => new SessionNode(request, element.community, this.extensionPath, this.api));
                 } else {
                     return [new CreateSessionNode("Create help request...", "liveshare.createHelpRequest")];
                 }
             } else if (element instanceof CommunityBroadcastsNode) {
                 if (element.community.broadcasts.length > 0) {
-                    return element.community.broadcasts.map(request => new SessionNode(request));
+                    return element.community.broadcasts.map(request => new SessionNode(request, element.community, this.extensionPath, this.api));
                 } else {
                     return [new CreateSessionNode("Start broadcast...", "liveshare.startBroadcast")];
                 }
             } else if (element instanceof CommunityCodeReviewsNode) {
                 if (element.community.codeReviews.length > 0) {
-                    return element.community.codeReviews.map(request => new SessionNode(request));
+                    return element.community.codeReviews.map(request => new SessionNode(request, element.community, this.extensionPath, this.api));
                 } else {
                     return [new CreateSessionNode("Create code review request...", "liveshare.createCodeReview")];
                 }
@@ -67,6 +67,6 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
 }
 
 export function registerTreeProvider(api: LiveShare, store: redux.Store, extensionPath: string) {
-    const treeProvider = new CommunitiesTreeProvider(store, extensionPath);
+    const treeProvider = new CommunitiesTreeProvider(store, extensionPath, api);
     window.registerTreeDataProvider("liveshare.communities", treeProvider);
 }

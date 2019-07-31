@@ -124,10 +124,11 @@ export function statusesUpdated(statuses: IMemberStatus[]) {
 	}
 }
 
-export function createSession(community: string, id: string, type: SessionType, description: string) {
+export function createSession(community: string, id: string, type: SessionType, description: string, host: string) {
 	return {
 		type: ACTION_SESSION_CREATED,
 		id,
+		host,
 		description,
 		sessionType: type,
 		community
@@ -141,14 +142,11 @@ export function createSessionAsync(community: string, type: SessionType, descrip
 		const sessionId = vslsApi.session.id;
 		
 		if (sessionUrl && userInfo && sessionId) {
-			dispatch(createSession(community, sessionId, type, description));
+			dispatch(createSession(community, sessionId, type, description, userInfo.emailAddress!));
 			
 			const session = {
 				id: vslsApi.session.id,
-				host: {
-					name: userInfo.displayName,
-					email: userInfo.emailAddress
-				},
+				host: userInfo.emailAddress,
 				startTime: (new Date()).toISOString(),
 				description,
 				type,

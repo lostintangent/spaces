@@ -1,6 +1,7 @@
 import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState } from "vscode";
-import { Status, ICommunity, ISession, IMember } from "../store/model";
+import { Status, ICommunity, ISession, IMember, IStore } from "../store/model";
+import { LiveShare } from "vsls";
 
 export abstract class TreeNode extends TreeItem {
     constructor(label: string, collapsibleState: TreeItemCollapsibleState = TreeItemCollapsibleState.None) {
@@ -92,6 +93,10 @@ export class CreateSessionNode extends TreeNode {
     }
 }
 
+function statusToIconPath(status: Status, extensionPath: string) {
+    return path.join(extensionPath, `images/${status.toString()}.svg`);
+}
+
 export class MemberNode extends TreeNode {
     email: string; 
 
@@ -99,8 +104,7 @@ export class MemberNode extends TreeNode {
         super(member.name);
 
         this.email = member.email;
-        this.tooltip = `${this.label} (${this.member.email})`;
-        this.iconPath = this.statusToIconPath(this.member.status || Status.offline, this.extensionPath);
+        this.iconPath = statusToIconPath(this.member.status || Status.offline, this.extensionPath);
 
         if (this.member.status === Status.offline) {
             this.contextValue = "member";
@@ -109,14 +113,23 @@ export class MemberNode extends TreeNode {
         }
     }
 
-    private statusToIconPath(status: Status, extensionPath: string) {
-        return path.join(extensionPath, `images/${status.toString()}.svg`);
+    
+}
+
+function hostName(session: ISession, api: LiveShare) {
+    if (session.host === api.session!.user!.emailAddress) {
+        return "You";
+    } else {
+        return api.session!.user!.emailAddress;
     }
 }
 
 export class SessionNode extends TreeNode {
-    constructor(public session: ISession) {
-        super(session.description);
+    constructor(public session: ISession, private community: ICommunity, private extensionPath: string, private api: LiveShare) {
+        super(`${hostName(session, api)} (${session.description})`);
+
+        const host = community.members.find(m => m.email === session.host);
+        this.iconPath = statusToIconPath(host!.status || Status.offline, this.extensionPath);
 
         this.contextValue = "session";
     }

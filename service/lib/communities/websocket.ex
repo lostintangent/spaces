@@ -16,7 +16,14 @@ defmodule LiveShareCommunities.Websocket do
   end
 
   def websocket_handle({:text, message}, state) do
-    # We don't expect clients to send us anything, so ignore their messages
+    # Clients can send chat messages that are added to the community store
+    incoming = Poison.decode!(message)
+    type = incoming["type"]
+
+    if type == "message" do
+      LiveShareCommunities.Store.add_message(incoming["name"], incoming, state[:registry_key])
+    end
+
     {:ok, state}
   end
 

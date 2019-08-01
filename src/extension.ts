@@ -10,7 +10,7 @@ import { LocalStorage } from "./storage/LocalStorage";
 import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
-import { WebsocketClient } from './ws';
+import ws from './ws';
 
 export async function activate(context: ExtensionContext) {
 	const api = (await getVslsApi())!;
@@ -35,11 +35,10 @@ export async function activate(context: ExtensionContext) {
 		const vslsUser = api.session.user;
 
 		if (vslsUser && vslsUser.emailAddress) {
-			const ws = new WebsocketClient(vslsUser.emailAddress, (data: any) => {
+			ws.init(vslsUser.emailAddress, (data: any) => {
 				const { name, members, sessions } = data;
 				store.dispatch(<any>updateCommunityAsync(name, members, sessions, api, store))
 			});
-			ws.init();
 		}
 	}, 5000);
 }

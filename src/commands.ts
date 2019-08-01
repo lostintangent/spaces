@@ -6,6 +6,7 @@ import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, createSe
 import { IStore, ICommunity } from "./store/model";
 import { CommunityNode, MemberNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, CommunityCodeReviewsNode, SessionNode } from "./tree/nodes";
 import { createWebView } from "./webView";
+import ws from "./ws";
 
 const EXTENSION_NAME = "liveshare";
 
@@ -82,6 +83,11 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
             }
         }
     }
+
+    commands.registerCommand(`${EXTENSION_NAME}.sendMessage`, async (node: CommunityNode) => {	
+        const content = await window.showInputBox({ placeHolder: "Enter message to send" });
+        content && ws.sendMessage(node.name, content);
+    });
 
     commands.registerCommand(`${EXTENSION_NAME}.createHelpRequest`, async (node?: CommunityHelpRequestsNode) => {
         createSession(SessionType.HelpRequest, node);

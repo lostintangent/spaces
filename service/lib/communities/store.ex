@@ -29,7 +29,12 @@ defmodule LiveShareCommunities.Store do
   end
 
   def community(name) do
-    %{"name" => name, "members" => members_of(name), "sessions" => sessions_of(name)}
+    %{
+      "name" => name,
+      "members" => members_of(name),
+      "sessions" => sessions_of(name),
+      "messages" => messages_of(name)
+    }
   end
 
   def members_of(name) do
@@ -40,6 +45,11 @@ defmodule LiveShareCommunities.Store do
   def sessions_of(name) do
     Agent.get(:store, &Map.get(&1, name, %{}))
     |> Map.get("sessions", [])
+  end
+
+  def messages_of(name) do
+    Agent.get(:store, &Map.get(&1, name, %{}))
+    |> Map.get("messages", [])
   end
 
   defp add_member_helper(communities, community_name, member) do
@@ -111,5 +121,35 @@ defmodule LiveShareCommunities.Store do
 
   def remove_session(name, session_id) do
     update(name, &remove_session_helper(&1, name, session_id))
+  end
+
+  defp add_message_helper(communities, community_name, message) do
+    community = communities |> Map.get(community_name, %{})
+
+    IO.inspect(Map.get(community, "messages", []))
+
+    messages =
+      Map.get(community, "messages", [])
+      |> Enum.concat([message])
+      |> Enum.sort_by(&Map.get(&1, "timestamp"), &Timex.after?/2)
+      |> Enum.take(50) # Only save 50 messages for a community
+
+    IO.inspect(messages)
+
+    communities
+    |> Map.merge(%{community_name => Map.merge(community, %{"messages" => messages})})
+  end
+
+  def add_message(name, message, member_email) do
+    update(
+      name,
+      &add_message_helper(
+        &1,
+        name,
+        message
+        |> Map.delete("name")
+        |> Map.merge(%{"sender" => member_email, "timestamp" => DateTime.utc_now()})
+      )
+    )
   end
 end

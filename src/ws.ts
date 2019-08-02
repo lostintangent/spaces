@@ -3,22 +3,26 @@ import * as WebSocket from "ws";
 const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net";
 
 export class WebsocketClient {
-    wsUrl: string;
     ws: WebSocket | undefined;
+    userEmail: string | undefined;
+    callback: any;
     pingTimer: NodeJS.Timer | undefined;
 
-    constructor(userEmail: string, private callback: any) {
-        this.wsUrl = `${BASE_URL}/ws?${userEmail}`;
+    init(userEmail: string, callback: any) {
+        this.userEmail = userEmail;
+        this.callback = callback;
+        this.connect();
     }
 
-    init() {
+    connect() {
         console.log("Websocket connecting");
-        this.ws = new WebSocket(this.wsUrl);
+        this.ws = new WebSocket(`${BASE_URL}/ws?${this.userEmail}`);
 
         this.ws.on("open", () => {
             console.log("Websocket open");
             this.pingTimer = setInterval(() => {
-                this.ws!.send("ping");
+                const pingMessage = {type: "ping"}
+                this.ws!.send(JSON.stringify(pingMessage));
             }, 7500)
         })
 
@@ -32,13 +36,23 @@ export class WebsocketClient {
         })
     }
 
+    sendMessage(communityName: string, content: string) {
+        const message = {type: "message", content, name: communityName}
+
+        if (this.ws) {
+            this.ws.send(JSON.stringify(message))
+        }
+    }
+
     initiateReconnection() {
         if (this.pingTimer) {
             clearInterval(this.pingTimer)
         }
 
         setTimeout(() => {
-            this.init()
+            this.connect()
         }, 5000)
     }
 }
+
+export default new WebsocketClient();

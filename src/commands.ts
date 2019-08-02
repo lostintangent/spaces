@@ -6,16 +6,17 @@ import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, createSe
 import { IStore, ICommunity } from "./store/model";
 import { CommunityNode, MemberNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, CommunityCodeReviewsNode, SessionNode } from "./tree/nodes";
 import { createWebView } from "./webView";
+import { ChatApi } from "./chatApi";
 
 const EXTENSION_NAME = "liveshare";
 
-export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage, extensionPath: string) {
+export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage, extensionPath: string, chatApi: ChatApi) {
     commands.registerCommand(`${EXTENSION_NAME}.joinCommunity`, async () => {
         const community = await window.showInputBox({ placeHolder: "Specify the community you'd like to join" });
         const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
 
         if (community && userInfo && userInfo.emailAddress) {
-            store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store));
+            store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
         }
     });
 

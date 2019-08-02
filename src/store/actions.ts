@@ -4,6 +4,7 @@ import * as api from "../api";
 import * as cm from "../contacts/contactManager";
 import { LocalStorage } from "../storage/LocalStorage";
 import { ICommunity, IMember, Status } from "./model";
+import { ChatApi } from "../chatApi";
 
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
@@ -32,10 +33,12 @@ function joinCommunityCompleted(name: string, members: any, sessions: any) {
 	}
 }
 
-export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo: vsls.UserInfo, vslsApi: vsls.LiveShare, store: redux.Store) {
+export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo: vsls.UserInfo, vslsApi: vsls.LiveShare, store: redux.Store, chatApi: ChatApi) {
 	return async (dispatch: redux.Dispatch) => {
 		storage.joinCommunity(name);
 		dispatch(joinCommunity(name));
+
+		chatApi.onCommunityJoined(name);
 
 		const { members, sessions } = await api.joinCommunity(name, userInfo.displayName, userInfo.emailAddress!);
 		dispatch(joinCommunityCompleted(name, members, sessions));

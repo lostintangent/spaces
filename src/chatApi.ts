@@ -7,6 +7,7 @@ import { IStore, IMember } from "./store/model";
 // This is the interface for the integration with the Team Chat extension
 export class ChatApi {
     callback: any;
+    communityCallback: any;
 
     constructor(private vslsApi: vsls.LiveShare, private store: redux.Store) {}
 
@@ -47,9 +48,19 @@ export class ChatApi {
         this.callback = callback;
     }
 
+    setCommunityCallback(callback: any) {
+        this.communityCallback = callback;
+    }
+
     onMessageReceived(name: string, messages: any) {
         if (this.callback) {
             this.callback({ name, messages })
+        }
+    }
+
+    onCommunityJoined(name: string) {
+        if (this.communityCallback) {
+            this.communityCallback(name);
         }
     }
 }

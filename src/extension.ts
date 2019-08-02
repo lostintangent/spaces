@@ -16,6 +16,7 @@ import ws from './ws';
 export async function activate(context: ExtensionContext) {
 	const api = (await getVslsApi())!;
 	const store = createReduxStore(reducer, applyMiddleware(thunk));
+	const chatApi = new ChatApi(api, store);
 
 	if (config.showSuggestedContacts) {
 		registerContactProvider(api, store);
@@ -26,11 +27,9 @@ export async function activate(context: ExtensionContext) {
 	registerTreeProvider(api, store, context.extensionPath);
 
 	const storage = new LocalStorage(context.globalState);
-	registerCommands(api, store, storage, context.extensionPath);
+	registerCommands(api, store, storage, context.extensionPath, chatApi);
 
 	store.dispatch(<any>loadCommunitiesAsync(storage, api, store));
-
-	const chatApi = new ChatApi(api, store);
 
 	// Wait 5 secs for vsls to get activated
 	// TODO: If the user is not logged in, we will never initiate the ws

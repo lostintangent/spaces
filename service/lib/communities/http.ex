@@ -24,6 +24,25 @@ defmodule LiveShareCommunities.HTTP do
     )
   end
 
+  get "/join_redirect/:name" do
+    conn = Plug.Conn.fetch_query_params(conn)
+
+    redirect_url = "lostintangent.vsls-communities/join?#{name}"
+
+    prefix =
+      if Map.has_key?(conn.params, "insiders") do
+        "vscode-insiders"
+      else
+        "vscode"
+      end
+
+    send_resp(
+      conn,
+      200,
+      "<iframe width=\"0\" height=\"0\" src=\"#{prefix}://#{redirect_url}\"></iframe>"
+    )
+  end
+
   get "/v0/load" do
     conn = Plug.Conn.fetch_query_params(conn)
 

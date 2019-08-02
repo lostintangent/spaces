@@ -18,6 +18,9 @@
 		"*"
 	],
 	"main": "./out/extension.js",
+	"extensionDependencies": [
+		"MS-vsliveshare.vsliveshare-pack"
+	],
 	"contributes": {
 		"commands": [
 			{

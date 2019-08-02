@@ -33,7 +33,7 @@ export class CommunityNode extends TreeNode {
 
 export class CommunityMembersNode extends TreeNode {
     constructor(public community: ICommunity, extensionPath: string) {
-        super(`Members (${community.members.length})`, TreeItemCollapsibleState.Collapsed);
+        super(`Members (${community.members.length})`, community.isExpanded ? TreeItemCollapsibleState.Expanded: TreeItemCollapsibleState.Collapsed);
 
         this.iconPath = {
             dark: path.join(extensionPath, `images/dark/member.svg`),
@@ -97,11 +97,20 @@ function statusToIconPath(status: Status, extensionPath: string) {
     return path.join(extensionPath, `images/${status.toString()}.svg`);
 }
 
+function displayName(api: LiveShare, email: string, community: ICommunity, ) {
+    if (email === api.session!.user!.emailAddress) {
+        return `${api.session.user!.displayName} (You)`;
+    } else {
+        const member = community.members.find(m => m.email === email);
+        return member!.name;
+    }
+}
+
 export class MemberNode extends TreeNode {
     email: string; 
 
-    constructor(public member: IMember, private extensionPath: string) {
-        super(member.name);
+    constructor(public member: IMember, public community: ICommunity, public api: LiveShare, private extensionPath: string) {
+        super(displayName(api, member.email, community));
 
         this.email = member.email;
         this.iconPath = statusToIconPath(this.member.status || Status.offline, this.extensionPath);
@@ -112,21 +121,11 @@ export class MemberNode extends TreeNode {
             this.contextValue = "member.online"
         }
     }
-
-    
-}
-
-function hostName(session: ISession, api: LiveShare) {
-    if (session.host === api.session!.user!.emailAddress) {
-        return "You";
-    } else {
-        return api.session!.user!.emailAddress;
-    }
 }
 
 export class SessionNode extends TreeNode {
     constructor(public session: ISession, private community: ICommunity, private extensionPath: string, private api: LiveShare) {
-        super(`${hostName(session, api)} (${session.description})`);
+        super(`${displayName(api, session.host, community)} - ${session.description}`);
 
         const host = community.members.find(m => m.email === session.host);
         this.iconPath = statusToIconPath(host!.status || Status.offline, this.extensionPath);

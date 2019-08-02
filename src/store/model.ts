@@ -23,7 +23,8 @@ export interface ISession {
 
 export interface ICommunity {
     isLoading?: boolean;
-    isLeaving?: boolean;
+	isLeaving?: boolean;
+	isExpanded?: boolean;
 	name: string;
 	members: IMember[],
 	helpRequests: ISession[],

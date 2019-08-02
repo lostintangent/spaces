@@ -4,6 +4,7 @@ import { Disposable, Event, EventEmitter, ProviderResult, TreeDataProvider, Tree
 import { LiveShare } from "vsls";
 import { IStore } from "../store/model";
 import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode, CommunityMembersNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, SessionNode, CommunityCodeReviewsNode, CreateSessionNode } from "./nodes";
+import { communityNodeExpanded } from "../store/actions";
 
 class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
     private _disposables: Disposable[] = [];
@@ -38,7 +39,7 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
                     new CommunityCodeReviewsNode(element.community, this.extensionPath)
                 ];
             } else if (element instanceof CommunityMembersNode) {
-                return element.community.members.map(member => new MemberNode(member, this.extensionPath));
+                return element.community.members.map(member => new MemberNode(member, element.community, this.api, this.extensionPath));
             } else if (element instanceof CommunityHelpRequestsNode) {
                 if (element.community.helpRequests.length > 0) {
                     return element.community.helpRequests.map(request => new SessionNode(request, element.community, this.extensionPath, this.api));
@@ -67,6 +68,16 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
 }
 
 export function registerTreeProvider(api: LiveShare, store: redux.Store, extensionPath: string) {
-    const treeProvider = new CommunitiesTreeProvider(store, extensionPath, api);
-    window.registerTreeDataProvider("liveshare.communities", treeProvider);
+    const treeDataProvider = new CommunitiesTreeProvider(store, extensionPath, api);
+
+    const treeView = window.createTreeView("liveshare.communities", {
+        showCollapseAll: true,
+        treeDataProvider
+    });
+
+    treeView.onDidExpandElement((e) => {
+        if (e.element instanceof CommunityMembersNode) {
+            store.dispatch(communityNodeExpanded(e.element.community));
+        }
+    });
 }

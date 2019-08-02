@@ -14,6 +14,7 @@ export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
 export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
 export const ACTION_SESSION_CREATED = "SESSION_CREATED";
 export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
+export const ACTION_COMMUNITY_NODE_EXPANDED = "COMMUNITY_NODE_EXPANDED";
 
 function joinCommunity(name: string) {
 	return { 
@@ -171,4 +172,11 @@ export function endActiveSessionAsync(vslsApi: vsls.LiveShare, store: redux.Stor
 		const { community, id } = activeSession;
 		await api.deleteSession(community, id)
 	}
+}
+
+export function communityNodeExpanded(community: ICommunity) {
+	return {
+		type: ACTION_COMMUNITY_NODE_EXPANDED,
+		community
+	};
 }

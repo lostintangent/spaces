@@ -9,7 +9,8 @@ import {
 	IMemberStatus,
 	ACTION_SESSION_CREATED,
 	SessionType,
-	ACTION_ACTIVE_SESSION_ENDED
+	ACTION_ACTIVE_SESSION_ENDED,
+	ACTION_COMMUNITY_NODE_EXPANDED
 } from "./actions";
 
 const initialState: IStore = {
@@ -35,7 +36,8 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 						helpRequests: [],
 						codeReviews: [],
 						isLoading: true,
-						isLeaving: false
+						isLeaving: false,
+						isExpanded: false
 					}
 				])
 			};
@@ -180,6 +182,20 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 			}
 		}
 
+		case ACTION_COMMUNITY_NODE_EXPANDED:
+			return {
+				...state,
+				communities: state.communities.map(community => {
+					if (community.name === action.community.name) {
+						return {
+							...community,
+							isExpanded: true
+						}
+					} else {
+						return community;
+					}
+				})
+			}
 			
 		default:
 			return state;

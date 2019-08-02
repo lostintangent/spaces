@@ -132,7 +132,7 @@
 				{
 					"command": "liveshare.leaveCommunity",
 					"when": "view == liveshare.communities && viewItem == community",
-					"group": "inline"
+					"group": "inline@2"
 				},
 				{
 					"command": "liveshare.inviteMemberByEmail",

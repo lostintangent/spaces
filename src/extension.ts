@@ -1,17 +1,18 @@
 import { applyMiddleware, createStore as createReduxStore } from "redux";
 import thunk from "redux-thunk";
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, window, commands } from "vscode";
 import { getApi as getVslsApi } from "vsls";
 import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
 import { intializeSessionManager } from "./sessionManager";
 import { LocalStorage } from "./storage/LocalStorage";
-import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
+import { loadCommunitiesAsync, updateCommunityAsync, joinCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
 import { ChatApi } from "./chatApi";
 import ws from './ws';
+import { registerUriHandler } from "./uriHandler";
 
 export async function activate(context: ExtensionContext) {
 	const api = (await getVslsApi())!;
@@ -44,6 +45,8 @@ export async function activate(context: ExtensionContext) {
 			});
 		}
 	}, 5000);
+
+	registerUriHandler(api, store, storage, chatApi);
 
 	return chatApi;
 }

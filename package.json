@@ -36,11 +36,6 @@
 				"icon": "images/leave.svg"
 			},
 			{
-				"command": "liveshare.sendMessage",
-				"category": "Live Share Communities",
-				"title": "Send Message"
-			},
-			{
 				"command": "liveshare.refreshCommunities",
 				"category": "Live Share Communities",
 				"title": "Refresh Communities",
@@ -138,10 +133,6 @@
 					"command": "liveshare.leaveCommunity",
 					"when": "view == liveshare.communities && viewItem == community",
 					"group": "inline"
-				},
-				{
-					"command": "liveshare.sendMessage",
-					"when": "view == liveshare.communities && viewItem == community"
 				},
 				{
 					"command": "liveshare.inviteMemberByEmail",

@@ -26,6 +26,11 @@ export async function deleteSession(community: string, sessionId: string) {
     return await axios.delete(`${BASE_URL}/community/${community}/session/${sessionId}`)
 }
 
+export async function getMessages(community: string) {
+    const { data } = await axios.get(`${BASE_URL}/community/${community}/messages`)
+    return data;
+}
+
 function createCommunityRequest(communityName: string, memberName: string, memberEmail: string) {
     return {
         name: communityName,

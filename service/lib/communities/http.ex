@@ -69,6 +69,11 @@ defmodule LiveShareCommunities.HTTP do
     send_resp(conn, 200, Poison.encode!(%{}))
   end
 
+  get "v0/community/:name/messages" do
+    messages = LiveShareCommunities.Store.messages_of(name)
+    send_resp(conn, 200, Poison.encode!(messages))
+  end
+
   get "/v0/debug" do
     store = LiveShareCommunities.Store.everything()
     send_resp(conn, 200, Poison.encode!(store))

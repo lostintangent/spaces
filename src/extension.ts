@@ -10,6 +10,7 @@ import { LocalStorage } from "./storage/LocalStorage";
 import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
+import { ChatApi } from "./chatApi";
 import ws from './ws';
 
 export async function activate(context: ExtensionContext) {
@@ -29,6 +30,8 @@ export async function activate(context: ExtensionContext) {
 
 	store.dispatch(<any>loadCommunitiesAsync(storage, api, store));
 
+	const chatApi = new ChatApi(api, store);
+
 	// Wait 5 secs for vsls to get activated
 	// TODO: If the user is not logged in, we will never initiate the ws
 	setTimeout(() => {
@@ -36,9 +39,12 @@ export async function activate(context: ExtensionContext) {
 
 		if (vslsUser && vslsUser.emailAddress) {
 			ws.init(vslsUser.emailAddress, (data: any) => {
-				const { name, members, sessions } = data;
+				const { name, members, sessions, messages } = data;
+				chatApi.onMessageReceived(name, messages);
 				store.dispatch(<any>updateCommunityAsync(name, members, sessions, api, store))
 			});
 		}
 	}, 5000);
+
+	return chatApi;
 }

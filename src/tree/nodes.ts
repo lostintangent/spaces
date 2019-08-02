@@ -44,7 +44,7 @@ export class CommunityMembersNode extends TreeNode {
 
 export class CommunityHelpRequestsNode extends TreeNode {
     constructor(public community: ICommunity, extensionPath: string) {
-        super(`Help Requests (${community.helpRequests.length})`, TreeItemCollapsibleState.Collapsed);
+        super(`Help Requests (${community.helpRequests.length})`, community.isHelpRequestsExpanded ? TreeItemCollapsibleState.Expanded: TreeItemCollapsibleState.Collapsed);
 
         this.contextValue = "helpRequests";
 

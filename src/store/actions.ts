@@ -174,9 +174,10 @@ export function endActiveSessionAsync(vslsApi: vsls.LiveShare, store: redux.Stor
 	}
 }
 
-export function communityNodeExpanded(community: ICommunity) {
+export function communityNodeExpanded(community: ICommunity, nodeType: string) {
 	return {
 		type: ACTION_COMMUNITY_NODE_EXPANDED,
-		community
+		community,
+		nodeType
 	};
 }

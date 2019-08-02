@@ -25,6 +25,7 @@ export interface ICommunity {
     isLoading?: boolean;
 	isLeaving?: boolean;
 	isExpanded?: boolean;
+	isHelpRequestsExpanded?: boolean;
 	name: string;
 	members: IMember[],
 	helpRequests: ISession[],

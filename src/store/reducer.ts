@@ -183,13 +183,14 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 		}
 
 		case ACTION_COMMUNITY_NODE_EXPANDED:
+			const property = action.nodeType === "members" ? "isExpanded": "isHelpRequestsExpanded";
 			return {
 				...state,
 				communities: state.communities.map(community => {
 					if (community.name === action.community.name) {
 						return {
 							...community,
-							isExpanded: true
+							[property]: true
 						}
 					} else {
 						return community;

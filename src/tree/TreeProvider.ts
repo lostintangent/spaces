@@ -77,7 +77,9 @@ export function registerTreeProvider(api: LiveShare, store: redux.Store, extensi
 
     treeView.onDidExpandElement((e) => {
         if (e.element instanceof CommunityMembersNode) {
-            store.dispatch(communityNodeExpanded(e.element.community));
+            store.dispatch(communityNodeExpanded(e.element.community, "members"));
+        } else if (e.element instanceof CommunityHelpRequestsNode) {
+            store.dispatch(communityNodeExpanded(e.element.community, "help"));
         }
     });
 }

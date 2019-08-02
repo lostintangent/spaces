@@ -31,16 +31,14 @@ defmodule LiveShareCommunities.HTTP do
 
     prefix =
       if Map.has_key?(conn.params, "insiders") do
-        "vscode-insiders"
+        "vscode-insiders://"
       else
-        "vscode"
+        "vscode://"
       end
 
-    send_resp(
-      conn,
-      200,
-      "<iframe width=\"0\" height=\"0\" src=\"#{prefix}://#{redirect_url}\"></iframe>"
-    )
+    conn
+    |> put_resp_header("Location", "#{prefix}#{redirect_url}")
+    |> send_resp(301, "")
   end
 
   get "/v0/load" do

@@ -1,6 +1,8 @@
 defmodule LiveShareCommunities.Store do
   use Agent
 
+  @top_communities_count 5
+
   def start_link(_opts) do
     Agent.start_link(fn -> %{} end, name: :store)
   end
@@ -50,7 +52,7 @@ defmodule LiveShareCommunities.Store do
     communities
       |> Enum.filter(& &1.member_count > 0)
       |> Enum.sort_by(& &1.member_count)
-      |> Enum.take(5)
+      |> Enum.take(@top_communities_count)
   end
 
   def sessions_of(name) do

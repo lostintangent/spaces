@@ -1,13 +1,13 @@
 import { Store } from "redux";
-import { commands, Uri, window, WebviewPanel } from "vscode";
+import { commands, Uri, WebviewPanel, window } from "vscode";
 import { LiveShare } from "vsls";
-import { LocalStorage } from "./storage/LocalStorage";
-import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, createSessionAsync, SessionType } from "./store/actions";
-import { IStore, ICommunity } from "./store/model";
-import { CommunityNode, MemberNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, CommunityCodeReviewsNode, SessionNode } from "./tree/nodes";
-import { createWebView } from "./webView";
-import { ChatApi } from "./chatApi";
 import { getTopCommunities } from "./api";
+import { ChatApi } from "./chatApi";
+import { LocalStorage } from "./storage/LocalStorage";
+import { createSessionAsync, joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, SessionType } from "./store/actions";
+import { ICommunity, IStore } from "./store/model";
+import { CommunityBroadcastsNode, CommunityCodeReviewsNode, CommunityHelpRequestsNode, CommunityNode, MemberNode, SessionNode } from "./tree/nodes";
+import { createWebView } from "./webView";
 
 const EXTENSION_NAME = "liveshare";
 

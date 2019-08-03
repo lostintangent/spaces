@@ -59,6 +59,13 @@ defmodule LiveShareCommunities.HTTP do
     |> send_resp(200, Poison.encode!(result))
   end
 
+  get "/v0/top_communities" do
+    result = LiveShareCommunities.Store.top_communities()
+
+    conn
+      |> send_resp(200, Poison.encode!(result))
+  end
+
   post "/v0/join" do
     member = conn.body_params["member"]
     community_name = conn.body_params["name"]

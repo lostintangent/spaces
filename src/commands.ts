@@ -7,17 +7,32 @@ import { IStore, ICommunity } from "./store/model";
 import { CommunityNode, MemberNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, CommunityCodeReviewsNode, SessionNode } from "./tree/nodes";
 import { createWebView } from "./webView";
 import { ChatApi } from "./chatApi";
+import { getTopCommunities } from "./api";
 
 const EXTENSION_NAME = "liveshare";
 
 export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage, extensionPath: string, chatApi: ChatApi) {
     commands.registerCommand(`${EXTENSION_NAME}.joinCommunity`, async () => {
-        const community = await window.showInputBox({ placeHolder: "Specify the community you'd like to join" });
-        const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
+        const communities = (await getTopCommunities()).map((c: any) => ({
+            label: c.name,
+            description: `(${c.member_count} members)`
+        }));
 
-        if (community && userInfo && userInfo.emailAddress) {
-            store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
-        }
+        const list = window.createQuickPick();
+        list.placeholder = "Specify the community you'd like to join";
+        list.items = communities;
+        list.show();
+        list.onDidChangeValue((e) => {
+            list.items = [{ label: e }, ...communities];
+        });
+
+        list.onDidAccept(() => {
+            const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
+            const community = list.selectedItems[0].label;
+            if (community && userInfo && userInfo.emailAddress) {
+                store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
+            }
+        });        
     });
 
     commands.registerCommand(`${EXTENSION_NAME}.leaveCommunity`, async (node?: CommunityNode) => {	

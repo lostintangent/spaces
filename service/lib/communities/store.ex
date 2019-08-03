@@ -42,6 +42,17 @@ defmodule LiveShareCommunities.Store do
     |> Map.get("members", [])
   end
 
+  def top_communities() do
+    communities = Agent.get(:store,
+      &Enum.map(&1, fn { name, community } ->
+        %{ name: name, member_count: length(community["members"]) } end))
+
+    communities
+      |> Enum.filter(& &1.member_count > 0)
+      |> Enum.sort_by(& &1.member_count)
+      |> Enum.take(5)
+  end
+
   def sessions_of(name) do
     Agent.get(:store, &Map.get(&1, name, %{}))
     |> Map.get("sessions", [])

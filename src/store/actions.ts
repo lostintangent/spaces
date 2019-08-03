@@ -139,9 +139,9 @@ export function createSession(community: string, id: string, type: SessionType, 
 	}
 }
 
-export function createSessionAsync(community: string, type: SessionType, description: string, vslsApi: vsls.LiveShare) {
+export function createSessionAsync(community: string, type: SessionType, description: string, vslsApi: vsls.LiveShare, access: vsls.Access) {
 	return async (dispatch: redux.Dispatch) => {
-		const sessionUrl = await vslsApi.share();
+		const sessionUrl = await vslsApi.share({ access });
 		const userInfo = vslsApi.session.user;
 		const sessionId = vslsApi.session.id;
 		

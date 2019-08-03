@@ -1,6 +1,6 @@
 import { Store } from "redux";
-import { commands, Uri, WebviewPanel, window, QuickPickItem } from "vscode";
-import { LiveShare } from "vsls";
+import { commands, Uri, WebviewPanel, window, QuickPickItem, TextEditorVisibleRangesChangeEvent } from "vscode";
+import { Access, LiveShare } from "vsls";
 import { getTopCommunities } from "./api";
 import { ChatApi } from "./chatApi";
 import { LocalStorage } from "./storage/LocalStorage";
@@ -93,7 +93,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         }
     });
 
-    async function createSession(type: SessionType, node?: { community: ICommunity }) {
+    async function createSession(type: SessionType, node?: { community: ICommunity }, access: Access = Access.ReadOnly) {
         let community;
         if (node) {
             community = node.community.name;
@@ -105,7 +105,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         if (community) {
             const description = await window.showInputBox({ placeHolder: "Enter a description" });
             if (description) {
-                store.dispatch(<any>createSessionAsync(community, type, description, api));
+                store.dispatch(<any>createSessionAsync(community, type, description, api, access));
             }
         }
     }

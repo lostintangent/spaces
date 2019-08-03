@@ -1,5 +1,5 @@
 import { Store } from "redux";
-import { commands, Uri, WebviewPanel, window } from "vscode";
+import { commands, Uri, WebviewPanel, window, QuickPickItem } from "vscode";
 import { LiveShare } from "vsls";
 import { getTopCommunities } from "./api";
 import { ChatApi } from "./chatApi";
@@ -13,17 +13,25 @@ const EXTENSION_NAME = "liveshare";
 
 export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage, extensionPath: string, chatApi: ChatApi) {
     commands.registerCommand(`${EXTENSION_NAME}.joinCommunity`, async () => {
-        const communities = (await getTopCommunities()).map((c: any) => ({
-            label: c.name,
-            description: `(${c.member_count} members)`
-        }));
+        const joinedCommunities = storage.getCommunities();
+        const topCommunities = await getTopCommunities();
+
+        const itemSuffix = (count: number) => "member" + (count > 1 ? "s" : "");
+        const communityItems = topCommunities
+            .filter(({ name }: any) => {
+                return !joinedCommunities.includes(name);
+            })
+            .map(({ name, member_count }: any) => (<QuickPickItem>{
+                label: name,
+                description: `(${member_count} ${itemSuffix(member_count)})`
+            }));
 
         const list = window.createQuickPick();
         list.placeholder = "Specify the community you'd like to join";
-        list.items = communities;
-        list.show();
-        list.onDidChangeValue((e) => {
-            list.items = [{ label: e }, ...communities];
+        list.items = communityItems;
+
+        list.onDidChangeValue((searchString) => {
+            list.items = [{ label: searchString }, ...communityItems];
         });
 
         list.onDidAccept(() => {
@@ -32,7 +40,10 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
             if (community && userInfo && userInfo.emailAddress) {
                 store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
             }
-        });        
+            list.hide();
+        });
+        
+        list.show();
     });
 
     commands.registerCommand(`${EXTENSION_NAME}.leaveCommunity`, async (node?: CommunityNode) => {	

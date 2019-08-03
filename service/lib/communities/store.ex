@@ -51,7 +51,7 @@ defmodule LiveShareCommunities.Store do
 
     communities
       |> Enum.filter(& &1.member_count > 0)
-      |> Enum.sort_by(& &1.member_count)
+      |> Enum.sort_by(& &1.member_count, &>=/2)
       |> Enum.take(@top_communities_count)
   end
 

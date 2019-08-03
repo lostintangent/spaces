@@ -1,6 +1,8 @@
 defmodule LiveShareCommunities.Store do
   use Agent
 
+  @top_communities_count 5
+
   def start_link(_opts) do
     Agent.start_link(fn -> %{} end, name: :store)
   end
@@ -40,6 +42,17 @@ defmodule LiveShareCommunities.Store do
   def members_of(name) do
     Agent.get(:store, &Map.get(&1, name, %{}))
     |> Map.get("members", [])
+  end
+
+  def top_communities() do
+    communities = Agent.get(:store,
+      &Enum.map(&1, fn { name, community } ->
+        %{ name: name, member_count: length(community["members"]) } end))
+
+    communities
+      |> Enum.filter(& &1.member_count > 0)
+      |> Enum.sort_by(& &1.member_count, &>=/2)
+      |> Enum.take(@top_communities_count)
   end
 
   def sessions_of(name) do

@@ -19,14 +19,12 @@ defmodule LiveShareCommunities.HTTP do
   get "/" do
     conn
     |> send_resp(
-      200,
+      :ok,
       "<a href=\"https://github.com/vsls-contrib/communities\">Live Share Communities</a>"
     )
   end
 
   get "/join_redirect/:name" do
-    conn = Plug.Conn.fetch_query_params(conn)
-
     redirect_url = "lostintangent.vsls-communities/join?#{name}"
 
     prefix =
@@ -37,13 +35,11 @@ defmodule LiveShareCommunities.HTTP do
       end
 
     conn
-    |> put_resp_header("Location", "#{prefix}#{redirect_url}")
-    |> send_resp(301, "")
+      |> put_resp_header("Location", "#{prefix}#{redirect_url}")
+      |> send_resp(:found, "")
   end
 
   get "/v0/load" do
-    conn = Plug.Conn.fetch_query_params(conn)
-
     result =
       if Map.has_key?(conn.params, "names") do
         conn.params
@@ -56,7 +52,7 @@ defmodule LiveShareCommunities.HTTP do
       end
 
     conn
-    |> send_resp(200, Poison.encode!(result))
+    |> send_resp(:ok, Poison.encode!(result))
   end
 
   post "/v0/join" do
@@ -65,7 +61,7 @@ defmodule LiveShareCommunities.HTTP do
 
     LiveShareCommunities.Store.add_member(community_name, member)
     community = LiveShareCommunities.Store.community(community_name)
-    send_resp(conn, 200, Poison.encode!(community))
+    send_resp(conn, :ok, Poison.encode!(community))
   end
 
   post "/v0/leave" do
@@ -73,30 +69,30 @@ defmodule LiveShareCommunities.HTTP do
     community_name = conn.body_params["name"]
 
     LiveShareCommunities.Store.remove_member(community_name, member)
-    send_resp(conn, 200, Poison.encode!(%{}))
+    send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   post "/v0/community/:name/session" do
     LiveShareCommunities.Store.add_session(name, conn.body_params)
-    send_resp(conn, 200, Poison.encode!(conn.body_params))
+    send_resp(conn, :ok, Poison.encode!(conn.body_params))
   end
 
   delete "v0/community/:name/session/:session_id" do
     LiveShareCommunities.Store.remove_session(name, session_id)
-    send_resp(conn, 200, Poison.encode!(%{}))
+    send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   get "v0/community/:name/messages" do
     messages = LiveShareCommunities.Store.messages_of(name)
-    send_resp(conn, 200, Poison.encode!(messages))
+    send_resp(conn, :ok, Poison.encode!(messages))
   end
 
   get "/v0/debug" do
     store = LiveShareCommunities.Store.everything()
-    send_resp(conn, 200, Poison.encode!(store))
+    send_resp(conn, :ok, Poison.encode!(store))
   end
 
   match _ do
-    send_resp(conn, 404, "404!")
+    send_resp(conn, :not_found, "404!")
   end
 end

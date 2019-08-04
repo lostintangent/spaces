@@ -1,17 +1,33 @@
 defmodule LiveShareCommunities.Store do
-  use Agent
-
-  def start_link(_opts) do
-    Agent.start_link(fn -> %{} end, name: :store)
-  end
-
   def everything() do
-    Agent.get(:store, & &1)
+    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT * FROM kv;")
+
+    Enum.map(result, fn x ->
+      {:key, name} = List.keyfind(x, :key, 0)
+      {:value, value} = List.keyfind(x, :value, 0)
+
+      %{
+        "name" => name,
+        "value" => Poison.decode!(value)
+      }
+    end)
   end
 
-  defp update(community_name, fun) do
-    Agent.update(:store, &fun.(&1))
-    inform_subscribers(community_name)
+  defp update(name, fun) do
+    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT value FROM kv WHERE key = '#{name}';")
+    {:value, community} = List.keyfind(List.flatten(result), :value, 0, {:value, "{}"})
+
+    updated_community =
+      community
+      |> Poison.decode!
+      |> fun.()
+
+    Sqlitex.Server.query(
+      Store.DB,
+      "REPLACE into kv (key, value) VALUES ('#{name}', '#{Poison.encode!(updated_community)}');"
+    )
+
+    inform_subscribers(name)
   end
 
   defp inform_subscribers(community_name) do
@@ -29,115 +45,92 @@ defmodule LiveShareCommunities.Store do
   end
 
   def community(name) do
-    %{
-      "name" => name,
-      "members" => members_of(name),
-      "sessions" => sessions_of(name),
-      "messages" => messages_of(name)
-    }
+    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT value FROM kv WHERE key = '#{name}';")
+    {:value, community} = List.keyfind(List.flatten(result), :value, 0, {:value, "{}"})
+
+    community
+    |> Poison.decode!
+    |> Map.update("name", name, & &1)
+    |> Map.update("members", [], & &1)
+    |> Map.update("sessions", [], & &1)
+    |> Map.update("messages", [], & &1)
   end
 
   def members_of(name) do
-    Agent.get(:store, &Map.get(&1, name, %{}))
+    community(name)
     |> Map.get("members", [])
   end
 
   def sessions_of(name) do
-    Agent.get(:store, &Map.get(&1, name, %{}))
+    community(name)
     |> Map.get("sessions", [])
   end
 
   def messages_of(name) do
-    Agent.get(:store, &Map.get(&1, name, %{}))
+    community(name)
     |> Map.get("messages", [])
   end
 
-  defp add_member_helper(communities, community_name, member) do
-    community =
-      communities
-      |> Map.get(community_name, %{})
-
+  defp add_member_helper(community, member) do
     members =
       community
       |> Map.get("members", [])
       |> Enum.filter(fn x -> x["email"] != member["email"] end)
       |> Enum.concat([member])
 
-    communities
-    |> Map.merge(%{community_name => Map.merge(community, %{"members" => members})})
+    Map.merge(community, %{"members" => members})
   end
 
   def add_member(name, member) do
-    update(name, &add_member_helper(&1, name, member))
+    update(name, &add_member_helper(&1, member))
   end
 
-  defp remove_member_helper(communities, community_name, member) do
-    community =
-      communities
-      |> Map.get(community_name, %{})
-
+  defp remove_member_helper(community, member) do
     members =
       Map.get(community, "members", [])
       |> Enum.filter(fn x -> x["email"] != member["email"] end)
 
-    communities
-    |> Map.merge(%{community_name => Map.merge(community, %{"members" => members})})
+    Map.merge(community, %{"members" => members})
   end
 
   def remove_member(name, member) do
-    update(name, &remove_member_helper(&1, name, member))
+    update(name, &remove_member_helper(&1, member))
   end
 
-  defp add_session_helper(communities, community_name, session) do
-    community =
-      communities
-      |> Map.get(community_name, %{})
-
+  defp add_session_helper(community, session) do
     sessions =
       community
       |> Map.get("sessions", [])
       |> Enum.concat([session])
 
-    communities
-    |> Map.merge(%{community_name => Map.merge(community, %{"sessions" => sessions})})
+    Map.merge(community, %{"sessions" => sessions})
   end
 
   def add_session(name, session) do
-    update(name, &add_session_helper(&1, name, session))
+    update(name, &add_session_helper(&1, session))
   end
 
-  defp remove_session_helper(communities, community_name, session_id) do
-    community =
-      communities
-      |> Map.get(community_name, %{})
-
+  defp remove_session_helper(community, session_id) do
     sessions =
       Map.get(community, "sessions", [])
       |> Enum.filter(fn x -> x["id"] != session_id end)
 
-    communities
-    |> Map.merge(%{community_name => Map.merge(community, %{"sessions" => sessions})})
+    Map.merge(community, %{"sessions" => sessions})
   end
 
   def remove_session(name, session_id) do
-    update(name, &remove_session_helper(&1, name, session_id))
+    update(name, &remove_session_helper(&1, session_id))
   end
 
-  defp add_message_helper(communities, community_name, message) do
-    community = communities |> Map.get(community_name, %{})
-
-    IO.inspect(Map.get(community, "messages", []))
-
+  defp add_message_helper(community, message) do
     messages =
       Map.get(community, "messages", [])
       |> Enum.concat([message])
       |> Enum.sort_by(&Map.get(&1, "timestamp"), &Timex.after?/2)
-      |> Enum.take(50) # Only save 50 messages for a community
+      # Only save 50 messages for a community
+      |> Enum.take(50)
 
-    IO.inspect(messages)
-
-    communities
-    |> Map.merge(%{community_name => Map.merge(community, %{"messages" => messages})})
+    Map.merge(community, %{"messages" => messages})
   end
 
   def add_message(name, message, member_email) do
@@ -145,7 +138,6 @@ defmodule LiveShareCommunities.Store do
       name,
       &add_message_helper(
         &1,
-        name,
         message
         |> Map.delete("name")
         |> Map.merge(%{"sender" => member_email, "timestamp" => DateTime.utc_now()})

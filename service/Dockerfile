@@ -3,6 +3,11 @@
 # Build stage
 FROM bitwalker/alpine-elixir:latest
 
+# Install sqlite
+RUN apk update \
+    && apk add sqlite \
+    && apk add socat
+
 # Copy source
 COPY . .
 

@@ -1,23 +1,49 @@
 import { Store } from "redux";
-import { commands, Uri, window, WebviewPanel } from "vscode";
-import { LiveShare } from "vsls";
-import { LocalStorage } from "./storage/LocalStorage";
-import { joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, createSessionAsync, SessionType } from "./store/actions";
-import { IStore, ICommunity } from "./store/model";
-import { CommunityNode, MemberNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, CommunityCodeReviewsNode, SessionNode } from "./tree/nodes";
-import { createWebView } from "./webView";
+import { commands, Uri, WebviewPanel, window, QuickPickItem, TextEditorVisibleRangesChangeEvent } from "vscode";
+import { Access, LiveShare } from "vsls";
+import { getTopCommunities } from "./api";
 import { ChatApi } from "./chatApi";
+import { LocalStorage } from "./storage/LocalStorage";
+import { createSessionAsync, joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, SessionType } from "./store/actions";
+import { ICommunity, IStore } from "./store/model";
+import { CommunityBroadcastsNode, CommunityCodeReviewsNode, CommunityHelpRequestsNode, CommunityNode, MemberNode, SessionNode } from "./tree/nodes";
+import { createWebView } from "./webView";
 
 const EXTENSION_NAME = "liveshare";
 
 export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage, extensionPath: string, chatApi: ChatApi) {
     commands.registerCommand(`${EXTENSION_NAME}.joinCommunity`, async () => {
-        const community = await window.showInputBox({ placeHolder: "Specify the community you'd like to join" });
-        const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
+        const joinedCommunities = storage.getCommunities();
+        const topCommunities = await getTopCommunities();
 
-        if (community && userInfo && userInfo.emailAddress) {
-            store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
-        }
+        const itemSuffix = (count: number) => "member" + (count > 1 ? "s" : "");
+        const communityItems = topCommunities
+            .filter(({ name }: any) => {
+                return !joinedCommunities.includes(name);
+            })
+            .map(({ name, member_count }: any) => (<QuickPickItem>{
+                label: name,
+                description: `(${member_count} ${itemSuffix(member_count)})`
+            }));
+
+        const list = window.createQuickPick();
+        list.placeholder = "Specify the community you'd like to join";
+        list.items = communityItems;
+
+        list.onDidChangeValue((searchString) => {
+            list.items = [{ label: searchString }, ...communityItems];
+        });
+
+        list.onDidAccept(() => {
+            const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
+            const community = list.selectedItems[0].label;
+            if (community && userInfo && userInfo.emailAddress) {
+                store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
+            }
+            list.hide();
+        });
+        
+        list.show();
     });
 
     commands.registerCommand(`${EXTENSION_NAME}.leaveCommunity`, async (node?: CommunityNode) => {	
@@ -67,7 +93,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         }
     });
 
-    async function createSession(type: SessionType, node?: { community: ICommunity }) {
+    async function createSession(type: SessionType, node?: { community: ICommunity }, access: Access = Access.ReadOnly) {
         let community;
         if (node) {
             community = node.community.name;
@@ -79,7 +105,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         if (community) {
             const description = await window.showInputBox({ placeHolder: "Enter a description" });
             if (description) {
-                store.dispatch(<any>createSessionAsync(community, type, description, api));
+                store.dispatch(<any>createSessionAsync(community, type, description, api, access));
             }
         }
     }

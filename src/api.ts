@@ -31,6 +31,11 @@ export async function getMessages(community: string) {
     return data;
 }
 
+export async function getTopCommunities() {
+    const { data } = await axios.get(`${BASE_URL}/top_communities`)
+    return data;
+}
+
 function createCommunityRequest(communityName: string, memberName: string, memberEmail: string) {
     return {
         name: communityName,

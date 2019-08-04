@@ -1,4 +1,6 @@
 defmodule LiveShareCommunities.Store do
+  @top_communities_count 5
+
   def everything() do
     {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT * FROM kv;")
 
@@ -19,7 +21,7 @@ defmodule LiveShareCommunities.Store do
 
     updated_community =
       community
-      |> Poison.decode!
+      |> Poison.decode!()
       |> fun.()
 
     Sqlitex.Server.query(
@@ -49,11 +51,31 @@ defmodule LiveShareCommunities.Store do
     {:value, community} = List.keyfind(List.flatten(result), :value, 0, {:value, "{}"})
 
     community
-    |> Poison.decode!
+    |> Poison.decode!()
     |> Map.update("name", name, & &1)
     |> Map.update("members", [], & &1)
     |> Map.update("sessions", [], & &1)
     |> Map.update("messages", [], & &1)
+  end
+
+  def top_communities() do
+    # TODO: We can optimize this by sorting inside sqlite, and not load all results
+    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT * FROM kv;")
+
+    communities = Enum.map(result, fn x ->
+      {:key, name} = List.keyfind(x, :key, 0)
+      {:value, value} = List.keyfind(x, :value, 0)
+
+      %{
+        name: name,
+        member_count: value |> Poison.decode! |> Map.get("members", []) |> length
+      }
+    end)
+
+    communities
+    |> Enum.filter(&(&1.member_count > 0))
+    |> Enum.sort_by(& &1.member_count, &>=/2)
+    |> Enum.take(@top_communities_count)
   end
 
   def members_of(name) do

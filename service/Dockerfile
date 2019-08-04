@@ -5,15 +5,16 @@ FROM bitwalker/alpine-elixir:latest
 
 # Install sqlite
 RUN apk update \
-    && apk add sqlite \
-    && apk add socat
+    && apk add sqlite-dev \
+    && apk add build-base
 
 # Copy source
 COPY . .
 
 # Install dependencies and build release
 RUN export MIX_ENV=prod && \
-    rm -Rf _build && \
+    rm -rf _build && \
+    rm -rf deps && \
     mix deps.get && \
     mix distillery.release
 

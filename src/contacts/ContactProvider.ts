@@ -1,7 +1,7 @@
 import { Store } from "redux";
 import { CancellationToken, Event, EventEmitter } from "vscode";
 import { LiveShare } from "vsls";
-import { Contact, ContactServiceProvider, ContactsNotification, Methods, NotifyContactServiceEventArgs } from "vsls/vsls-contactprotocol";
+import { Contact, ContactServiceProvider, ContactsNotification, Methods, NotifyContactServiceEventArgs } from "vsls/vsls-contactprotocol.js";
 import { IStore } from "../store/model";
 import { uniqueMemberContacts } from "../utils";
 

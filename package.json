@@ -3,6 +3,7 @@
 	"displayName": "Live Share Communities",
 	"publisher": "lostintangent",
 	"description": "",
+	"icon": "images/icon.png",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.36.0"

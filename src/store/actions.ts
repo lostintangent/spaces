@@ -38,11 +38,10 @@ export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo
 		storage.joinCommunity(name);
 		dispatch(joinCommunity(name));
 
-		chatApi.onCommunityJoined(name);
-
 		const { members, sessions } = await api.joinCommunity(name, userInfo.displayName, userInfo.emailAddress!);
 		dispatch(joinCommunityCompleted(name, members, sessions));
 
+		chatApi.onCommunityJoined(name);
 		cm.rebuildContacts(vslsApi, store);	
 	}
 }

@@ -222,11 +222,11 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "npm run compile-webview && tsc -p ./",
+		"vscode:prepublish": "rm -rf out && webpack --mode production",
+		"compile": "npm run compile-webview && webpack --mode none",
 		"compile-webview": "cd webView && elm make Main.elm --output static/Main.js",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile",
+		"watch": "webpack --mode none --watch",
+		"pretest": "tsc -p ./",
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
@@ -238,9 +238,12 @@
 		"@types/ws": "^6.0.1",
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
-		"typescript": "^3.3.1",
+		"ts-loader": "^6.0.4",
 		"tslint": "^5.12.1",
-		"vscode-test": "^1.0.0-next.0"
+		"typescript": "^3.3.1",
+		"vscode-test": "^1.0.0-next.0",
+		"webpack": "^4.39.1",
+		"webpack-cli": "^3.3.6"
 	},
 	"dependencies": {
 		"axios": "^0.19.0",

@@ -2,7 +2,7 @@
 	"name": "vsls-communities",
 	"displayName": "Live Share Communities",
 	"publisher": "lostintangent",
-	"description": "",
+	"description": "Discover, share, and receive real-time assistance from developers across your favorite communities",
 	"icon": "images/icon.png",
 	"version": "0.0.1",
 	"engines": {

@@ -1,7 +1,7 @@
 defmodule LiveShareCommunities do
   @moduledoc "The main OTP application for LiveShareCommunities"
 
-  @db_location "/home/store.sqlite3"
+  @db_location "store.sqlite3"
 
   use Application
 

@@ -148,7 +148,8 @@ defmodule LiveShareCommunities.Store do
     messages =
       Map.get(community, "messages", [])
       |> Enum.concat([message])
-      |> Enum.sort_by(&Map.get(&1, "timestamp"), &Timex.after?/2)
+      |> Enum.sort_by(&Map.get(&1, "timestamp"))
+      |> Enum.reverse()
       # Only save 50 messages for a community
       |> Enum.take(50)
 
@@ -162,7 +163,7 @@ defmodule LiveShareCommunities.Store do
         &1,
         message
         |> Map.delete("name")
-        |> Map.merge(%{"sender" => member_email, "timestamp" => DateTime.utc_now()})
+        |> Map.merge(%{"sender" => member_email, "timestamp" => DateTime.utc_now() |> DateTime.to_iso8601()})
       )
     )
   end

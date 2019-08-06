@@ -10,9 +10,11 @@ Once you join a community, you can chat with other members, invite them into col
 
 To begin joining communities, simply perform the following steps:
 
-1. Install this extension, then reload VS Code. Additionally, set the `liveshare.featureSet` setting to `insiders`, since the communities experience relies on bleeding edge Live Share features
+1. Install this extension, then reload VS Code
 
-1. Open the Live Share activity bar, and look for the `Communities` tree view
+1. Open the Live Share activity bar, and look for the `Communities` tree view. Click the `Sign in with Live Share...` link and complete the sign in flow, using a GitHub or Microsoft Account. 
+
+   > If you're already using Live Share then you won't need to sign in again.
 
 1. Click the `Join a community...` link and then type the community name you'd like to join (e.g. `redux`, `python`) or select a popular one from the list
 

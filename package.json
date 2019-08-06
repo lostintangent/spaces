@@ -196,12 +196,12 @@
 			"view/title": [
 				{
 					"command": "liveshare.joinCommunity",
-					"when": "view == liveshare.communities",
+					"when": "view == liveshare.communities && communities:signedIn == true",
 					"group": "navigation@1"
 				},
 				{
 					"command": "liveshare.refreshCommunities",
-					"when": "view == liveshare.communities",
+					"when": "view == liveshare.communities && communities:signedIn == true",
 					"group": "navigation@2"
 				}
 			],

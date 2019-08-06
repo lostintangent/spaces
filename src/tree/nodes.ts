@@ -9,6 +9,17 @@ export abstract class TreeNode extends TreeItem {
     }
 }
 
+export class SignInNode extends TreeNode {
+    constructor() {
+        super("Sign in with Live Share...");
+
+        this.command = {
+            command: "liveshare.signin.browser",
+            title: "Sign in with Live Share..."
+        }
+    }
+}
+
 export class NoCommunitiesNode extends TreeNode {
     constructor() {
         super("Join a community...");

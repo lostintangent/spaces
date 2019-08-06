@@ -2,6 +2,7 @@ import { SessionType } from "./actions";
 
 export interface IStore {
 	isLoading: boolean;
+	isSignedIn: boolean;
 	activeSession?: ISession;
 	communities: ICommunity[]
 }

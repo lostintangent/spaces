@@ -10,13 +10,15 @@ import {
 	ACTION_SESSION_CREATED,
 	SessionType,
 	ACTION_ACTIVE_SESSION_ENDED,
-	ACTION_COMMUNITY_NODE_EXPANDED
+	ACTION_COMMUNITY_NODE_EXPANDED,
+	ACTION_USER_AUTHENTICATION_CHANGED
 } from "./actions";
 
 const initialState: IStore = {
 	isLoading: true,
+	isSignedIn: false,
 	communities: []
-}
+};
 
 const sorted = R.sortBy(R.prop("name"));
 
@@ -85,7 +87,11 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 			}
 
 		case ACTION_LOAD_COMMUNITIES:
-			return initialState;
+			return {
+				...state,
+				isLoading: true,
+				communities: []
+			};
 
 		case ACTION_LOAD_COMMUNITIES_COMPLETED:
 			// memberSorter sorts members and adds the default status value
@@ -97,6 +103,7 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 				helpRequests: c.sessions.filter((s: any) => s.type === SessionType.HelpRequest)
 			});
 			return {
+				...state,
 				isLoading: false,
 				communities: R.map(memberSorter, sorted(action.communities))
 			};
@@ -197,6 +204,12 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 					}
 				})
 			}
+
+		case ACTION_USER_AUTHENTICATION_CHANGED:
+			return {
+				...state,
+				isSignedIn: action.isSignedIn
+			};
 			
 		default:
 			return state;

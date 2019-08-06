@@ -1,6 +1,6 @@
 import { applyMiddleware, createStore as createReduxStore } from "redux";
 import thunk from "redux-thunk";
-import { ExtensionContext, window, commands } from "vscode";
+import { ExtensionContext, window, commands, workspace, ConfigurationTarget } from "vscode";
 import { getApi as getVslsApi } from "vsls";
 import { registerCommands } from "./commands";
 import { config } from "./config";
@@ -15,6 +15,9 @@ import ws from './ws';
 import { registerUriHandler } from "./uriHandler";
 
 export async function activate(context: ExtensionContext) {
+	workspace.getConfiguration("liveshare")
+		.update("featureSet", "insiders", ConfigurationTarget.Global);
+
 	const api = (await getVslsApi())!;
 	const store = createReduxStore(reducer, applyMiddleware(thunk));
 	const chatApi = new ChatApi(api, store);

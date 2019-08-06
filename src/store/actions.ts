@@ -16,6 +16,7 @@ export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
 export const ACTION_SESSION_CREATED = "SESSION_CREATED";
 export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
 export const ACTION_COMMUNITY_NODE_EXPANDED = "COMMUNITY_NODE_EXPANDED";
+export const ACTION_USER_AUTHENTICATION_CHANGED = "USER_AUTHENTICATION_CHANGED"
 
 function joinCommunity(name: string) {
 	return { 
@@ -182,4 +183,11 @@ export function communityNodeExpanded(community: ICommunity, nodeType: string) {
 		community,
 		nodeType
 	};
+}
+
+export function userAuthenticationChanged(isSignedIn: boolean) {
+	return {
+		type: ACTION_USER_AUTHENTICATION_CHANGED,
+		isSignedIn
+	}
 }

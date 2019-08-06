@@ -4,7 +4,7 @@ import { LiveShare } from "vsls";
 import { endActiveSessionAsync, userAuthenticationChanged } from "./store/actions";
 import { onPropertyChanged } from "./utils";
 
-export function intializeSessionManager(api: LiveShare, store: Store) {
+export function intializeSessionManager(api: LiveShare, store: Store, onDidUserSignIn: Function) {
     commands.executeCommand("setContext", "communities:inSession", false);
 
 	api.onDidChangeSession((e) => {
@@ -21,10 +21,17 @@ export function intializeSessionManager(api: LiveShare, store: Store) {
 	// onDidChangeSession event for login/log out events
 
 	commands.executeCommand("setContext", "communities:signedIn", !!api.session.user);
+	if (api.session.user) {
+		onDidUserSignIn();
+	}
 
 	// @ts-ignore
 	api.session = onPropertyChanged(api.session, "user", () => {
 		commands.executeCommand("setContext", "communities:signedIn", !!api.session.user);
 		store.dispatch(<any>userAuthenticationChanged(!!api.session.user));
+		
+		if (api.session.user) {
+			onDidUserSignIn();
+		}
 	});
 }

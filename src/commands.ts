@@ -13,6 +13,10 @@ const EXTENSION_NAME = "liveshare";
 
 export function registerCommands(api: LiveShare, store: Store, storage: LocalStorage, extensionPath: string, chatApi: ChatApi) {
     commands.registerCommand(`${EXTENSION_NAME}.joinCommunity`, async () => {
+        if (!api.session.user) {
+            await commands.executeCommand("liveshare.signin.browser");
+        }
+        
         const joinedCommunities = storage.getCommunities();
         const topCommunities = await getTopCommunities();
 

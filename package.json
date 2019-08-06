@@ -4,7 +4,7 @@
 	"publisher": "lostintangent",
 	"description": "Discover, share, and receive real-time assistance from developers across your favorite communities",
 	"icon": "images/icon.png",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"engines": {
 		"vscode": "^1.36.0"
 	},
@@ -196,12 +196,12 @@
 			"view/title": [
 				{
 					"command": "liveshare.joinCommunity",
-					"when": "view == liveshare.communities",
+					"when": "view == liveshare.communities && communities:signedIn == true",
 					"group": "navigation@1"
 				},
 				{
 					"command": "liveshare.refreshCommunities",
-					"when": "view == liveshare.communities",
+					"when": "view == liveshare.communities && communities:signedIn == true",
 					"group": "navigation@2"
 				}
 			],

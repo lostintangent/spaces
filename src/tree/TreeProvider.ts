@@ -2,9 +2,9 @@ import * as R from "ramda";
 import * as redux from "redux";
 import { Disposable, Event, EventEmitter, ProviderResult, TreeDataProvider, TreeItem, window } from "vscode";
 import { LiveShare } from "vsls";
-import { IStore } from "../store/model";
-import { CommunityNode, LoadingNode, MemberNode, NoCommunitiesNode, TreeNode, CommunityMembersNode, CommunityHelpRequestsNode, CommunityBroadcastsNode, SessionNode, CommunityCodeReviewsNode, CreateSessionNode } from "./nodes";
 import { communityNodeExpanded } from "../store/actions";
+import { IStore } from "../store/model";
+import { CommunityBroadcastsNode, CommunityCodeReviewsNode, CommunityHelpRequestsNode, CommunityMembersNode, CommunityNode, CreateSessionNode, LoadingNode, MemberNode, NoCommunitiesNode, SessionNode, SignInNode, TreeNode } from "./nodes";
 
 class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
     private _disposables: Disposable[] = [];
@@ -22,7 +22,10 @@ class CommunitiesTreeProvider implements TreeDataProvider<TreeNode>, Disposable 
         const state: IStore = this.store.getState()
 
         if (!element) {
-            if (state.isLoading) {
+            if (!state.isSignedIn) {
+                return [new SignInNode()];
+            }
+            else if (state.isLoading) {
                 return [new LoadingNode()]
             } else if (state.communities.length === 0) {
                 return [new NoCommunitiesNode()];

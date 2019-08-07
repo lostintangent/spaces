@@ -35,7 +35,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         list.items = communityItems;
 
         list.onDidChangeValue((searchString) => {
-            list.items = [{ label: searchString }, ...communityItems];
+                list.items = searchString ? [{ label: searchString }, ...communityItems] : communityItems;
         });
 
         list.onDidAccept(() => {

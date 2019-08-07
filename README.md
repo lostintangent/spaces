@@ -1,6 +1,6 @@
 # Live Share Communities
 
-[![Join community](http://vslscommunitieswebapp.azurewebsites.net/badge/vsls)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls) [![Join community](http://vslscommunitieswebapp.azurewebsites.net/badge/vsls?insiders)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls?insiders)
+[![Join community](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls) [![Join community](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls?insiders)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls?insiders)
 
 Live Share Communities enables you to join one or more communities, and begin discovering, communicating and collaborating with other developers in real-time. A "community" is nothing more than a name, that allows you to find other people that share common interests and/or context (almost like a Twitter hash tag). A community can represent an ad-hoc group (e.g. a hack-a-thon team, a classroom), a language/framework ecosystem (e.g. `elixir`, `redux`), an online forum (e.g. `dev.to/javascript`) and everything in-between. Since communities can represent literally anything, they can be as broad or as focused as neccessary, as long as they help faciliate meaningful collaboration.
 
@@ -58,9 +58,11 @@ If you'd like to help others within the community, simply look at any outstandin
 
 ## FAQ
 
-1. **How do I create a community?**
+**How do I create a community?**
 
-   By joining it! Live Share Communities (like Twitter hash tags) are simply monikers that allow multiple developers to discover and collaborate with each other. As a result, there's no need for reation/deletion/management of communities. You simply join and leave communities as needed.
+By joining it! Live Share Communities (like Twitter hash tags) are simply monikers that allow multiple developers to discover and collaborate with each other. As a result, there's no need for creation/deletion/management of communities. You simply join and leave communities as needed. That said, if you are the first person to join a community, you'll get the special title of `Founder` added to your name in the member list 🎉
+
+   <img width="200px" src="https://user-images.githubusercontent.com/116461/62597328-8a85a700-b89a-11e9-85df-b9d9dc3e0258.png" />
 
 ## Credits
 

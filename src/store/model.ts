@@ -11,6 +11,7 @@ export interface IMember {
 	name: string;
 	email: string;
 	status: Status;
+	title: string | undefined;
 }
 
 export interface ISession {

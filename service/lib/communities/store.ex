@@ -65,22 +65,19 @@ defmodule LiveShareCommunities.Store do
     first =
       community
       |> Map.get("members")
-      |> Enum.map(&Map.get(&1, "joined_at"))
-      |> Enum.filter(& &1)
+      |> Enum.map(&Map.get(&1, "joined_at", now()))
+      |> Enum.concat([now()])
       |> Enum.min()
 
     with_titles =
       community
       |> Map.get("members")
       |> Enum.map(
-        &Map.merge(&1, %{
-          "title" =>
-            if Map.get(&1, "joined_at") == first do
-              "Founder"
-            else
-              nil
-            end
-        })
+        &if Map.get(&1, "joined_at") == first do
+          Map.merge(&1, %{"title" => "Founder"})
+        else
+          &1
+        end
       )
 
     Map.merge(community, %{"members" => with_titles})
@@ -134,7 +131,7 @@ defmodule LiveShareCommunities.Store do
       name,
       &add_member_helper(
         &1,
-        member |> Map.merge(%{"joined_at" => DateTime.utc_now() |> DateTime.to_iso8601()})
+        member |> Map.merge(%{"joined_at" => now()})
       )
     )
   end
@@ -197,9 +194,13 @@ defmodule LiveShareCommunities.Store do
         |> Map.delete("name")
         |> Map.merge(%{
           "sender" => member_email,
-          "timestamp" => DateTime.utc_now() |> DateTime.to_iso8601()
+          "timestamp" => now()
         })
       )
     )
+  end
+
+  defp now() do
+    DateTime.utc_now() |> DateTime.to_iso8601()
   end
 end

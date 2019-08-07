@@ -126,9 +126,14 @@ export class MemberNode extends TreeNode {
 
         this.email = member.email;
         this.iconPath = statusToIconPath(this.member.status || Status.offline, this.extensionPath);
-
         const isCurrentUser = member.email === api.session.user!.emailAddress;
-        this.description = isCurrentUser ? "You" : "";
+        let titles: string[] = member.title ? [member.title] : [];
+
+        if (isCurrentUser) {
+            titles.push("You")
+        }
+
+        this.description = titles.join(", ")
 
         if (!isCurrentUser) {
             if (this.member.status === Status.offline) {

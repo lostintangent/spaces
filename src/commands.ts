@@ -6,7 +6,7 @@ import { ChatApi } from "./chatApi";
 import { LocalStorage } from "./storage/LocalStorage";
 import { createSessionAsync, joinCommunityAsync, leaveCommunityAsync, loadCommunitiesAsync, SessionType } from "./store/actions";
 import { ICommunity, IStore } from "./store/model";
-import { CommunityBroadcastsNode, CommunityCodeReviewsNode, CommunityHelpRequestsNode, CommunityNode, MemberNode, SessionNode } from "./tree/nodes";
+import { CommunityBroadcastsNode, CommunityCodeReviewsNode, CommunityHelpRequestsNode, CommunityNode, MemberNode, SessionNode, CreateSessionNode } from "./tree/nodes";
 import { createWebView } from "./webView";
 
 const EXTENSION_NAME = "liveshare";
@@ -97,10 +97,11 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         }
     });
 
-    async function createSession(type: SessionType, node?: { community: ICommunity }, access: Access = Access.ReadOnly) {
+    async function createSession(type: SessionType, node?: { community: ICommunity } | ICommunity, access: Access = Access.ReadOnly) {
         let community;
         if (node) {
-            community = node.community.name;
+            // @ts-ignore
+            community = node.community ? node.community.name : node.name;
         } else {
             const { communities } = <IStore>store.getState();
             community = await window.showQuickPick(communities.map((n) => n.name, { placeHolder: "Select the community to make this request within" }));
@@ -114,15 +115,15 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         }
     }
 
-    commands.registerCommand(`${EXTENSION_NAME}.createHelpRequest`, async (node?: CommunityHelpRequestsNode) => {
+    commands.registerCommand(`${EXTENSION_NAME}.createHelpRequest`, async (node?: CommunityHelpRequestsNode | ICommunity) => {
         createSession(SessionType.HelpRequest, node);
     });
 
-    commands.registerCommand(`${EXTENSION_NAME}.startBroadcast`, async (node?: CommunityBroadcastsNode) => {	
+    commands.registerCommand(`${EXTENSION_NAME}.startBroadcast`, async (node?: CommunityBroadcastsNode | ICommunity) => {	
         createSession(SessionType.Broadcast, node);
     });
 
-    commands.registerCommand(`${EXTENSION_NAME}.createCodeReview`, async (node?: CommunityCodeReviewsNode) => {	
+    commands.registerCommand(`${EXTENSION_NAME}.createCodeReview`, async (node?: CommunityCodeReviewsNode | ICommunity) => {	
         createSession(SessionType.CodeReview, node);
     });
 

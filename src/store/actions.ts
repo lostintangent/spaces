@@ -36,14 +36,19 @@ function joinCommunityCompleted(name: string, members: any, sessions: any) {
 
 export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo: vsls.UserInfo, vslsApi: vsls.LiveShare, store: redux.Store, chatApi: ChatApi) {
 	return async (dispatch: redux.Dispatch) => {
-		storage.joinCommunity(name);
-		dispatch(joinCommunity(name));
+		const { communities } = store.getState();
+		const isMember = communities.find((c: ICommunity) => c.name === name)
 
-		const { members, sessions } = await api.joinCommunity(name, userInfo.displayName, userInfo.emailAddress!);
-		dispatch(joinCommunityCompleted(name, members, sessions));
+		if (!isMember) {
+			storage.joinCommunity(name);
+			dispatch(joinCommunity(name));
 
-		chatApi.onCommunityJoined(name);
-		cm.rebuildContacts(vslsApi, store);	
+			const { members, sessions } = await api.joinCommunity(name, userInfo.displayName, userInfo.emailAddress!);
+			dispatch(joinCommunityCompleted(name, members, sessions));
+
+			chatApi.onCommunityJoined(name);
+			cm.rebuildContacts(vslsApi, store);
+		}
 	}
 }
 

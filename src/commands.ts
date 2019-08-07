@@ -39,7 +39,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         });
 
         list.onDidAccept(() => {
-            const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
+            const userInfo = api.session.user;
             const community = list.selectedItems[0].label;
             if (community && userInfo && userInfo.emailAddress) {
                 store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
@@ -52,7 +52,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
 
     commands.registerCommand(`${EXTENSION_NAME}.leaveCommunity`, async (node?: CommunityNode) => {	
         let community: string | undefined;
-        const userInfo = api.session.user; // TODO: Show login in tree when the user is not logged in
+        const userInfo = api.session.user;
 
         if (!node) {
             const { communities } = <IStore>store.getState();

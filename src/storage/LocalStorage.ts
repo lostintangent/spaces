@@ -17,10 +17,7 @@ export class LocalStorage {
 
     public leaveCommunity(name: string) {
         const communities = this.getCommunities();
-        const communityIndex = communities.indexOf(name);
-
-        const updateCommunities = communities.splice(communityIndex, 1);
-        this.saveCommunities(communities);
+        this.saveCommunities(communities.filter(c => c !== name));
     }
 
     private saveCommunities(communities: string[]) {

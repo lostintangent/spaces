@@ -7,7 +7,7 @@ import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
 import { intializeSessionManager } from "./sessionManager";
 import { LocalStorage } from "./storage/LocalStorage";
-import { loadCommunitiesAsync, updateCommunityAsync, joinCommunityAsync } from "./store/actions";
+import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
 import { ChatApi } from "./chatApi";

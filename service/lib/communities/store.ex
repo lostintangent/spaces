@@ -117,11 +117,19 @@ defmodule LiveShareCommunities.Store do
   end
 
   defp add_member_helper(community, member) do
+    existing_members = community |> Map.get("members", [])
+
+    has_member =
+      existing_members
+      |> Enum.filter(fn x -> x["email"] == member["email"] end)
+      |> length
+
     members =
-      community
-      |> Map.get("members", [])
-      |> Enum.filter(fn x -> x["email"] != member["email"] end)
-      |> Enum.concat([member])
+      if has_member == 0 do
+        existing_members |> Enum.concat([member])
+      else
+        existing_members
+      end
 
     Map.merge(community, %{"members" => members})
   end

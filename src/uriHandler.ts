@@ -16,7 +16,8 @@ export function registerUriHandler(api: LiveShare, store: redux.Store, storage: 
                 const userInfo = api.session.user; 
 
                 if (userInfo && userInfo.emailAddress) {
-                    store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
+                    const sanitisedName = community.toLowerCase()
+                    store.dispatch(<any>joinCommunityAsync(sanitisedName, storage, userInfo, api, store, chatApi));
                 }
 
                 commands.executeCommand("workbench.view.extension.liveshare");

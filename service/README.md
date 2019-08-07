@@ -22,6 +22,7 @@ mix deps.get
 ### Run the service for development
 
 ```
+redis-server
 iex -S mix
 ```
 

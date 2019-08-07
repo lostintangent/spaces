@@ -121,15 +121,20 @@ export class MemberNode extends TreeNode {
     email: string; 
 
     constructor(public member: IMember, public community: ICommunity, public api: LiveShare, private extensionPath: string) {
-        super(displayName(api, member.email, community));
+        super(member.name);
 
         this.email = member.email;
         this.iconPath = statusToIconPath(this.member.status || Status.offline, this.extensionPath);
 
-        if (this.member.status === Status.offline) {
-            this.contextValue = "member";
-        } else {
-            this.contextValue = "member.online"
+        const isCurrentUser = member.email === api.session.user!.emailAddress;
+        this.description = isCurrentUser ? "You" : "";
+
+        if (!isCurrentUser) {
+            if (this.member.status === Status.offline) {
+                this.contextValue = "member";
+            } else {
+                this.contextValue = "member.online"
+            }
         }
     }
 }

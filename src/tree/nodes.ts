@@ -94,12 +94,13 @@ export class CommunityBroadcastsNode extends TreeNode {
 }
 
 export class CreateSessionNode extends TreeNode {
-    constructor(label: string, command: string) {
+    constructor(label: string, command: string, community: ICommunity) {
         super(label);
 
         this.command = {
             command,
-            title: label
+            title: label,
+            arguments: [community]
         };
     }
 }

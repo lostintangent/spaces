@@ -26,7 +26,7 @@ defmodule LiveShareCommunities.MixProject do
       {:plug, "~> 1.3"},
       {:plug_cowboy, "~> 2.0"},
       {:poison, "~> 4.0.1"},
-      {:sqlitex, "~> 1.7.0"},
+      {:redix, ">= 0.0.0"},
 
       # distillery to create release
       {:distillery, "~> 2.1"}

@@ -2,33 +2,30 @@ defmodule LiveShareCommunities.Store do
   @top_communities_count 5
 
   def everything() do
-    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT * FROM kv;")
+    {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
-    Enum.map(result, fn x ->
-      {:key, name} = List.keyfind(x, :key, 0)
-      {:value, value} = List.keyfind(x, :value, 0)
+    Enum.map(keys, fn x ->
+      {:ok, value} = Redix.command(:redix, ["GET", x])
 
       %{
-        "name" => name,
+        "name" => x,
         "value" => Poison.decode!(value)
       }
     end)
   end
 
   defp update(name, fun) do
-    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT value FROM kv WHERE key = '#{name}';")
-    {:value, community} = List.keyfind(List.flatten(result), :value, 0, {:value, "{}"})
+    {:ok, value} = Redix.command(:redix, ["GET", name])
 
-    updated_community =
-      community
-      |> Poison.decode!()
-      |> fun.()
+    community =
+      if value do
+        Poison.decode!(value)
+      else
+        %{}
+      end
 
-    Sqlitex.Server.query(
-      Store.DB,
-      "REPLACE into kv (key, value) VALUES ('#{name}', '#{Poison.encode!(updated_community)}');"
-    )
-
+    updated_community = fun.(community)
+    {:ok, _} = Redix.command(:redix, ["SET", name, Poison.encode!(updated_community)])
     inform_subscribers(name)
   end
 
@@ -47,11 +44,16 @@ defmodule LiveShareCommunities.Store do
   end
 
   def community(name) do
-    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT value FROM kv WHERE key = '#{name}';")
-    {:value, community} = List.keyfind(List.flatten(result), :value, 0, {:value, "{}"})
+    {:ok, value} = Redix.command(:redix, ["GET", name])
+
+    community =
+      if value do
+        Poison.decode!(value)
+      else
+        %{}
+      end
 
     community
-    |> Poison.decode!()
     |> Map.update("name", name, & &1)
     |> Map.update("members", [], & &1)
     |> Map.update("sessions", [], & &1)
@@ -59,18 +61,16 @@ defmodule LiveShareCommunities.Store do
   end
 
   def top_communities() do
-    # TODO: We can optimize this by sorting inside sqlite, and not load all results
-    {:ok, result} = Sqlitex.Server.query(Store.DB, "SELECT * FROM kv;")
+    # TODO: We can optimize this by sorting inside Redis, and not load all results
+    {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
-    communities = Enum.map(result, fn x ->
-      {:key, name} = List.keyfind(x, :key, 0)
-      {:value, value} = List.keyfind(x, :value, 0)
-
-      %{
-        name: name,
-        member_count: value |> Poison.decode! |> Map.get("members", []) |> length
-      }
-    end)
+    communities =
+      Enum.map(keys, fn x ->
+        %{
+          name: x,
+          member_count: community(x) |> Map.get("members", []) |> length
+        }
+      end)
 
     communities
     |> Enum.filter(&(&1.member_count > 0))
@@ -163,7 +163,10 @@ defmodule LiveShareCommunities.Store do
         &1,
         message
         |> Map.delete("name")
-        |> Map.merge(%{"sender" => member_email, "timestamp" => DateTime.utc_now() |> DateTime.to_iso8601()})
+        |> Map.merge(%{
+          "sender" => member_email,
+          "timestamp" => DateTime.utc_now() |> DateTime.to_iso8601()
+        })
       )
     )
   end

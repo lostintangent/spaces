@@ -5,7 +5,7 @@ FROM bitwalker/alpine-elixir:latest
 
 # Install sqlite
 RUN apk update \
-    && apk add sqlite-dev \
+    && apk add redis \
     && apk add build-base
 
 # Copy source
@@ -23,4 +23,4 @@ EXPOSE 4000
 ENV REPLACE_OS_VARS=true \
     PORT=4000
 
-CMD trap 'exit' INT; _build/prod/rel/communities/bin/communities foreground
+CMD sh cmd.sh

@@ -94,12 +94,13 @@ export class CommunityBroadcastsNode extends TreeNode {
 }
 
 export class CreateSessionNode extends TreeNode {
-    constructor(label: string, command: string) {
+    constructor(label: string, command: string, community: ICommunity) {
         super(label);
 
         this.command = {
             command,
-            title: label
+            title: label,
+            arguments: [community]
         };
     }
 }
@@ -121,15 +122,25 @@ export class MemberNode extends TreeNode {
     email: string; 
 
     constructor(public member: IMember, public community: ICommunity, public api: LiveShare, private extensionPath: string) {
-        super(displayName(api, member.email, community));
+        super(member.name);
 
         this.email = member.email;
         this.iconPath = statusToIconPath(this.member.status || Status.offline, this.extensionPath);
+        const isCurrentUser = member.email === api.session.user!.emailAddress;
+        let titles: string[] = member.title ? [member.title] : [];
 
-        if (this.member.status === Status.offline) {
-            this.contextValue = "member";
-        } else {
-            this.contextValue = "member.online"
+        if (isCurrentUser) {
+            titles.push("You")
+        }
+
+        this.description = titles.join(", ")
+
+        if (!isCurrentUser) {
+            if (this.member.status === Status.offline) {
+                this.contextValue = "member";
+            } else {
+                this.contextValue = "member.online"
+            }
         }
     }
 }

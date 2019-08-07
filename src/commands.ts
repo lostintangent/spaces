@@ -42,8 +42,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
             const userInfo = api.session.user;
             const community = list.selectedItems[0].label;
             if (community && userInfo && userInfo.emailAddress) {
-                const sanitisedName = community.toLowerCase()
-                store.dispatch(<any>joinCommunityAsync(sanitisedName, storage, userInfo, api, store, chatApi));
+                store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
             }
             list.hide();
         });

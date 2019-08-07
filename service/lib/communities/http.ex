@@ -44,6 +44,13 @@ defmodule LiveShareCommunities.HTTP do
   get "/badge/:name" do
     members = LiveShareCommunities.Store.members_of(name) |> length
 
+    prefix =
+      if Map.has_key?(conn.params, "insiders") do
+        "Live Share Community Insiders"
+      else
+        "Live Share Community"
+      end
+
     badge_name =
       if members > 0 do
         "#{name} (#{members})"
@@ -52,10 +59,13 @@ defmodule LiveShareCommunities.HTTP do
       end
 
     redirect_url =
-      "https://img.shields.io/badge/Live_Share_Community-#{badge_name}-8F80CF.svg?logo=#{@logo}"
+      "https://img.shields.io/badge/#{prefix}-#{badge_name}-8F80CF.svg?logo=#{@logo}"
 
     conn
     |> put_resp_header("Location", redirect_url)
+    |> put_resp_header("Cache-Control", "no-cache, no-store, must-revalidate")
+    |> put_resp_header("Pragma", "no-cache")
+    |> put_resp_header("Expires", "0")
     |> send_resp(:found, "")
   end
 

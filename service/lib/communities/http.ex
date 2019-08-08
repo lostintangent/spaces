@@ -124,6 +124,11 @@ defmodule LiveShareCommunities.HTTP do
     send_resp(conn, :ok, Poison.encode!(messages))
   end
 
+  delete "v0/community/:name/messages" do
+    LiveShareCommunities.Store.clear_messages(name)
+    send_resp(conn, :ok, Poison.encode!(%{}))
+  end
+
   get "/v0/debug" do
     store = LiveShareCommunities.Store.everything()
     send_resp(conn, :ok, Poison.encode!(store))

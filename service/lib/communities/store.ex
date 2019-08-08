@@ -208,6 +208,10 @@ defmodule LiveShareCommunities.Store do
     )
   end
 
+  def clear_messages(name) do
+    update(name, fn x -> Map.merge(x, %{"messages" => []}) end)
+  end
+
   defp now() do
     DateTime.utc_now() |> DateTime.to_iso8601()
   end

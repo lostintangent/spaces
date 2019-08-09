@@ -1,5 +1,5 @@
 import { Store } from "redux";
-import { commands, Uri, WebviewPanel, window, QuickPickItem, TextEditorVisibleRangesChangeEvent } from "vscode";
+import { commands, WebviewPanel, window, QuickPickItem } from "vscode";
 import { Access, LiveShare } from "vsls";
 import { getTopCommunities } from "./api";
 import { ChatApi } from "./chatApi";
@@ -127,7 +127,7 @@ export function registerCommands(api: LiveShare, store: Store, storage: LocalSto
         createSession(SessionType.CodeReview, node);
     });
 
-    commands.registerCommand(`${EXTENSION_NAME}.joinCommunitySession`, async (node: SessionNode) => {	
-        api.join(Uri.parse(node.session.url));
+    commands.registerCommand(`${EXTENSION_NAME}.joinCommunitySession`, async (node: SessionNode) => {
+        return commands.executeCommand("liveshare.join", { link: node.session.url })
     });
 }

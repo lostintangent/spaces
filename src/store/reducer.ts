@@ -1,6 +1,6 @@
 import * as redux from "redux";
 import * as R from "ramda";
-import { IStore, IMember, ICommunity, Status } from "./model";
+import { IStore, IMember, ICommunity, Status, ISession } from "./model";
 import { 
     ACTION_JOIN_COMMUNITY, ACTION_JOIN_COMMUNITY_COMPLETED,
 	ACTION_LEAVE_COMMUNITY, ACTION_LEAVE_COMMUNITY_COMPLETED,
@@ -23,6 +23,15 @@ const initialState: IStore = {
 const sorted = R.sortBy(R.prop("name"));
 
 const setDefaultStatus = (m: IMember) => ({...m, status: Status.offline})
+
+function online(sessions: ISession[], community: ICommunity) {
+	return sessions.filter(s => {
+		const member = community.members.find(m => m.email === s.host);
+		if (member && member.status && member.status !== "offline") {
+			return s;
+		}
+	});
+}
 
 export const reducer: redux.Reducer = (state: IStore = initialState, action) => {
 	switch(action.type) {
@@ -53,9 +62,9 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 							...community,
 							isLoading: false,
 							members: sorted(action.members.map(setDefaultStatus)),
-							helpRequests: action.sessions.filter((s: any) => s.type === SessionType.HelpRequest),
-							codeReviews: action.sessions.filter((s: any) => s.type === SessionType.CodeReview),
-							broadcasts: action.sessions.filter((s: any) => s.type === SessionType.Broadcast),
+							helpRequests: online(action.sessions.filter((s: any) => s.type === SessionType.HelpRequest), community),
+							codeReviews: online(action.sessions.filter((s: any) => s.type === SessionType.CodeReview), community),
+							broadcasts: online(action.sessions.filter((s: any) => s.type === SessionType.Broadcast), community),
 						}
 					} else {
 						return community
@@ -98,9 +107,9 @@ export const reducer: redux.Reducer = (state: IStore = initialState, action) => 
 			const memberSorter = (c: any) => ({
 				...c,
 				members: sorted(c.members.map(setDefaultStatus)),
-				broadcasts: c.sessions.filter((s: any) => s.type === SessionType.Broadcast),
-				codeReviews: c.sessions.filter((s: any) => s.type === SessionType.CodeReview),
-				helpRequests: c.sessions.filter((s: any) => s.type === SessionType.HelpRequest)
+				broadcasts: online(c.sessions.filter((s: any) => s.type === SessionType.Broadcast), c),
+				codeReviews: online(c.sessions.filter((s: any) => s.type === SessionType.CodeReview), c),
+				helpRequests: online(c.sessions.filter((s: any) => s.type === SessionType.HelpRequest), c)
 			});
 			return {
 				...state,

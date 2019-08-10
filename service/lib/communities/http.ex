@@ -114,14 +114,19 @@ defmodule LiveShareCommunities.HTTP do
     send_resp(conn, :ok, Poison.encode!(conn.body_params))
   end
 
-  delete "v0/community/:name/session/:session_id" do
+  delete "/v0/community/:name/session/:session_id" do
     LiveShareCommunities.Store.remove_session(name, session_id)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
-  get "v0/community/:name/messages" do
+  get "/v0/community/:name/messages" do
     messages = LiveShareCommunities.Store.messages_of(name)
     send_resp(conn, :ok, Poison.encode!(messages))
+  end
+
+  delete "/v0/community/:name/messages" do
+    LiveShareCommunities.Store.clear_messages(name)
+    send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   get "/v0/debug" do

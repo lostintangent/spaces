@@ -8,7 +8,7 @@ import ws from "./ws";
 export class ChatApi {
   callback: any;
   communityCallback: any;
-  clearMessageCallback: any;
+  clearMessagesCallback: any;
 
   constructor(private vslsApi: vsls.LiveShare, private store: redux.Store) {}
 
@@ -49,8 +49,8 @@ export class ChatApi {
     this.callback = callback;
   }
 
-  setClearMessageCallback(callback: Function) {
-    this.clearMessageCallback = callback;
+  setClearMessagesCallback(callback: Function) {
+    this.clearMessagesCallback = callback;
   }
 
   setCommunityCallback(callback: any) {

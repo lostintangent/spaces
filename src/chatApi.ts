@@ -70,8 +70,8 @@ export class ChatApi {
   }
 
   onMessagesCleared(communityName: string) {
-    if (this.clearMessageCallback) {
-      this.clearMessageCallback(communityName);
+    if (this.clearMessagesCallback) {
+      this.clearMessagesCallback(communityName);
     }
   }
 }

@@ -1,7 +1,13 @@
 import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState } from "vscode";
 import { LiveShare } from "vsls";
-import { ICommunity, IMember, ISession, Status } from "../store/model";
+import {
+  ICommunity,
+  IMember,
+  ISession,
+  MemberTitles,
+  Status
+} from "../store/model";
 
 export abstract class TreeNode extends TreeItem {
   constructor(
@@ -45,7 +51,9 @@ export class CommunityNode extends TreeNode {
 
     this.name = community.name;
 
-    const founder = community.members.find(m => m.title === "Founder");
+    const founder = community.members.find(
+      m => m.title === MemberTitles.Founder
+    );
     let isFounder = false;
 
     if (founder && founder.email === vslsApi.session.user!.emailAddress!) {

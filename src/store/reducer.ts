@@ -1,226 +1,248 @@
-import * as redux from "redux";
 import * as R from "ramda";
-import { IStore, IMember, ICommunity, Status, ISession } from "./model";
-import { 
-    ACTION_JOIN_COMMUNITY, ACTION_JOIN_COMMUNITY_COMPLETED,
-	ACTION_LEAVE_COMMUNITY, ACTION_LEAVE_COMMUNITY_COMPLETED,
-	ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED,
-	ACTION_STATUSES_UPDATED,
-	IMemberStatus,
-	ACTION_SESSION_CREATED,
-	SessionType,
-	ACTION_ACTIVE_SESSION_ENDED,
-	ACTION_COMMUNITY_NODE_EXPANDED,
-	ACTION_USER_AUTHENTICATION_CHANGED
+import * as redux from "redux";
+import {
+  ACTION_ACTIVE_SESSION_ENDED,
+  ACTION_COMMUNITY_NODE_EXPANDED,
+  ACTION_JOIN_COMMUNITY,
+  ACTION_JOIN_COMMUNITY_COMPLETED,
+  ACTION_LEAVE_COMMUNITY,
+  ACTION_LEAVE_COMMUNITY_COMPLETED,
+  ACTION_LOAD_COMMUNITIES,
+  ACTION_LOAD_COMMUNITIES_COMPLETED,
+  ACTION_SESSION_CREATED,
+  ACTION_STATUSES_UPDATED,
+  ACTION_USER_AUTHENTICATION_CHANGED
 } from "./actions";
+import {
+  ICommunity,
+  IMember,
+  IMemberStatus,
+  ISession,
+  IStore,
+  SessionType,
+  Status
+} from "./model";
 
 const initialState: IStore = {
-	isLoading: true,
-	isSignedIn: false,
-	communities: []
+  isLoading: true,
+  isSignedIn: false,
+  communities: []
 };
 
 const sorted = R.sortBy(R.prop("name"));
 
-const setDefaultStatus = (m: IMember) => ({...m, status: Status.offline})
+const setDefaultStatus = (m: IMember) => ({ ...m, status: Status.offline });
 
 function online(sessions: ISession[], community: ICommunity) {
-	return sessions.filter(s => {
-		const member = community.members.find(m => m.email === s.host);
-		if (member && member.status && member.status !== "offline") {
-			return s;
-		}
-	});
+  return sessions.filter(s => {
+    const member = community.members.find(m => m.email === s.host);
+    if (member && member.status && member.status !== "offline") {
+      return s;
+    }
+  });
 }
 
-export const reducer: redux.Reducer = (state: IStore = initialState, action) => {
-	switch(action.type) {
-		case ACTION_JOIN_COMMUNITY:
-			return {
-				...state,
-				communities: sorted([
-					...state.communities,
-					{
-						name: action.name,
-						members: [],
-						broadcasts: [],
-						helpRequests: [],
-						codeReviews: [],
-						isLoading: true,
-						isLeaving: false,
-						isExpanded: false
-					}
-				])
-			};
+export const reducer: redux.Reducer = (
+  state: IStore = initialState,
+  action
+) => {
+  switch (action.type) {
+    case ACTION_JOIN_COMMUNITY:
+      return {
+        ...state,
+        communities: sorted([
+          ...state.communities,
+          {
+            name: action.name,
+            members: [],
+            broadcasts: [],
+            helpRequests: [],
+            codeReviews: [],
+            isLoading: true,
+            isLeaving: false,
+            isExpanded: false
+          }
+        ])
+      };
 
-		case ACTION_JOIN_COMMUNITY_COMPLETED:
-			return {
-				...state,
-				communities: state.communities.map(community => {
-					if (community.name === action.name) {
-						return { 
-							...community,
-							isLoading: false,
-							members: sorted(action.members.map(setDefaultStatus)),
-							helpRequests: online(action.sessions.filter((s: any) => s.type === SessionType.HelpRequest), community),
-							codeReviews: online(action.sessions.filter((s: any) => s.type === SessionType.CodeReview), community),
-							broadcasts: online(action.sessions.filter((s: any) => s.type === SessionType.Broadcast), community),
-						}
-					} else {
-						return community
-					}
-				})
-			}
+    case ACTION_JOIN_COMMUNITY_COMPLETED:
+      return {
+        ...state,
+        communities: state.communities.map(community => {
+          if (community.name === action.name) {
+            return {
+              ...community,
+              isLoading: false,
+              members: sorted(action.members.map(setDefaultStatus)),
+              helpRequests: action.sessions.filter(
+                (s: any) => s.type === SessionType.HelpRequest
+              ),
+              codeReviews: action.sessions.filter(
+                (s: any) => s.type === SessionType.CodeReview
+              ),
+              broadcasts: action.sessions.filter(
+                (s: any) => s.type === SessionType.Broadcast
+              )
+            };
+          } else {
+            return community;
+          }
+        })
+      };
 
-		case ACTION_LEAVE_COMMUNITY:
-			return {
-				...state,
-				communities: state.communities.filter(community => {
-					if (community.name === action.name) {
-						return {
-							...community,
-							isLeaving: true 
-						}
-					} else {
-						return community
-					}
-				})
-			}
+    case ACTION_LEAVE_COMMUNITY:
+      return {
+        ...state,
+        communities: state.communities.filter(community => {
+          if (community.name === action.name) {
+            return {
+              ...community,
+              isLeaving: true
+            };
+          } else {
+            return community;
+          }
+        })
+      };
 
-		case ACTION_LEAVE_COMMUNITY_COMPLETED:
-			return {
-				...state,
-				communities: state.communities.filter(community => 
-					community.name !== action.name
-				)
-			}
+    case ACTION_LEAVE_COMMUNITY_COMPLETED:
+      return {
+        ...state,
+        communities: state.communities.filter(
+          community => community.name !== action.name
+        )
+      };
 
-		case ACTION_LOAD_COMMUNITIES:
-			return {
-				...state,
-				isLoading: true,
-				communities: []
-			};
+    case ACTION_LOAD_COMMUNITIES:
+      return {
+        ...state,
+        isLoading: true,
+        communities: []
+      };
 
-		case ACTION_LOAD_COMMUNITIES_COMPLETED:
-			// memberSorter sorts members and adds the default status value
-			const memberSorter = (c: any) => ({
-				...c,
-				members: sorted(c.members.map(setDefaultStatus)),
-				broadcasts: online(c.sessions.filter((s: any) => s.type === SessionType.Broadcast), c),
-				codeReviews: online(c.sessions.filter((s: any) => s.type === SessionType.CodeReview), c),
-				helpRequests: online(c.sessions.filter((s: any) => s.type === SessionType.HelpRequest), c)
-			});
-			return {
-				...state,
-				isLoading: false,
-				communities: R.map(memberSorter, sorted(action.communities))
-			};
+    case ACTION_LOAD_COMMUNITIES_COMPLETED:
+      // memberSorter sorts members and adds the default status value
+      const memberSorter = (c: any) => ({
+        ...c,
+        members: sorted(c.members.map(setDefaultStatus)),
+        broadcasts: c.sessions.filter(
+          (s: any) => s.type === SessionType.Broadcast
+        ),
+        codeReviews: c.sessions.filter(
+          (s: any) => s.type === SessionType.CodeReview
+        ),
+        helpRequests: c.sessions.filter(
+          (s: any) => s.type === SessionType.HelpRequest
+        )
+      });
+      return {
+        ...state,
+        isLoading: false,
+        communities: R.map(memberSorter, sorted(action.communities))
+      };
 
-		case ACTION_STATUSES_UPDATED:
-			return {
-				...state,
-				communities: R.map(
-					(community: ICommunity) => ({
-						...community,
-						members: community.members.map(m => {
-							const memberStatus = action.statuses.find(
-								({email}: IMemberStatus) => email === m.email
-							)
-							return {
-								...m,
-								status: memberStatus ? memberStatus.status : m.status
-							}
-						})
-					}),
-					state.communities)
-			}
+    case ACTION_STATUSES_UPDATED:
+      return {
+        ...state,
+        communities: R.map(
+          (community: ICommunity) => ({
+            ...community,
+            members: community.members.map(m => {
+              const memberStatus = action.statuses.find(
+                ({ email }: IMemberStatus) => email === m.email
+              );
+              return {
+                ...m,
+                status: memberStatus ? memberStatus.status : m.status
+              };
+            })
+          }),
+          state.communities
+        )
+      };
 
-		case ACTION_SESSION_CREATED: {
-			const type = action.sessionType;
-			const session = {
-				id: action.id,
-				host: action.host,
-				description: action.description,
-				community: action.community,
-				type
-			};
-			let sessionType: string = "helpRequests";
-			if (type === SessionType.Broadcast) {
-				sessionType = "broadcasts";
-			} else if (type === SessionType.CodeReview) {
-				sessionType = "codeReviews";
-			}
+    case ACTION_SESSION_CREATED: {
+      const type = action.activeSession.session.type;
+      let sessionType: string = "helpRequests";
+      if (type === SessionType.Broadcast) {
+        sessionType = "broadcasts";
+      } else if (type === SessionType.CodeReview) {
+        sessionType = "codeReviews";
+      }
 
-			return {
-				...state,
-				activeSession: session,
-				communities: state.communities.map(community => {
-					if (community.name === action.community) {
-						return {
-							...community,
-							[sessionType]: [
-								// @ts-ignore
-								...community[sessionType],
-								session
-							]
-						};
-					} else {
-						return community;
-					}
-				})
-			}
-		}
-		
-		case ACTION_ACTIVE_SESSION_ENDED: {
-			const session = state.activeSession!;
-			let sessionType: string = "helpRequests";
-			if (session.type === SessionType.Broadcast) {
-				sessionType = "broadcasts";
-			} else if (session.type === SessionType.CodeReview) {
-				sessionType = "codeReviews";
-			}
+      return {
+        ...state,
+        activeSession: action.activeSession,
+        communities: state.communities.map(community => {
+          if (community.name === action.activeSession.community) {
+            return {
+              ...community,
+              [sessionType]: [
+                // @ts-ignore
+                ...community[sessionType],
+                action.activeSession.session
+              ]
+            };
+          } else {
+            return community;
+          }
+        })
+      };
+    }
 
-			return {
-				...state,
-				activeSession: null,
-				communities: state.communities.map(community => {
-				if (community.name === (<any>session).community) {
-					return {
-						...community,
-						// @ts-ignore
-						[sessionType]: community[sessionType].filter((s: ISession) => s.description !== session.description)
-					};
-				} else {
-					return community;
-				}
-			})
-			}
-		}
+    case ACTION_ACTIVE_SESSION_ENDED: {
+      const activeSession = state.activeSession!;
+      let sessionType: string = "helpRequests";
+      if (activeSession.session.type === SessionType.Broadcast) {
+        sessionType = "broadcasts";
+      } else if (activeSession.session.type === SessionType.CodeReview) {
+        sessionType = "codeReviews";
+      }
 
-		case ACTION_COMMUNITY_NODE_EXPANDED:
-			const property = action.nodeType === "members" ? "isExpanded": "isHelpRequestsExpanded";
-			return {
-				...state,
-				communities: state.communities.map(community => {
-					if (community.name === action.community.name) {
-						return {
-							...community,
-							[property]: true
-						}
-					} else {
-						return community;
-					}
-				})
-			}
+      return {
+        ...state,
+        activeSession: null,
+        communities: state.communities.map(community => {
+          if (community.name === activeSession.community) {
+            return {
+              ...community,
+              // @ts-ignore
+              [sessionType]: community[sessionType].filter(
+                (s: ISession) => s.id !== activeSession.session.id
+              )
+            };
+          } else {
+            return community;
+          }
+        })
+      };
+    }
 
-		case ACTION_USER_AUTHENTICATION_CHANGED:
-			return {
-				...state,
-				isSignedIn: action.isSignedIn
-			};
-			
-		default:
-			return state;
-	}
-}
+    case ACTION_COMMUNITY_NODE_EXPANDED:
+      const property =
+        action.nodeType === "members" ? "isExpanded" : "isHelpRequestsExpanded";
+
+      return {
+        ...state,
+        communities: state.communities.map(community => {
+          if (community.name === action.community.name) {
+            return {
+              ...community,
+              [property]: true
+            };
+          } else {
+            return community;
+          }
+        })
+      };
+
+    case ACTION_USER_AUTHENTICATION_CHANGED:
+      return {
+        ...state,
+        isSignedIn: action.isSignedIn
+      };
+
+    default:
+      return state;
+  }
+};

@@ -1,51 +1,55 @@
-import { applyMiddleware, createStore as createReduxStore } from "redux";
-import thunk from "redux-thunk";
-import { ExtensionContext, window, commands, workspace, ConfigurationTarget } from "vscode";
+import { applyMiddleware, createStore } from "redux";
+import createSagaMiddleware from "redux-saga";
+import { ExtensionContext } from "vscode";
 import { getApi as getVslsApi } from "vsls";
+import {
+  createSessionStateChannel,
+  ISessionStateChannel
+} from "./channels/sessionState";
+import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
-import { intializeSessionManager } from "./sessionManager";
+import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
-import { loadCommunitiesAsync, updateCommunityAsync } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
-import { ChatApi } from "./chatApi";
-import ws from './ws';
 import { registerUriHandler } from "./uriHandler";
 
+let sessionStateChannel: ISessionStateChannel;
+
 export async function activate(context: ExtensionContext) {
-	workspace.getConfiguration("liveshare")
-		.update("featureSet", "insiders", ConfigurationTarget.Global);
+  config.ensureLiveShareInsiders();
 
-	const api = (await getVslsApi())!;
-	const store = createReduxStore(reducer, applyMiddleware(thunk));
-	const chatApi = new ChatApi(api, store);
+  const storage = new LocalStorage(context.globalState);
 
-	if (config.showSuggestedContacts) {
-		registerContactProvider(api, store);
-	}
+  const saga = createSagaMiddleware();
+  const store = createStore(reducer, applyMiddleware(saga));
 
-	registerTreeProvider(api, store, context.extensionPath);
+  const api = (await getVslsApi())!;
+  const chatApi = new ChatApi(api, store);
 
-	const storage = new LocalStorage(context.globalState);
-	registerCommands(api, store, storage, context.extensionPath, chatApi);
+  sessionStateChannel = createSessionStateChannel(api);
 
-	registerUriHandler(api, store, storage, chatApi);
+  registerTreeProvider(api, store, context.extensionPath);
+  registerCommands(
+    api,
+    store,
+    storage,
+    context.extensionPath,
+    sessionStateChannel
+  );
+  registerUriHandler(api, store);
 
-	intializeSessionManager(api, store, () => {
-		const vslsUser = api.session.user;
+  if (config.showSuggestedContacts) {
+    registerContactProvider(api, store);
+  }
 
-		store.dispatch(<any>loadCommunitiesAsync(storage, api, store));
+  saga.run(rootSaga, storage, api, chatApi, sessionStateChannel);
 
-		if (vslsUser && vslsUser.emailAddress) {
-			ws.init(vslsUser.emailAddress, (data: any) => {
-				const { name, members, sessions, messages } = data;
-				chatApi.onMessageReceived(name, messages);
-				store.dispatch(<any>updateCommunityAsync(name, members, sessions, api, store))
-			});
-		}
-	});
+  return chatApi;
+}
 
-	return chatApi;
+export function deactivate() {
+  sessionStateChannel.endActiveSession();
 }

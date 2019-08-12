@@ -61,6 +61,10 @@ export async function getTopCommunities() {
   return data;
 }
 
+export async function clearMessages(community: string) {
+  return await axios.delete(`${BASE_URL}/community/${community}/messages`);
+}
+
 function createCommunityRequest(
   communityName: string,
   memberName: string,

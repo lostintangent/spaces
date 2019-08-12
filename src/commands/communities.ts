@@ -5,6 +5,7 @@ import { getTopCommunities } from "../api";
 import { EXTENSION_NAME } from "../constants";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
+  clearMessages,
   joinCommunity,
   leaveCommunity,
   loadCommunities
@@ -99,6 +100,13 @@ export function registerCommunityCommands(
       } else {
         webViewPanel.reveal();
       }
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.clearMessages`,
+    async (node: CommunityNode) => {
+      store.dispatch(clearMessages(node.name));
     }
   );
 }

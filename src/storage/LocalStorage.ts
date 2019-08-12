@@ -21,8 +21,11 @@ export class LocalStorage {
     this.saveCommunities(communities.filter(c => c !== name));
   }
 
-  public saveActiveSession(sessionId: string) {
-    this.storage.update(SESSION_STORAGE_KEY, sessionId);
+  public saveActiveSession(sessionId: string, communityName: string) {
+    this.storage.update(SESSION_STORAGE_KEY, {
+      id: sessionId,
+      name: communityName
+    });
   }
 
   public clearActiveSession() {
@@ -30,7 +33,7 @@ export class LocalStorage {
   }
 
   public getActiveSession() {
-    return this.storage.get<string>(SESSION_STORAGE_KEY);
+    return this.storage.get(SESSION_STORAGE_KEY);
   }
 
   private saveCommunities(communities: string[]) {

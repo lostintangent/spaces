@@ -12,6 +12,7 @@ import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
 import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
+import { clearZombieSessions } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
 import { registerUriHandler } from "./uriHandler";
@@ -46,6 +47,9 @@ export async function activate(context: ExtensionContext) {
   }
 
   saga.run(rootSaga, storage, api, chatApi, sessionStateChannel);
+
+  console.log(storage.getActiveSession()); // TODO: this is to be removed
+  store.dispatch(<any>clearZombieSessions());
 
   return chatApi;
 }

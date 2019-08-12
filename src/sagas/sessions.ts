@@ -22,7 +22,7 @@ export function* createSession(
     url: sessionUrl.toString()
   };
 
-  storage.saveActiveSession(sessionId);
+  storage.saveActiveSession(sessionId, community);
   yield put(sessionCreated({ community, session }));
   yield call(api.createSession, community, session);
 }
@@ -39,5 +39,14 @@ export function* endActiveSession(storage: LocalStorage) {
 
     storage.clearActiveSession();
     yield put(activeSessionEnded());
+  }
+}
+
+export function* cleanZombieSession(storage: LocalStorage) {
+  const { id, name }: any = storage.getActiveSession();
+
+  if (id && name) {
+    yield call(api.deleteSession, name, id);
+    storage.clearActiveSession();
   }
 }

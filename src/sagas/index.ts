@@ -13,6 +13,7 @@ import { ChatApi } from "../chatApi";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   ACTION_CLEAR_MESSAGES,
+  ACTION_CLEAR_ZOMBIE_SESSIONS,
   ACTION_COMMUNITY_UPDATED,
   ACTION_CREATE_SESSION,
   ACTION_JOIN_COMMUNITY,
@@ -29,7 +30,11 @@ import {
   updateCommunitySaga
 } from "./communities";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
-import { createSession, endActiveSession } from "./sessions";
+import {
+  cleanZombieSession,
+  createSession,
+  endActiveSession
+} from "./sessions";
 
 function* childSagas(
   storage: LocalStorage,
@@ -57,6 +62,10 @@ function* childSagas(
       createSession.bind(null, storage, vslsApi)
     ),
     takeEvery(sessionStateChannel, endActiveSession.bind(null, storage)),
+    takeEvery(
+      ACTION_CLEAR_ZOMBIE_SESSIONS,
+      cleanZombieSession.bind(null, storage)
+    ),
 
     takeLatest(
       ACTION_LOAD_COMMUNITIES,

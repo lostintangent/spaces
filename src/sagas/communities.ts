@@ -79,3 +79,8 @@ export function* updateCommunitySaga(
   yield put(joinCommunityCompleted(name, members, sessions));
   yield call(rebuildContacts, vslsApi);
 }
+
+export function* clearMessages(chatApi: ChatApi, { community }: any) {
+  yield call(api.clearMessages, community);
+  yield call(chatApi.onMessagesCleared.bind(chatApi), community);
+}

@@ -55,3 +55,7 @@ export interface IMemberStatus {
   email: string;
   status: Status;
 }
+
+export enum MemberTitles {
+  Founder = "Founder"
+}

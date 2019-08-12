@@ -1,17 +1,20 @@
 import { call, put, select } from "redux-saga/effects";
 import { LiveShare } from "vsls";
 import * as api from "../api";
+import { LocalStorage } from "../storage/LocalStorage";
 import { activeSessionEnded, sessionCreated } from "../store/actions";
 import { ISession } from "../store/model";
 
 export function* createSession(
+  storage: LocalStorage,
   vslsApi: LiveShare,
   { description, sessionType, community, access }: any
 ) {
   const sessionUrl = yield call(vslsApi.share.bind(vslsApi), { access });
+  const sessionId = vslsApi.session.id!;
 
   const session: ISession = {
-    id: vslsApi.session.id!,
+    id: sessionId,
     host: vslsApi.session.user!.emailAddress!,
     startTime: new Date(),
     description,
@@ -19,12 +22,12 @@ export function* createSession(
     url: sessionUrl.toString()
   };
 
+  storage.saveActiveSession(sessionId);
   yield put(sessionCreated({ community, session }));
-
   yield call(api.createSession, community, session);
 }
 
-export function* endActiveSession() {
+export function* endActiveSession(storage: LocalStorage) {
   const activeSession = yield select(s => s.activeSession);
 
   if (activeSession) {
@@ -33,6 +36,8 @@ export function* endActiveSession() {
       activeSession.community,
       activeSession.session.id
     );
+
+    storage.clearActiveSession();
     yield put(activeSessionEnded());
   }
 }

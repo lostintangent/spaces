@@ -49,8 +49,11 @@ function* childSagas(
       updateCommunitySaga.bind(null, vslsApi)
     ),
 
-    takeEvery(ACTION_CREATE_SESSION, createSession.bind(null, vslsApi)),
-    takeEvery(sessionStateChannel, endActiveSession),
+    takeEvery(
+      ACTION_CREATE_SESSION,
+      createSession.bind(null, storage, vslsApi)
+    ),
+    takeEvery(sessionStateChannel, endActiveSession.bind(null, storage)),
 
     takeLatest(
       ACTION_LOAD_COMMUNITIES,

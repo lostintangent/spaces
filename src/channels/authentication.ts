@@ -1,4 +1,4 @@
-import { eventChannel } from "redux-saga";
+import { buffers, eventChannel } from "redux-saga";
 import { LiveShare, Session } from "vsls";
 import { onPropertyChanged } from "../utils";
 
@@ -20,5 +20,5 @@ export function createAuthenticationChannel(api: LiveShare) {
       // @ts-ignore (session is a readonly property)
       api.session = originalSessionObject;
     };
-  });
+  }, buffers.sliding(1));
 }

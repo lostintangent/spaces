@@ -44,12 +44,13 @@ function* childSagas(
       ACTION_LEAVE_COMMUNITY,
       leaveCommunity.bind(null, storage, vslsApi)
     ),
-    takeEvery(ACTION_CREATE_SESSION, createSession.bind(null, vslsApi)),
-    takeEvery(sessionStateChannel, endActiveSession),
     takeEvery(
       ACTION_COMMUNITY_UPDATED,
       updateCommunitySaga.bind(null, vslsApi)
     ),
+
+    takeEvery(ACTION_CREATE_SESSION, createSession.bind(null, vslsApi)),
+    takeEvery(sessionStateChannel, endActiveSession),
 
     takeLatest(
       ACTION_LOAD_COMMUNITIES,
@@ -82,7 +83,7 @@ export function* rootSaga(
       );
       yield put(<any>loadCommunities());
     } else {
-      task.cancel();
+      task && task.cancel();
     }
   }
 }

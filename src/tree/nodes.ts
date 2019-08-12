@@ -1,7 +1,13 @@
 import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState } from "vscode";
 import { LiveShare } from "vsls";
-import { ICommunity, IMember, ISession, Status } from "../store/model";
+import {
+  ICommunity,
+  IMember,
+  ISession,
+  MemberTitles,
+  Status
+} from "../store/model";
 
 export abstract class TreeNode extends TreeItem {
   constructor(
@@ -37,14 +43,28 @@ export class NoCommunitiesNode extends TreeNode {
 export class CommunityNode extends TreeNode {
   name: string;
 
-  constructor(public community: ICommunity) {
+  constructor(public community: ICommunity, vslsApi: LiveShare) {
     super(
       `${community.name} (${community.members.length})`,
       TreeItemCollapsibleState.Expanded
     );
 
     this.name = community.name;
-    this.contextValue = "community";
+
+    const founder = community.members.find(
+      m => m.title === MemberTitles.Founder
+    );
+    let isFounder = false;
+
+    if (founder && founder.email === vslsApi.session.user!.emailAddress!) {
+      isFounder = true;
+    }
+
+    if (isFounder) {
+      this.contextValue = "community.founder";
+    } else {
+      this.contextValue = "community";
+    }
   }
 }
 

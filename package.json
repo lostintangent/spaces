@@ -112,6 +112,11 @@
         "category": "Live Share Communities",
         "title": "End Session",
         "icon": "images/leave.svg"
+      },
+      {
+        "command": "liveshare.clearMessages",
+        "category": "Live Share Communities",
+        "title": "Clear Messages"
       }
     ],
     "views": {
@@ -137,12 +142,16 @@
       "view/item/context": [
         {
           "command": "liveshare.leaveCommunity",
-          "when": "view == liveshare.communities && viewItem == community"
+          "when": "view == liveshare.communities && viewItem =~ /^community/"
         },
         {
           "command": "liveshare.leaveCommunity",
-          "when": "view == liveshare.communities && viewItem == community",
+          "when": "view == liveshare.communities && viewItem =~ /^community/",
           "group": "inline@2"
+        },
+        {
+          "command": "liveshare.clearMessages",
+          "when": "view == liveshare.communities && viewItem == community.founder"
         },
         {
           "command": "liveshare.inviteMemberByEmail",
@@ -231,6 +240,10 @@
         },
         {
           "command": "liveshare.joinCommunitySession",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.clearMessages",
           "when": "false"
         }
       ]

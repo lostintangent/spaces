@@ -50,6 +50,6 @@ export async function activate(context: ExtensionContext) {
   return chatApi;
 }
 
-export function deactivate() {
-  sessionStateChannel.endActiveSession();
+export async function deactivate() {
+  return sessionStateChannel.endActiveSession();
 }

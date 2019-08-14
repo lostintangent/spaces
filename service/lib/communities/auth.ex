@@ -3,7 +3,7 @@ defmodule LiveShareCommunities.Authentication do
 
   def init(opts), do: opts
 
-  def findPublicKey(kid) do
+  def findPublicKey?({:ok, kid, token}) do
     # TODO: add the logic to cache cert keys
     response = HTTPotion.get "https://login.microsoftonline.com/common/discovery/v2.0/keys"
     jsonBody = Poison.decode!(response.body)
@@ -23,16 +23,8 @@ defmodule LiveShareCommunities.Authentication do
       raise "Cannot find appropriate public key."
     end
 
-    certKey
+    {:ok, certKey, token}
   end
-
-  # def okSet(ok) do
-  #   if ok == true do
-  #     {:ok, claims}
-  #   else
-  #     {:error, "Token is not valid."}
-  #   end
-  # end
 
   def validIssuer?({:ok, claims}) do
     if claims.fields["iss"] == "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
@@ -70,26 +62,26 @@ defmodule LiveShareCommunities.Authentication do
     try do
       protected = JOSE.JWT.peek_protected(token)
       kid = protected.fields["kid"]
-      {:ok, kid}
-    catch
-      :exit, _ -> "exit blocked"
-      # x -> "Got #{x}"
-      # e in RuntimeError ->
-      # IO.inspect "Caught!"
-      # {:error, "Failed to parse kid."}
+      {:ok, kid, token}
+    rescue
+      # :exit, _ -> "exit blocked"
+      e in ArgumentError -> e
+      {:error, "Failed to parse kid."}
     end
   end
 
-  def isValidAADToken(token) do
-    kid = {:ok, token}
-      |> getKid?
-    # protected = JOSE.JWT.peek_protected(token)
-    # kid = protected.fields["kid"]
-    certKey = findPublicKey(kid)
+  def createCert?({:ok, certKey, token}) do
     cert = "-----BEGIN CERTIFICATE-----\n#{certKey}\n-----END CERTIFICATE-----"
+    try do
+      jwk = JOSE.JWK.from_pem(cert)
+      {:ok, jwk, token}
+    rescue
+      e in ArgumentError -> e
+      {:error, "Failed to create cert."}
+    end
+  end
 
-    jwk = JOSE.JWK.from_pem(cert)
-
+  def verifyToken?({:ok, jwk, token}) do
     case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
       {ok, claims, _} ->
         if ok == false do
@@ -103,6 +95,18 @@ defmodule LiveShareCommunities.Authentication do
       {:error, error} ->
         IO.inspect error
         {:error, error}
+    end
+  end
+
+  def isValidAADToken(token) do
+    try do
+      {:ok, jwk} = {:ok, token}
+        |> getKid?
+        |> findPublicKey?
+        |> createCert?
+        |> verifyToken?
+    rescue
+      e in FunctionClauseError -> {:error, "Token is invalid. #{e.function}"}
     end
   end
 

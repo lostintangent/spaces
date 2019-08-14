@@ -3,62 +3,84 @@ defmodule LiveShareCommunities.Authentication do
 
   def init(opts), do: opts
 
+  def getKeys?(arg) do
+    case arg do
+      {:ok, kid, token} ->
+        response = HTTPotion.get "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+        jsonBody = Poison.decode!(response.body)
+        keys = jsonBody["keys"]
+        {:ok, kid, token, keys}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
-  def getKeys() do
-    response = HTTPotion.get "https://login.microsoftonline.com/common/discovery/v2.0/keys"
-    jsonBody = Poison.decode!(response.body)
-    jsonBody["keys"]
+  def findPublicKeyInKeys?(arg) do
+    case arg do
+      {:ok, kid, token, keys} ->
+        certItem = Enum.find(keys, fn key ->
+          key["kid"] == kid
+        end)
+
+        if certItem == nil do
+          {:error, "Cannot find appropriate public key."}
+        else
+          certKey = Enum.at(certItem["x5c"], 0)
+          {:ok, certKey, token}
+        end
+    end
   end
 
   def findPublicKey?(arg) do
     case arg do
       {:ok, kid, token} ->
-        keys = getKeys()
-        certItem = Enum.find(keys, fn key ->
-          key["kid"] == kid
-        end)
+        {:ok, kid, token}
+          |> getKeys?
+          |> findPublicKeyInKeys?
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
-        certKey = Enum.at(certItem["x5c"], 0)
-
-        if certKey == "" do
-          {:error, "Cannot find appropriate public key."}
+  def validIssuer?(arg) do
+    case arg do
+      {:ok, claims} ->
+        if claims.fields["iss"] == "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
+          {:ok, claims}
         else
-          {:ok, certKey, token}
+          {:error, "Invalid issuer."}
+        end
+      {:error, reason}  -> {:error, reason}
+    end
+  end
+
+  def validAudience?(arg) do
+    case arg do
+      {:ok, claims} ->
+        if claims.fields["aud"] == "9db1d849-f699-4cfb-8160-64bed3335c72" do
+          {:ok, claims}
+        else
+          {:error, "Invalid audience."}
         end
       {:error, reason} -> {:error, reason}
     end
-
   end
 
-  def validIssuer?({:ok, claims}) do
-    if claims.fields["iss"] == "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
-      {:ok, claims}
-    else
-      {:error, "Invalid issuer."}
-    end
-  end
+  def validExpiration?(arg) do
+    case arg do
+      {:ok, claims} ->
+        exp = claims.fields["exp"]
+        expDate = case DateTime.from_unix(exp) do
+          {:ok, date} ->
+            date
+          {:error, reason} ->
+            raise reason
+        end
 
-  def validAudience?({:ok, claims}) do
-    if claims.fields["aud"] == "9db1d849-f699-4cfb-8160-64bed3335c72" do
-      {:ok, claims}
-    else
-      {:error, "Invalid audience."}
-    end
-  end
-
-  def validExpiration?({:ok, claims}) do
-    exp = claims.fields["exp"]
-    expDate = case DateTime.from_unix(exp) do
-      {:ok, date} ->
-        date
-      {:error, reason} ->
-        raise reason
-    end
-
-    if DateTime.utc_now() > expDate do
-      {:error, "Token is expired."}
-    else
-      {:ok, claims}
+        if DateTime.utc_now() > expDate do
+          {:error, "Token is expired."}
+        else
+          {:ok, claims}
+        end
+      {:error, reason} -> {:error, reason}
     end
   end
 

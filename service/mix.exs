@@ -28,7 +28,7 @@ defmodule LiveShareCommunities.MixProject do
       {:poison, "~> 4.0.1"},
       {:redix, ">= 0.0.0"},
       {:joken, "~> 2.0-rc0"},
-
+      {:httpotion, "~> 3.1.0"},
       # distillery to create release
       {:distillery, "~> 2.1"}
     ]

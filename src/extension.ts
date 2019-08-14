@@ -13,8 +13,11 @@ import { registerTreeProvider } from "./tree/TreeProvider";
 import { ChatApi } from "./chatApi";
 import ws from './ws';
 import { registerUriHandler } from "./uriHandler";
+import { auth } from "./auth/auth";
 
 export async function activate(context: ExtensionContext) {
+    await auth.init(context);
+	
 	workspace.getConfiguration("liveshare")
 		.update("featureSet", "insiders", ConfigurationTarget.Global);
 

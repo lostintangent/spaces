@@ -58,8 +58,7 @@ defmodule LiveShareCommunities.HTTP do
         name
       end
 
-    redirect_url =
-      "https://img.shields.io/badge/#{prefix}-#{badge_name}-8F80CF.svg?logo=#{@logo}"
+    redirect_url = "https://img.shields.io/badge/#{prefix}-#{badge_name}-8F80CF.svg?logo=#{@logo}"
 
     conn
     |> put_resp_header("Location", redirect_url)
@@ -97,6 +96,11 @@ defmodule LiveShareCommunities.HTTP do
     community_name = conn.body_params["name"]
 
     LiveShareCommunities.Store.add_member(community_name, member)
+
+    LiveShareCommunities.Events.send(:member_joined, community_name, %{
+      email: member["email"]
+    })
+
     community = LiveShareCommunities.Store.community(community_name)
     send_resp(conn, :ok, Poison.encode!(community))
   end
@@ -106,16 +110,25 @@ defmodule LiveShareCommunities.HTTP do
     community_name = conn.body_params["name"]
 
     LiveShareCommunities.Store.remove_member(community_name, member)
+    LiveShareCommunities.Events.send(:member_left, community_name, %{email: member["email"]})
+
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   post "/v0/community/:name/session" do
     LiveShareCommunities.Store.add_session(name, conn.body_params)
+
+    LiveShareCommunities.Events.send(:session_start, name, %{id: conn.body_params["id"]})
+
     send_resp(conn, :ok, Poison.encode!(conn.body_params))
   end
 
   delete "/v0/community/:name/session/:session_id" do
+    session = LiveShareCommunities.Store.session(name, session_id)
+
     LiveShareCommunities.Store.remove_session(name, session_id)
+    LiveShareCommunities.Events.send(:session_end, name, %{session: session})
+
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 

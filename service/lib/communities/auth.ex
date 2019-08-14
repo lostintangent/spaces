@@ -106,7 +106,8 @@ defmodule LiveShareCommunities.Authentication do
         |> createCert?
         |> verifyToken?
     rescue
-      e in FunctionClauseError -> {:error, "Token is invalid. #{e.function}"}
+      e in FunctionClauseError ->
+        {:error, "Token is invalid. #{e.function}"}
     end
   end
 

@@ -6,7 +6,8 @@ import ws from "./ws";
 
 // This is the interface for the integration with the Team Chat extension
 export class ChatApi {
-  callback: any;
+  messageCallback: any;
+  infoMessageCallback: any;
   communityCallback: any;
   clearMessagesCallback: any;
 
@@ -46,7 +47,11 @@ export class ChatApi {
   }
 
   setMessageCallback(callback: any) {
-    this.callback = callback;
+    this.messageCallback = callback;
+  }
+
+  setInfoMessageCallback(callback: any) {
+    this.infoMessageCallback = callback;
   }
 
   setClearMessagesCallback(callback: Function) {
@@ -58,8 +63,18 @@ export class ChatApi {
   }
 
   onMessageReceived(name: string, messages: any) {
-    if (this.callback) {
-      this.callback({ name, messages });
+    if (this.messageCallback) {
+      this.messageCallback({ name, messages });
+    }
+  }
+
+  onInfoMessage(communityName: string, messageText: string, userEmail: string) {
+    if (this.infoMessageCallback) {
+      this.infoMessageCallback({
+        name: communityName,
+        text: messageText,
+        user: userEmail
+      });
     }
   }
 

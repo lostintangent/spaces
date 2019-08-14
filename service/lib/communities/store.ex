@@ -111,6 +111,11 @@ defmodule LiveShareCommunities.Store do
     |> Map.get("sessions", [])
   end
 
+  def session(name, id) do
+    sessions_of(name)
+    |> Enum.find(nil, fn x -> x["id"] == id end)
+  end
+
   def messages_of(name) do
     community(name)
     |> Map.get("messages", [])
@@ -206,6 +211,10 @@ defmodule LiveShareCommunities.Store do
         })
       )
     )
+  end
+
+  def add_info_message(name, content, member_email) do
+    add_message(name, %{"content" => content, "type" => "info_message"}, member_email)
   end
 
   def clear_messages(name) do

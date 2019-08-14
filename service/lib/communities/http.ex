@@ -124,8 +124,10 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   delete "/v0/community/:name/session/:session_id" do
+    session = LiveShareCommunities.Store.session(name, session_id)
+
     LiveShareCommunities.Store.remove_session(name, session_id)
-    LiveShareCommunities.Events.send(:session_end, name, %{id: session_id})
+    LiveShareCommunities.Events.send(:session_end, name, %{session: session})
 
     send_resp(conn, :ok, Poison.encode!(%{}))
   end

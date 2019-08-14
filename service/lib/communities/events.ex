@@ -20,10 +20,8 @@ defmodule LiveShareCommunities.Events do
     create(community, "Started #{label(type)}: #{description}", host)
   end
 
-  def send(:session_end, community, %{id: id}) do
-    %{"type" => type, "description" => description, "host" => host} =
-      LiveShareCommunities.Store.session(community, id)
-
+  def send(:session_end, community, %{session: session}) do
+    %{"type" => type, "description" => description, "host" => host} = session
     create(community, "Ended #{label(type)}: #{description}", host)
   end
 

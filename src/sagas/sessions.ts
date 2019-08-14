@@ -3,12 +3,19 @@ import { LiveShare } from "vsls";
 import * as api from "../api";
 import { activeSessionEnded, sessionCreated } from "../store/actions";
 import { ISession } from "../store/model";
+import { getCurrentSessionUrl } from "../utils";
 
 export function* createSession(
   vslsApi: LiveShare,
   { description, sessionType, community, access }: any
 ) {
-  const sessionUrl = yield call(vslsApi.share.bind(vslsApi), { access });
+  let sessionUrl: string;
+
+  if (!vslsApi.session.id) {
+    sessionUrl = yield call(vslsApi.share.bind(vslsApi), { access });
+  } else {
+    sessionUrl = getCurrentSessionUrl(vslsApi);
+  }
 
   const session: ISession = {
     id: vslsApi.session.id!,

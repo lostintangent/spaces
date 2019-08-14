@@ -29,6 +29,7 @@ defmodule LiveShareCommunities.MixProject do
       {:redix, ">= 0.0.0"},
       {:joken, "~> 2.0-rc0"},
       {:httpotion, "~> 3.1.0"},
+      {:memoize, "~> 1.2"},
       # distillery to create release
       {:distillery, "~> 2.1"}
     ]

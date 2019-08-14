@@ -1,9 +1,10 @@
 defmodule LiveShareCommunities.Authentication do
   import Plug.Conn
+  use Memoize
 
   def init(opts), do: opts
 
-  def getKeys?(arg) do
+  defmemo getKeys?(arg) do
     case arg do
       {:ok, kid, token} ->
         response = HTTPotion.get "https://login.microsoftonline.com/common/discovery/v2.0/keys"

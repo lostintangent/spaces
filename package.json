@@ -4,7 +4,7 @@
 	"publisher": "lostintangent",
 	"description": "Discover, share, and receive real-time assistance from developers across your favorite communities",
 	"icon": "images/icon.png",
-	"version": "0.0.4",
+	"version": "0.0.7",
 	"engines": {
 		"vscode": "^1.36.0"
 	},
@@ -19,12 +19,12 @@
 		"*"
 	],
 	"main": "./out/extension.js",
+	"aiKey": "APPINSIGHTS_INSTRUMENTATIONKEY",
 	"extensionDependencies": [
 		"MS-vsliveshare.vsliveshare-pack"
 	],
 	"contributes": {
-		"commands": [
-			{
+		"commands": [{
 				"command": "liveshare.joinCommunity",
 				"category": "Live Share Communities",
 				"title": "Join Community",
@@ -106,15 +106,24 @@
 				"command": "liveshare.viewCommunityDetails",
 				"category": "Live Share Communities",
 				"title": "View Details"
+			},
+			{
+				"command": "liveshare.endSession",
+				"category": "Live Share Communities",
+				"title": "End Session",
+				"icon": "images/leave.svg"
+			},
+			{
+				"command": "liveshare.clearMessages",
+				"category": "Live Share Communities",
+				"title": "Clear Messages"
 			}
 		],
 		"views": {
-			"liveshare": [
-				{
-					"id": "liveshare.communities",
-					"name": "Communities"
-				}
-			]
+			"liveshare": [{
+				"id": "liveshare.communities",
+				"name": "Communities"
+			}]
 		},
 		"configuration": {
 			"type": "object",
@@ -128,15 +137,18 @@
 			}
 		},
 		"menus": {
-			"view/item/context": [
-				{
+			"view/item/context": [{
 					"command": "liveshare.leaveCommunity",
-					"when": "view == liveshare.communities && viewItem == community"
+					"when": "view == liveshare.communities && viewItem =~ /^community/"
 				},
 				{
 					"command": "liveshare.leaveCommunity",
-					"when": "view == liveshare.communities && viewItem == community",
+					"when": "view == liveshare.communities && viewItem =~ /^community/",
 					"group": "inline@2"
+				},
+				{
+					"command": "liveshare.clearMessages",
+					"when": "view == liveshare.communities && viewItem == community.founder"
 				},
 				{
 					"command": "liveshare.inviteMemberByEmail",
@@ -158,29 +170,29 @@
 				},
 				{
 					"command": "liveshare.createHelpRequest",
-					"when": "view == liveshare.communities && viewItem == helpRequests && communities:inSession == false"
+					"when": "view == liveshare.communities && viewItem == helpRequests && !liveshare:isCollaborating"
 				},
 				{
 					"command": "liveshare.createHelpRequest",
-					"when": "view == liveshare.communities && viewItem == helpRequests && communities:inSession == false",
+					"when": "view == liveshare.communities && viewItem == helpRequests && !liveshare:isCollaborating",
 					"group": "inline"
 				},
 				{
 					"command": "liveshare.startBroadcast",
-					"when": "view == liveshare.communities && viewItem == broadcasts && communities:inSession == false"
+					"when": "view == liveshare.communities && viewItem == broadcasts && !liveshare:isCollaborating"
 				},
 				{
 					"command": "liveshare.startBroadcast",
-					"when": "view == liveshare.communities && viewItem == broadcasts && communities:inSession == false",
+					"when": "view == liveshare.communities && viewItem == broadcasts && !liveshare:isCollaborating",
 					"group": "inline"
 				},
 				{
 					"command": "liveshare.createCodeReview",
-					"when": "view == liveshare.communities && viewItem == codeReviews && communities:inSession == false"
+					"when": "view == liveshare.communities && viewItem == codeReviews && !liveshare:isCollaborating"
 				},
 				{
 					"command": "liveshare.createCodeReview",
-					"when": "view == liveshare.communities && viewItem == codeReviews && communities:inSession == false",
+					"when": "view == liveshare.communities && viewItem == codeReviews && !liveshare:isCollaborating",
 					"group": "inline"
 				},
 				{
@@ -191,22 +203,29 @@
 					"command": "liveshare.joinCommunitySession",
 					"when": "view == liveshare.communities && viewItem == session",
 					"group": "inline"
+				},
+				{
+					"command": "liveshare.endSession",
+					"when": "view == liveshare.communities && viewItem == session.own"
+				},
+				{
+					"command": "liveshare.endSession",
+					"when": "view == liveshare.communities && viewItem == session.own",
+					"group": "inline"
 				}
 			],
-			"view/title": [
-				{
+			"view/title": [{
 					"command": "liveshare.joinCommunity",
-					"when": "view == liveshare.communities && communities:signedIn == true",
+					"when": "view == liveshare.communities && liveshare:state != SignedOut",
 					"group": "navigation@1"
 				},
 				{
 					"command": "liveshare.refreshCommunities",
-					"when": "view == liveshare.communities && communities:signedIn == true",
+					"when": "view == liveshare.communities && liveshare:state != SignedOut",
 					"group": "navigation@2"
 				}
 			],
-			"commandPalette": [
-				{
+			"commandPalette": [{
 					"command": "liveshare.inviteMember",
 					"when": "false"
 				},
@@ -216,6 +235,10 @@
 				},
 				{
 					"command": "liveshare.joinCommunitySession",
+					"when": "false"
+				},
+				{
+					"command": "liveshare.clearMessages",
 					"when": "false"
 				}
 			]
@@ -252,6 +275,7 @@
 		"elm": "^0.19.0-no-deps",
 		"ramda": "^0.26.1",
 		"redux": "^4.0.4",
+		"redux-saga": "^1.0.5",
 		"redux-thunk": "^2.3.0",
 		"vsls": "^0.3.1291",
 		"ws": "^7.1.1"

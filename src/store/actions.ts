@@ -1,10 +1,12 @@
-import * as redux from "redux";
-import * as vsls from "vsls";
-import * as api from "../api";
-import * as cm from "../contacts/contactManager";
-import { LocalStorage } from "../storage/LocalStorage";
-import { ICommunity, IMember, Status } from "./model";
-import { ChatApi } from "../chatApi";
+import { Access } from "vsls";
+import {
+  IActiveSession,
+  ICommunity,
+  IMember,
+  IMemberStatus,
+  ISession,
+  SessionType
+} from "./model";
 
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
@@ -13,187 +15,72 @@ export const ACTION_LEAVE_COMMUNITY_COMPLETED = "LEAVE_COMMUNITY_COMPLETED";
 export const ACTION_LOAD_COMMUNITIES = "LOAD_COMMUNITIES";
 export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
 export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
+export const ACTION_CREATE_SESSION = "CREATE_SESSION";
 export const ACTION_SESSION_CREATED = "SESSION_CREATED";
 export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
 export const ACTION_COMMUNITY_NODE_EXPANDED = "COMMUNITY_NODE_EXPANDED";
-export const ACTION_USER_AUTHENTICATION_CHANGED = "USER_AUTHENTICATION_CHANGED"
+export const ACTION_USER_AUTHENTICATION_CHANGED = "USER_AUTHENTICATION_CHANGED";
+export const ACTION_COMMUNITY_UPDATED = "COMMUNITY_UPDATED";
+export const ACTION_CLEAR_MESSAGES = "CLEAR_MESSAGES";
 
-function joinCommunity(name: string) {
-	return { 
-		type: ACTION_JOIN_COMMUNITY,
-		name
-	}
+function action(type: string, payload = {}) {
+  return { type, ...payload };
 }
 
-function joinCommunityCompleted(name: string, members: any, sessions: any) {
-	return { 
-		type: ACTION_JOIN_COMMUNITY_COMPLETED,
-		name,
-		members,
-		sessions
-	}
-}
+export const loadCommunities = () => action(ACTION_LOAD_COMMUNITIES);
 
-export function joinCommunityAsync(name: string, storage: LocalStorage, userInfo: vsls.UserInfo, vslsApi: vsls.LiveShare, store: redux.Store, chatApi: ChatApi) {
-	return async (dispatch: redux.Dispatch) => {
-		const sanitisedName = name.toLowerCase()
-		const { communities } = store.getState();
-		const isMember = communities.find((c: ICommunity) => c.name === sanitisedName)
+export const loadCommunitiesCompleted = (communities: ICommunity[]) =>
+  action(ACTION_LOAD_COMMUNITIES_COMPLETED, { communities });
 
-		if (!isMember) {
-			storage.joinCommunity(sanitisedName);
-			dispatch(joinCommunity(sanitisedName));
+export const joinCommunity = (name: string) =>
+  action(ACTION_JOIN_COMMUNITY, { name: name.toLowerCase() });
 
-			const { members, sessions } = await api.joinCommunity(sanitisedName, userInfo.displayName, userInfo.emailAddress!);
-			dispatch(joinCommunityCompleted(sanitisedName, members, sessions));
+export const joinCommunityCompleted = (
+  name: string,
+  members: any,
+  sessions: any
+) => action(ACTION_JOIN_COMMUNITY_COMPLETED, { name, members, sessions });
 
-			chatApi.onCommunityJoined(sanitisedName);
-			cm.rebuildContacts(vslsApi, store);
-		}
-	}
-}
+export const leaveCommunity = (name: string) =>
+  action(ACTION_LEAVE_COMMUNITY, { name });
 
-export function updateCommunityAsync(name: string, members: IMember[], sessions: any, vslsApi: vsls.LiveShare, store: redux.Store) {
-	return async (dispatch: redux.Dispatch) => {
-		dispatch(joinCommunityCompleted(name, members, sessions));
+export const leaveCommunityCompleted = (name: string) =>
+  action(ACTION_LEAVE_COMMUNITY_COMPLETED, { name });
 
-		cm.rebuildContacts(vslsApi, store);
-	}
-}
+export const statusesUpdated = (statuses: IMemberStatus[]) =>
+  action(ACTION_STATUSES_UPDATED, { statuses });
 
-function leaveCommunity(name: string) {
-	return {
-		type: ACTION_LEAVE_COMMUNITY,
-		name
-	}
-}
+export const createSession = (
+  community: string,
+  type: SessionType,
+  description: string,
+  access: Access
+) =>
+  action(ACTION_CREATE_SESSION, {
+    description,
+    sessionType: type,
+    community,
+    access
+  });
 
-function leaveCommunityCompleted(name: string) {
-	return { 
-		type: ACTION_LEAVE_COMMUNITY_COMPLETED,
-		name
-	}
-}
+export const sessionCreated = (activeSession: IActiveSession) =>
+  action(ACTION_SESSION_CREATED, { activeSession });
 
-export function leaveCommunityAsync(name: string, storage: LocalStorage, vslsApi: vsls.LiveShare, store: redux.Store) {
-	return async (dispatch: redux.Dispatch) => {
-		storage.leaveCommunity(name);
-		dispatch(leaveCommunity(name));
-		
-		await api.leaveCommunity(name, vslsApi.session.user!.displayName, vslsApi.session.user!.emailAddress!);
-		dispatch(leaveCommunityCompleted(name));
+export const activeSessionEnded = () => action(ACTION_ACTIVE_SESSION_ENDED);
 
-		cm.rebuildContacts(vslsApi, store);
-	}
-}
+export const communityNodeExpanded = (
+  community: ICommunity,
+  nodeType: string
+) => action(ACTION_COMMUNITY_NODE_EXPANDED, { community, nodeType });
 
-export function loadCommunities() {
-	return { 
-		type: ACTION_LOAD_COMMUNITIES
-	}
-}
+export const userAuthenticationChanged = (isSignedIn: boolean) =>
+  action(ACTION_USER_AUTHENTICATION_CHANGED, { isSignedIn });
 
-export function loadCommunitiesCompleted(communities: ICommunity[]) {
-	return {
-		type: ACTION_LOAD_COMMUNITIES_COMPLETED,
-		communities
-	}
-}
+export const updateCommunity = (
+  name: string,
+  members: IMember[],
+  sessions: ISession[]
+) => action(ACTION_COMMUNITY_UPDATED, { name, members, sessions });
 
-export function loadCommunitiesAsync(storage: LocalStorage, vslsApi: vsls.LiveShare, store: redux.Store) {
-	return async (dispatch: redux.Dispatch) => {
-		const communityNames: string[]= storage.getCommunities();
-		dispatch(loadCommunities());
-		
-		let response: ICommunity[] = [];
-		if (communityNames.length > 0) {
-			response = await api.loadCommunities(communityNames)
-		}
-
-		dispatch(loadCommunitiesCompleted(response));
-
-		cm.rebuildContacts(vslsApi, store);	
-	}
-}
-
-export interface IMemberStatus {
-	email: string;
-	status: Status;
-}
-
-export enum SessionType {
-	Broadcast,
-	CodeReview,
-	HelpRequest
-}
-
-export function statusesUpdated(statuses: IMemberStatus[]) {
-	return {
-		type: ACTION_STATUSES_UPDATED,
-		statuses
-	}
-}
-
-export function createSession(community: string, id: string, type: SessionType, description: string, host: string) {
-	return {
-		type: ACTION_SESSION_CREATED,
-		id,
-		host,
-		description,
-		sessionType: type,
-		community
-	}
-}
-
-export function createSessionAsync(community: string, type: SessionType, description: string, vslsApi: vsls.LiveShare, access: vsls.Access) {
-	return async (dispatch: redux.Dispatch) => {
-		const sessionUrl = await vslsApi.share({ access });
-		const userInfo = vslsApi.session.user;
-		const sessionId = vslsApi.session.id;
-		
-		if (sessionUrl && userInfo && sessionId) {
-			dispatch(createSession(community, sessionId, type, description, userInfo.emailAddress!));
-			
-			const session = {
-				id: vslsApi.session.id,
-				host: userInfo.emailAddress,
-				startTime: (new Date()).toISOString(),
-				description,
-				type,
-				url: sessionUrl.toString()			
-			};
-			await api.createSession(community, session);
-		}
-	}
-}
-
-export function endActiveSession() {
-	return {
-		type: ACTION_ACTIVE_SESSION_ENDED
-	}
-}
-
-export function endActiveSessionAsync(vslsApi: vsls.LiveShare, store: redux.Store) {
-	return async (dispatch: redux.Dispatch) => {
-		const { activeSession } = store.getState()
-		dispatch(endActiveSession());
-
-		const { community, id } = activeSession;
-		await api.deleteSession(community, id)
-	}
-}
-
-export function communityNodeExpanded(community: ICommunity, nodeType: string) {
-	return {
-		type: ACTION_COMMUNITY_NODE_EXPANDED,
-		community,
-		nodeType
-	};
-}
-
-export function userAuthenticationChanged(isSignedIn: boolean) {
-	return {
-		type: ACTION_USER_AUTHENTICATION_CHANGED,
-		isSignedIn
-	}
-}
+export const clearMessages = (community: string) =>
+  action(ACTION_CLEAR_MESSAGES, { community });

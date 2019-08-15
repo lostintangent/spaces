@@ -3,12 +3,12 @@ import { commands, window } from "vscode";
 import { LiveShare } from "vsls";
 import { ChatApi } from "./chatApi";
 import { LocalStorage } from "./storage/LocalStorage";
-import { joinCommunityAsync } from "./store/actions";
+import { joinCommunity } from "./store/actions";
 
 const JOIN_PATH = "/join";
 
 // vscode-insiders://lostintangent.vsls-communities/join?<community>
-export function registerUriHandler(api: LiveShare, store: redux.Store, storage: LocalStorage, chatApi: ChatApi) {
+export function registerUriHandler(api: LiveShare, store: redux.Store) {
     window.registerUriHandler({
         handleUri: (uri) => {
             if (uri.path === JOIN_PATH && uri.query) {
@@ -16,7 +16,7 @@ export function registerUriHandler(api: LiveShare, store: redux.Store, storage: 
                 const userInfo = api.session.user; 
 
                 if (userInfo && userInfo.emailAddress) {
-                    store.dispatch(<any>joinCommunityAsync(community, storage, userInfo, api, store, chatApi));
+                    store.dispatch(<any>joinCommunity(community));
                 }
 
                 commands.executeCommand("workbench.view.extension.liveshare");

@@ -1,66 +1,92 @@
-import * as vsls from "vsls";
 import * as redux from "redux";
-import ws from "./ws";
+import * as vsls from "vsls";
 import * as api from "./api";
-import { IStore, IMember } from "./store/model";
+import { IMember, IStore } from "./store/model";
+import ws from "./ws";
 
 // This is the interface for the integration with the Team Chat extension
 export class ChatApi {
-    callback: any;
-    communityCallback: any;
+  messageCallback: any;
+  infoMessageCallback: any;
+  communityCallback: any;
+  clearMessagesCallback: any;
 
-    constructor(private vslsApi: vsls.LiveShare, private store: redux.Store) {}
+  constructor(private vslsApi: vsls.LiveShare, private store: redux.Store) {}
 
-    getCommunities(): string[] {
-        const state: IStore = this.store.getState();
-        return state.communities.map(c => c.name);
+  getCommunities(): string[] {
+    const state: IStore = this.store.getState();
+    return state.communities.map(c => c.name);
+  }
+
+  getUserInfo() {
+    const userInfo = this.vslsApi.session.user;
+
+    if (userInfo) {
+      return {
+        name: userInfo.displayName,
+        email: userInfo.emailAddress
+      };
     }
+  }
 
-    getUserInfo() {
-        const userInfo = this.vslsApi.session.user
+  getUsers() {
+    const state: IStore = this.store.getState();
+    let allMembers: IMember[] = [];
+    state.communities.forEach(c => {
+      allMembers = [...allMembers, ...c.members];
+    });
+    return allMembers;
+  }
 
-        if (userInfo) {
-            return {
-                name: userInfo.displayName,
-                email: userInfo.emailAddress
-            }
-        }
+  async getChannelHistory(communityName: string) {
+    return await api.getMessages(communityName);
+  }
+
+  sendMessage(communityName: string, content: string) {
+    ws.sendMessage(communityName, content);
+  }
+
+  setMessageCallback(callback: any) {
+    this.messageCallback = callback;
+  }
+
+  setInfoMessageCallback(callback: any) {
+    this.infoMessageCallback = callback;
+  }
+
+  setClearMessagesCallback(callback: Function) {
+    this.clearMessagesCallback = callback;
+  }
+
+  setCommunityCallback(callback: any) {
+    this.communityCallback = callback;
+  }
+
+  onMessageReceived(name: string, messages: any) {
+    if (this.messageCallback) {
+      this.messageCallback({ name, messages });
     }
+  }
 
-    getUsers() {
-        const state: IStore = this.store.getState();
-        let allMembers: IMember[] = [];
-        state.communities.forEach(c => {
-            allMembers = [...allMembers, ...c.members]
-        })
-        return allMembers;
+  onInfoMessage(communityName: string, messageText: string, userEmail: string) {
+    if (this.infoMessageCallback) {
+      this.infoMessageCallback({
+        name: communityName,
+        text: messageText,
+        user: userEmail
+      });
     }
+  }
 
-    async getChannelHistory(communityName: string) {
-        return await api.getMessages(communityName);
+  onCommunityJoined(name: string) {
+    if (this.communityCallback) {
+      this.communityCallback(name);
     }
+  }
 
-    sendMessage(communityName: string, content: string) {
-        ws.sendMessage(communityName, content);
+  onMessagesCleared(communityName: string) {
+    if (this.clearMessagesCallback) {
+      this.clearMessagesCallback(communityName);
     }
-
-    setMessageCallback(callback: any) {
-        this.callback = callback;
-    }
-
-    setCommunityCallback(callback: any) {
-        this.communityCallback = callback;
-    }
-
-    onMessageReceived(name: string, messages: any) {
-        if (this.callback) {
-            this.callback({ name, messages })
-        }
-    }
-
-    onCommunityJoined(name: string) {
-        if (this.communityCallback) {
-            this.communityCallback(name);
-        }
-    }
+  }
 }

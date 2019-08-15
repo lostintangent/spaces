@@ -59,6 +59,7 @@ defmodule LiveShareCommunities.Store do
     |> Map.update("sessions", [], & &1)
     |> Map.update("messages", [], & &1)
     |> update_with_titles()
+    |> update_with_thanks_count()
   end
 
   def update_with_titles(community) do
@@ -81,6 +82,23 @@ defmodule LiveShareCommunities.Store do
       )
 
     Map.merge(community, %{"members" => with_titles})
+  end
+
+  def update_with_thanks_count(community) do
+    thanks = community |> Map.get("thanks", [])
+
+    with_count =
+      community
+      |> Map.get("members")
+      |> Enum.map(
+        &Map.merge(&1, %{
+          "thanks" => thanks |> Enum.filter(fn y -> y["to"] == &1["email"] end) |> length
+        })
+      )
+
+    community
+    |> Map.merge(%{"members" => with_count})
+    |> Map.delete("thanks")
   end
 
   def top_communities() do
@@ -219,6 +237,24 @@ defmodule LiveShareCommunities.Store do
 
   def clear_messages(name) do
     update(name, fn x -> Map.merge(x, %{"messages" => []}) end)
+  end
+
+  defp say_thanks_helper(community, values) do
+    thanks =
+      Map.get(community, "thanks", [])
+      |> Enum.concat(values)
+
+    Map.merge(community, %{"thanks" => thanks})
+  end
+
+  def say_thanks(name, from, to) do
+    update(
+      name,
+      &say_thanks_helper(
+        &1,
+        Enum.map(to, fn x -> %{"to" => x, "from" => from, "timestamp" => now()} end)
+      )
+    )
   end
 
   defp now() do

@@ -21,6 +21,7 @@ export interface IMember {
   name: string;
   email: string;
   status: Status;
+  thanks: number;
   title: string | undefined;
 }
 

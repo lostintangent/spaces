@@ -182,6 +182,10 @@ export class MemberNode extends TreeNode {
       titles.push("You");
     }
 
+    if (member.thanks > 0) {
+      titles = [...titles]
+    }
+    
     this.description = titles.join(", ");
 
     if (!isCurrentUser) {

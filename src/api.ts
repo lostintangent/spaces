@@ -2,8 +2,8 @@ import axios from "axios";
 import { auth } from "./auth/auth";
 import { ICommunity } from "./store/model";
 
-// const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0";
-const BASE_URL = "http://localhost:4000/v0";
+const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0";
+// const BASE_URL = "http://localhost:4000/v0";
 
 const getAuthHeader = async () => {
     const tokens = await auth.API.getTokensOrAskToSignIn();

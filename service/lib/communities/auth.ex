@@ -14,6 +14,18 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
+  
+  defmemo findCascadePublicKey?(arg) do
+    case arg do
+      {:ok, token} ->
+        response = HTTPotion.get "https://prod.liveshare.vsengsaas.visualstudio.com/api/authenticatemetadata"
+        jsonBody = Poison.decode!(response.body)
+        keys = jsonBody["jwtPublicKeys"]
+        certKey = Enum.at(keys, 0)
+        {:ok, certKey, token}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   def findPublicKeyInKeys?(arg) do
     case arg do
@@ -47,7 +59,19 @@ defmodule LiveShareCommunities.Authentication do
         if claims.fields["iss"] == "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
           {:ok, claims}
         else
-          {:error, "Invalid issuer."}
+          {:error, "Invalid AAD issuer."}
+        end
+      {:error, reason}  -> {:error, reason}
+    end
+  end
+  
+  def validCascadeIssuer?(arg) do
+    case arg do
+      {:ok, claims} ->
+        if claims.fields["iss"] == "https://insiders.liveshare.vsengsaas.visualstudio.com/" do
+          {:ok, claims}
+        else
+          {:error, "Invalid Cascade issuer."}
         end
       {:error, reason}  -> {:error, reason}
     end
@@ -59,7 +83,19 @@ defmodule LiveShareCommunities.Authentication do
         if claims.fields["aud"] == "9db1d849-f699-4cfb-8160-64bed3335c72" do
           {:ok, claims}
         else
-          {:error, "Invalid audience."}
+          {:error, "Invalid AAD audience."}
+        end
+      {:error, reason} -> {:error, reason}
+    end
+  end
+  
+  def validCascadeAudience?(arg) do
+    case arg do
+      {:ok, claims} ->
+        if claims.fields["aud"] == "https://insiders.liveshare.vsengsaas.visualstudio.com/" do
+          {:ok, claims}
+        else
+          {:error, "Invalid Cascade audience."}
         end
       {:error, reason} -> {:error, reason}
     end
@@ -77,7 +113,22 @@ defmodule LiveShareCommunities.Authentication do
         end
 
         if DateTime.utc_now() > expDate do
-          {:error, "Token is expired."}
+          {:error, "AAD token is expired."}
+        else
+          {:ok, claims}
+        end
+      {:error, reason} -> {:error, reason}
+    end
+  end
+  
+  def validCascadeExpiration?(arg) do
+    case arg do
+      {:ok, claims} ->
+        expDate = claims.fields["exp"] * 1000
+        now = :os.system_time() / 1000 / 1000
+        
+        if now > expDate do
+          {:error, "Cascade token is expired."}
         else
           {:ok, claims}
         end
@@ -134,6 +185,26 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
+  
+  def verifyCascadeToken?(arg) do
+    case arg do
+      {:ok, jwk, token} ->
+        case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
+          {ok, claims, _} ->
+            if ok == false do
+              {:error, "Token is not valid"}
+            else
+              {:ok, claims}
+                |> validCascadeIssuer?
+                |> validCascadeAudience?
+                |> validCascadeExpiration?
+            end
+          {:error, error} ->
+            {:error, error}
+        end
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   def isValidAADToken?(arg) do
     arg
@@ -141,6 +212,13 @@ defmodule LiveShareCommunities.Authentication do
       |> findPublicKey?
       |> createCert?
       |> verifyToken?
+  end
+  
+  def isValidCascadeToken?(arg) do
+    arg
+      |> findCascadePublicKey?
+      |> createCert?
+      |> verifyCascadeToken?
   end
 
   def isAuthHeaderPresent?(arg) do
@@ -165,11 +243,30 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
+  
+  def isValidToken?(arg) do
+    case arg do
+      {:ok, token} ->
+        try do
+          payload = JOSE.JWT.peek_payload(token)
+          iss = payload.fields["iss"]
+          if iss == "https://insiders.liveshare.vsengsaas.visualstudio.com/" do
+            {:ok, token} |> isValidCascadeToken?
+          else
+            {:ok, token} |> isValidAADToken?
+          end
+        rescue
+          e in ArgumentError ->
+            {:error, "Failed to parse kid."}
+        end
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   def authenticated?(conn) do
     {:ok, conn}
       |> isAuthHeaderPresent?
-      |> isValidAADToken?
+      |> isValidToken?
   end
 
   def call(conn, _opts) do

@@ -4,7 +4,7 @@ defmodule LiveShareCommunities.Authentication do
 
   def init(opts), do: opts
 
-  defmemo getKeys?(arg) do
+  defmemo get_aad_keys?(arg) do
     case arg do
       {:ok, kid, token} ->
         response = HTTPotion.get "https://login.microsoftonline.com/common/discovery/v2.0/keys"
@@ -15,7 +15,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  defmemo findCascadePublicKey?(arg) do
+  defmemo find_cascade_public_key?(arg) do
     case arg do
       {:ok, token} ->
         response = HTTPotion.get "https://prod.liveshare.vsengsaas.visualstudio.com/api/authenticatemetadata"
@@ -27,7 +27,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def findPublicKeyInKeys?(arg) do
+  def find_aad_public_key_in_keys?(arg) do
     case arg do
       {:ok, kid, token, keys} ->
         certItem = Enum.find(keys, fn key ->
@@ -43,17 +43,17 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def findPublicKey?(arg) do
+  def find_aad_public_key?(arg) do
     case arg do
       {:ok, kid, token} ->
         {:ok, kid, token}
-          |> getKeys?
-          |> findPublicKeyInKeys?
+          |> get_aad_keys?
+          |> find_aad_public_key_in_keys?
       {:error, reason} -> {:error, reason}
     end
   end
 
-  def validIssuer?(arg) do
+  def valid_issuer?(arg) do
     case arg do
       {:ok, claims} ->
         if claims.fields["iss"] == "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
@@ -65,7 +65,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  def validCascadeIssuer?(arg) do
+  def valid_cascade_issuer?(arg) do
     case arg do
       {:ok, claims} ->
         if claims.fields["iss"] == "https://insiders.liveshare.vsengsaas.visualstudio.com/" do
@@ -77,7 +77,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def validAudience?(arg) do
+  def valid_audience?(arg) do
     case arg do
       {:ok, claims} ->
         if claims.fields["aud"] == "9db1d849-f699-4cfb-8160-64bed3335c72" do
@@ -101,7 +101,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def validExpiration?(arg) do
+  def valid_expiration?(arg) do
     case arg do
       {:ok, claims} ->
         exp = claims.fields["exp"]
@@ -121,7 +121,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  def validCascadeExpiration?(arg) do
+  def valid_cascade_expiration?(arg) do
     case arg do
       {:ok, claims} ->
         expDate = claims.fields["exp"] * 1000
@@ -136,7 +136,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def getKid?(arg) do
+  def get_aad_kid?(arg) do
     case arg do
       {:ok, token} ->
         try do
@@ -151,7 +151,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def createCert?(arg) do
+  def create_cert?(arg) do
     case arg do
       {:ok, certKey, token} ->
         cert = "-----BEGIN CERTIFICATE-----\n#{certKey}\n-----END CERTIFICATE-----"
@@ -166,7 +166,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def verifyToken?(arg) do
+  def verify_token?(arg) do
     case arg do
       {:ok, jwk, token} ->
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
@@ -175,9 +175,9 @@ defmodule LiveShareCommunities.Authentication do
               {:error, "Token is not valid"}
             else
               {:ok, claims}
-                |> validIssuer?
-                |> validAudience?
-                |> validExpiration?
+                |> valid_issuer?
+                |> valid_audience?
+                |> valid_expiration?
             end
           {:error, error} ->
             {:error, error}
@@ -186,7 +186,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  def verifyCascadeToken?(arg) do
+  def verify_cascade_token?(arg) do
     case arg do
       {:ok, jwk, token} ->
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
@@ -195,9 +195,9 @@ defmodule LiveShareCommunities.Authentication do
               {:error, "Token is not valid"}
             else
               {:ok, claims}
-                |> validCascadeIssuer?
+                |> valid_cascade_issuer?
                 |> validCascadeAudience?
-                |> validCascadeExpiration?
+                |> valid_cascade_expiration?
             end
           {:error, error} ->
             {:error, error}
@@ -206,22 +206,22 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def isValidAADToken?(arg) do
+  def is_valid_aad_token?(arg) do
     arg
-      |> getKid?
-      |> findPublicKey?
-      |> createCert?
-      |> verifyToken?
+      |> get_aad_kid?
+      |> find_aad_public_key?
+      |> create_cert?
+      |> verify_token?
   end
   
-  def isValidCascadeToken?(arg) do
+  def is_valid_cascade_token?(arg) do
     arg
-      |> findCascadePublicKey?
-      |> createCert?
-      |> verifyCascadeToken?
+      |> find_cascade_public_key?
+      |> create_cert?
+      |> verify_cascade_token?
   end
 
-  def isAuthHeaderPresent?(arg) do
+  def is_auth_header_present?(arg) do
     case arg do
       {:ok, conn} ->
         auth_header_list = conn |> get_req_header("authorization")
@@ -244,20 +244,22 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  def isValidToken?(arg) do
+  def is_valid_token?(arg) do
     case arg do
       {:ok, token} ->
         try do
           payload = JOSE.JWT.peek_payload(token)
           iss = payload.fields["iss"]
           if iss == "https://insiders.liveshare.vsengsaas.visualstudio.com/" do
-            {:ok, token} |> isValidCascadeToken?
+            {:ok, token} |> is_valid_cascade_token?
           else
-            {:ok, token} |> isValidAADToken?
+            {:ok, token} |> is_valid_aad_token?
           end
         rescue
+          e in Poison.ParseError ->
+            {:error, "Failed to parse payload."}
           e in ArgumentError ->
-            {:error, "Failed to parse kid."}
+            {:error, "Failed to parse payload."}
         end
       {:error, reason} -> {:error, reason}
     end
@@ -265,8 +267,8 @@ defmodule LiveShareCommunities.Authentication do
 
   def authenticated?(conn) do
     {:ok, conn}
-      |> isAuthHeaderPresent?
-      |> isValidToken?
+      |> is_auth_header_present?
+      |> is_valid_token?
   end
 
   def call(conn, _opts) do

@@ -80,7 +80,7 @@ export function* updateCommunitySaga(
   yield call(rebuildContacts, vslsApi);
 }
 
-export function* clearMessages(chatApi: ChatApi, { community }: any) {
-  yield call(api.clearMessages, community);
-  yield call(chatApi.onMessagesCleared.bind(chatApi), community);
+export function* clearMessagesSaga(chatApi: ChatApi, { payload }: any) {
+  yield call(api.clearMessages, payload);
+  yield call(chatApi.onMessagesCleared.bind(chatApi), payload);
 }

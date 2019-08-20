@@ -12,17 +12,17 @@ import { ISessionStateChannel } from "../channels/sessionState";
 import { ChatApi } from "../chatApi";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
-  ACTION_CLEAR_MESSAGES,
   ACTION_COMMUNITY_UPDATED,
   ACTION_CREATE_SESSION,
   ACTION_JOIN_COMMUNITY,
   ACTION_LEAVE_COMMUNITY,
   ACTION_LOAD_COMMUNITIES,
+  clearMessages,
   loadCommunities,
   userAuthenticationChanged
 } from "../store/actions";
 import {
-  clearMessages,
+  clearMessagesSaga,
   joinCommunity,
   leaveCommunity,
   loadCommunitiesSaga,
@@ -50,7 +50,7 @@ function* childSagas(
       ACTION_COMMUNITY_UPDATED,
       updateCommunitySaga.bind(null, vslsApi)
     ),
-    takeEvery(ACTION_CLEAR_MESSAGES, clearMessages.bind(null, chatApi)),
+    takeEvery(clearMessages, clearMessagesSaga.bind(null, chatApi)),
 
     takeEvery(ACTION_CREATE_SESSION, createSession.bind(null, vslsApi)),
     takeEvery(sessionStateChannel, endActiveSession),

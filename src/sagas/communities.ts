@@ -6,12 +6,7 @@ import { createWebSocketChannel } from "../channels/webSocket";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { LocalStorage } from "../storage/LocalStorage";
-import {
-  joinCommunityCompleted,
-  leaveCommunityCompleted,
-  loadCommunitiesCompleted,
-  updateCommunity
-} from "../store/actions";
+import { joinCommunityCompleted, leaveCommunityCompleted, loadCommunitiesCompleted, updateCommunity } from "../store/actions";
 import { ICommunity, IMember, ISession } from "../store/model";
 import { sessionTypeDisplayName } from "../utils";
 
@@ -84,16 +79,22 @@ export function* updateCommunitySaga(
   );
 
   yield put(joinCommunityCompleted(name, members, sessions));
+  const mutedCommunities = config.mutedCommunities;
 
-  if (!config.displaySessionNotifications) {
+  if (mutedCommunities.includes("*") || mutedCommunities.includes(name)) {
     return;
   }
 
   const filteredSessions = sessions.filter(
     (s: ISession) => !currentSessions.find((ss: ISession) => ss.id === s.id)
   ) as ISession[];
+  const selfEmail = vslsApi.session.user ? vslsApi.session.user.emailAddress : undefined;
 
   for (let s of filteredSessions) {
+    if (s.host === selfEmail) {
+      continue;
+    }
+
     const { name: host } = members.find((m: IMember) => m.email === s.host);
     const message = `${host} started a ${sessionTypeDisplayName(
       s.type
@@ -104,13 +105,16 @@ export function* updateCommunitySaga(
       window.showInformationMessage,
       message,
       "Join",
-      "Don't show again"
+      `Mute ${name}`,
+      "Mute All"
     );
 
     if (response === "Join") {
       vslsApi.join(Uri.parse(s.url));
-    } else if (response === "Don't show again") {
-      config.displaySessionNotifications = false;
+    } else if (response === "Mute All") {
+      config.mutedCommunities = ["*"]
+    } else {
+      config.mutedCommunities = [...mutedCommunities, name]
     }
   }
 }

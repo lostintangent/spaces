@@ -4,7 +4,7 @@ const liveShareConfig = workspace.getConfiguration("liveshare");
 
 const FEATURE_SET_SETTING = "featureSet";
 const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
-const DISPLAY_SESSION_NOTIFICATIONS = "displaySessionNotifications";
+const MUTED_COMMUNITIES = "mutedCommunities";
 const INSIDERS = "insiders";
 
 export const config = {
@@ -37,13 +37,13 @@ export const config = {
     return this.getConfig().get(SUGGESTED_CONTACTS_SETTING);
   },
 
-  get displaySessionNotifications() {
-    return this.getConfig().get<boolean>(DISPLAY_SESSION_NOTIFICATIONS)!;
+  get mutedCommunities() {
+    return this.getConfig().get<string[]>(MUTED_COMMUNITIES)!;
   },
 
-  set displaySessionNotifications(value: boolean) {
+  set mutedCommunities(value: string[]) {
     this.getConfig().update(
-      DISPLAY_SESSION_NOTIFICATIONS,
+      MUTED_COMMUNITIES,
       value,
       ConfigurationTarget.Global
     );

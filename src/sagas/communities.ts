@@ -96,11 +96,10 @@ export function* updateCommunitySaga(
   { name, members, sessions }: any
 ) {
   const communities = yield select(s => s.communities);
-  const { sessions: currentSessions } = communities.find(
+  const { sessions: currentSessions, isMuted } = communities.find(
     (c: any) => c.name === name
   );
 
-  const isMuted = isCommunityMuted(name);
   yield put(joinCommunityCompleted(name, members, sessions, isMuted));
 
   if (isCommunityMuted(name)) {
@@ -108,7 +107,8 @@ export function* updateCommunitySaga(
   }
 
   const filteredSessions = sessions.filter(
-    (s: ISession) => !currentSessions.find((ss: ISession) => ss.id === s.id)
+    (s: ISession) =>
+      currentSessions && !currentSessions.find((ss: ISession) => ss.id === s.id)
   ) as ISession[];
   const selfEmail = vslsApi.session.user
     ? vslsApi.session.user.emailAddress
@@ -124,12 +124,13 @@ export function* updateCommunitySaga(
       s.type
     )} in ${name}: ${s.description}`;
 
+    const muteCommunityLabel = `Mute ${name}`;
     const response = yield call(
       // @ts-ignore
       window.showInformationMessage,
       message,
       "Join",
-      `Mute ${name}`,
+      muteCommunityLabel,
       "Mute All"
     );
 
@@ -137,7 +138,7 @@ export function* updateCommunitySaga(
       vslsApi.join(Uri.parse(s.url));
     } else if (response === "Mute All") {
       yield put(muteAllCommunities());
-    } else {
+    } else if (response === muteCommunityLabel) {
       yield put(muteCommunity(name));
     }
   }

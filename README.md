@@ -6,18 +6,11 @@ Live Share Communities enables you to join one or more communities, and begin di
 
 Once you join a community, you can chat with other members, invite them into collaboration sessions, ask for help and even live stream anything cool that you're working on. All of this is built-in top of [Live Share](https://aka.ms/vsls), which provides a full-fidelity developer collaboration platform (e.g. co-editing, debugging, localhost server, etc.).
 
-## Prerequisites 
-
-1.  <a href="https://code.visualstudio.com/Download" target="_blank">VS Code</a> 
-
-1.  <a href="https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare-pack" target="_blank">VS Code Live Share extension pack</a> 
-
-
 ## Getting Started
 
 To begin joining communities, simply perform the following steps:
 
-1. <a href="https://aka.ms/vsls-communities" target="_blank">Install this extension</a>, then reload VS Code
+1. Install <a href="https://aka.ms/vsls-communities" target="_blank">this extension</a>, then reload VS Code
 
 1. Open the Live Share activity bar, and look for the `Communities` tree view. Click the `Sign in with Live Share...` link and complete the sign in flow, using a GitHub or Microsoft Account. 
 

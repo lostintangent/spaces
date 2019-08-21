@@ -135,6 +135,11 @@
           "default": false,
           "type": "boolean",
           "description": "Specifies whether to show community contacts in the Live Share Suggested Contacts tree."
+        },
+        "liveshare.communities.displaySessionNotifications": {
+          "default": true,
+          "type": "boolean",
+          "description": "Specifies whether to display a toast notification when a community member starts a new session (e.g. help request, broadcast)."
         }
       }
     },

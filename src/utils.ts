@@ -1,7 +1,7 @@
 import * as R from "ramda";
 import { LiveShare } from "vsls";
 import { LIVE_SHARE_SESSION_URL } from "./constants";
-import { ICommunity, IMember, Status } from "./store/model";
+import { ICommunity, IMember, SessionType, Status } from "./store/model";
 
 const sortedMembers = R.pipe(
   R.chain<ICommunity, IMember>(R.prop("members")),
@@ -43,6 +43,18 @@ export function toStatus(status?: string): Status {
     case "offline":
     default:
       return Status.offline;
+  }
+}
+
+export function sessionTypeDisplayName(sessionType: SessionType) {
+  switch (sessionType) {
+    case SessionType.Broadcast:
+      return "broadcast";
+    case SessionType.CodeReview:
+      return "code review";
+    case SessionType.HelpRequest:
+    default:
+      return "help request";
   }
 }
 

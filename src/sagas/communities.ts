@@ -1,8 +1,10 @@
-import { call, put, take } from "redux-saga/effects";
+import { call, put, select, take } from "redux-saga/effects";
+import { Uri, window } from "vscode";
 import { LiveShare } from "vsls";
 import * as api from "../api";
 import { createWebSocketChannel } from "../channels/webSocket";
 import { ChatApi } from "../chatApi";
+import { config } from "../config";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   joinCommunityCompleted,
@@ -10,8 +12,8 @@ import {
   loadCommunitiesCompleted,
   updateCommunity
 } from "../store/actions";
-import { ICommunity } from "../store/model";
-import { rebuildContacts } from "./contacts";
+import { ICommunity, IMember, ISession } from "../store/model";
+import { sessionTypeDisplayName } from "../utils";
 
 export function* loadCommunitiesSaga(
   storage: LocalStorage,
@@ -76,8 +78,41 @@ export function* updateCommunitySaga(
   vslsApi: LiveShare,
   { name, members, sessions }: any
 ) {
+  const communities = yield select(s => s.communities);
+  const { sessions: currentSessions } = communities.find(
+    (c: any) => c.name === name
+  );
+
   yield put(joinCommunityCompleted(name, members, sessions));
-  yield call(rebuildContacts, vslsApi);
+
+  if (!config.displaySessionNotifications) {
+    return;
+  }
+
+  const filteredSessions = sessions.filter(
+    (s: ISession) => !currentSessions.find((ss: ISession) => ss.id === s.id)
+  ) as ISession[];
+
+  for (let s of filteredSessions) {
+    const { name: host } = members.find((m: IMember) => m.email === s.host);
+    const message = `${host} started a ${sessionTypeDisplayName(
+      s.type
+    )} in ${name}: ${s.description}`;
+
+    const response = yield call(
+      // @ts-ignore
+      window.showInformationMessage,
+      message,
+      "Join",
+      "Don't show again"
+    );
+
+    if (response === "Join") {
+      vslsApi.join(Uri.parse(s.url));
+    } else if (response === "Don't show again") {
+      config.displaySessionNotifications = false;
+    }
+  }
 }
 
 export function* clearMessages(chatApi: ChatApi, { community }: any) {

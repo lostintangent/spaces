@@ -284,6 +284,7 @@
     "ramda": "^0.26.1",
     "redux": "^4.0.4",
     "redux-saga": "^1.0.5",
+    "redux-starter-kit": "^0.6.3",
     "redux-thunk": "^2.3.0",
     "vsls": "^0.3.1291",
     "ws": "^7.1.1"

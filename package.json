@@ -4,7 +4,7 @@
   "publisher": "lostintangent",
   "description": "Discover, share, and receive real-time assistance from developers across your favorite communities",
   "icon": "images/icon.png",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "engines": {
     "vscode": "^1.36.0"
   },

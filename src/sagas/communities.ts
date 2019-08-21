@@ -93,29 +93,29 @@ export function* leaveCommunity(
 
 export function* updateCommunitySaga(
   vslsApi: LiveShare,
-  { name, members, sessions }: any
+  { name, members, sessions: newSessions }: any
 ) {
   const communities = yield select(s => s.communities);
   const { sessions: currentSessions, isMuted } = communities.find(
     (c: any) => c.name === name
   );
 
-  yield put(joinCommunityCompleted(name, members, sessions, isMuted));
+  yield put(joinCommunityCompleted(name, members, newSessions, isMuted));
 
   if (isCommunityMuted(name)) {
     return;
   }
 
-  const filteredSessions = sessions.filter(
-    (s: ISession) =>
-      currentSessions && !currentSessions.find((ss: ISession) => ss.id === s.id)
+  const filteredSessions = newSessions.filter(
+    (newSession: ISession) =>
+      currentSessions &&
+      !currentSessions.find(
+        (currentSession: ISession) => newSession.id === currentSession.id
+      )
   ) as ISession[];
-  const selfEmail = vslsApi.session.user
-    ? vslsApi.session.user.emailAddress
-    : undefined;
 
   for (let s of filteredSessions) {
-    if (s.host === selfEmail) {
+    if (s.host === vslsApi.session.user!.emailAddress!) {
       continue;
     }
 

@@ -175,9 +175,9 @@ export function registerCommunityCommands(
       env.clipboard.writeText(url);
 
       const response = await window.showInformationMessage(
-        `Join URL for the ${
+        `The join URL for the "${
           node.name
-        } community has been copied to your clipboard!`,
+        }" community has been copied to your clipboard!`,
         "Copy again"
       );
 

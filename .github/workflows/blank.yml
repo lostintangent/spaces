@@ -15,6 +15,11 @@ jobs:
       run: |
         echo Add other actions to build,
         echo test, and deploy your project.
+    - uses: azure/actions/login@master
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}   
+    - run: |
+        az webapp list --query "[?state=='Running']"
     - name: Run deploy script
       run: |
         cd service

@@ -55,7 +55,8 @@ export const reducer: redux.Reducer = (
             codeReviews: [],
             isLoading: true,
             isLeaving: false,
-            isExpanded: false
+            isExpanded: false,
+            isMuted: true
           }
         ])
       };

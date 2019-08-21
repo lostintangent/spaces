@@ -93,13 +93,14 @@ export function* leaveCommunity(
 
 export function* updateCommunitySaga(
   vslsApi: LiveShare,
-  { name, members, sessions, isMuted }: any
+  { name, members, sessions }: any
 ) {
   const communities = yield select(s => s.communities);
   const { sessions: currentSessions } = communities.find(
     (c: any) => c.name === name
   );
 
+  const isMuted = isCommunityMuted(name);
   yield put(joinCommunityCompleted(name, members, sessions, isMuted));
 
   if (isCommunityMuted(name)) {

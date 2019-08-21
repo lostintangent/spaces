@@ -96,11 +96,14 @@ export function* updateCommunitySaga(
   { name, members, sessions: newSessions }: any
 ) {
   const communities = yield select(s => s.communities);
-  const { helpRequests, broadcasts, codeReviews, isMuted } = communities.find(
-    (c: any) => c.name === name
-  );
+  const {
+    helpRequests,
+    broadcasts,
+    codeReviews,
+    isMuted
+  }: ICommunity = communities.find((c: any) => c.name === name);
 
-  yield put(joinCommunityCompleted(name, members, newSessions, isMuted));
+  yield put(joinCommunityCompleted(name, members, newSessions, isMuted!));
 
   if (isCommunityMuted(name)) {
     return;

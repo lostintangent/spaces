@@ -96,7 +96,7 @@ export function* updateCommunitySaga(
   { name, members, sessions: newSessions }: any
 ) {
   const communities = yield select(s => s.communities);
-  const { sessions: currentSessions, isMuted } = communities.find(
+  const { helpRequests, broadcasts, codeReviews, isMuted } = communities.find(
     (c: any) => c.name === name
   );
 
@@ -106,9 +106,9 @@ export function* updateCommunitySaga(
     return;
   }
 
+  const currentSessions = [...helpRequests, ...broadcasts, ...codeReviews];
   const filteredSessions = newSessions.filter(
     (newSession: ISession) =>
-      currentSessions &&
       !currentSessions.find(
         (currentSession: ISession) => newSession.id === currentSession.id
       )
@@ -129,9 +129,9 @@ export function* updateCommunitySaga(
       // @ts-ignore
       window.showInformationMessage,
       message,
-      "Join",
       muteCommunityLabel,
-      "Mute All"
+      "Mute All",
+      "Join"
     );
 
     if (response === "Join") {

@@ -68,6 +68,7 @@ export const reducer: redux.Reducer = (
             return {
               ...community,
               isLoading: false,
+              isMuted: action.isMuted,
               members: sorted(action.members.map(setDefaultStatus)),
               helpRequests: action.sessions.filter(
                 (s: any) => s.type === SessionType.HelpRequest

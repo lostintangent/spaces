@@ -17,6 +17,15 @@ import {
 import { ICommunity, IMember, ISession } from "../store/model";
 import { sessionTypeDisplayName } from "../utils";
 
+function isCommunityMuted(name: string) {
+  return (
+    (config.mutedCommunities.includes("*") &&
+      !config.mutedCommunities.includes(`!${name}`)) ||
+    (!config.mutedCommunities.includes("*") &&
+      config.mutedCommunities.includes(name))
+  );
+}
+
 export function* loadCommunitiesSaga(
   storage: LocalStorage,
   vslsApi: LiveShare,
@@ -30,11 +39,7 @@ export function* loadCommunitiesSaga(
   }
 
   for (let community of response) {
-    community.isMuted =
-      (config.mutedCommunities.includes("*") &&
-        !config.mutedCommunities.includes(`!${community.name}`)) ||
-      (!config.mutedCommunities.includes("*") &&
-        config.mutedCommunities.includes(community.name));
+    community.isMuted = isCommunityMuted(community.name);
   }
 
   yield put(loadCommunitiesCompleted(response));
@@ -64,7 +69,8 @@ export function* joinCommunity(
     userInfo.emailAddress!
   );
 
-  yield put(joinCommunityCompleted(name, members, sessions));
+  const isMuted = isCommunityMuted(name);
+  yield put(joinCommunityCompleted(name, members, sessions, isMuted));
 
   chatApi.onCommunityJoined(name);
 }
@@ -94,11 +100,9 @@ export function* updateCommunitySaga(
     (c: any) => c.name === name
   );
 
-  yield put(joinCommunityCompleted(name, members, sessions));
+  yield put(joinCommunityCompleted(name, members, sessions, isMuted));
 
-  const allCommunitiesMuted = yield select(s => s.isMuted);
-
-  if (isMuted || allCommunitiesMuted) {
+  if (isCommunityMuted(name)) {
     return;
   }
 

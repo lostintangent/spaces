@@ -38,8 +38,10 @@ export const joinCommunity = (name: string) =>
 export const joinCommunityCompleted = (
   name: string,
   members: any,
-  sessions: any
-) => action(ACTION_JOIN_COMMUNITY_COMPLETED, { name, members, sessions });
+  sessions: any,
+  isMuted: boolean
+) =>
+  action(ACTION_JOIN_COMMUNITY_COMPLETED, { name, members, sessions, isMuted });
 
 export const leaveCommunity = (name: string) =>
   action(ACTION_LEAVE_COMMUNITY, { name });

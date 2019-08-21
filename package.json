@@ -117,6 +117,42 @@
         "command": "liveshare.clearMessages",
         "category": "Live Share Communities",
         "title": "Clear Messages"
+      },
+      {
+        "command": "liveshare.muteCommunity",
+        "category": "Live Share Communities",
+        "title": "Mute Community",
+        "icon": {
+          "dark": "images/dark/speaker.svg",
+          "light": "images/light/speaker.svg"
+        }
+      },
+      {
+        "command": "liveshare.unmuteCommunity",
+        "category": "Live Share Communities",
+        "title": "Unmute Community",
+        "icon": {
+          "dark": "images/dark/speaker-mute.svg",
+          "light": "images/light/speaker-mute.svg"
+        }
+      },
+      {
+        "command": "liveshare.muteAllCommunities",
+        "category": "Live Share Communities",
+        "title": "Mute All Communities",
+        "icon": {
+          "dark": "images/dark/speaker.svg",
+          "light": "images/light/speaker.svg"
+        }
+      },
+      {
+        "command": "liveshare.unmuteAllCommunities",
+        "category": "Live Share Communities",
+        "title": "Unmute All Communities",
+        "icon": {
+          "dark": "images/dark/speaker-mute.svg",
+          "light": "images/light/speaker-mute.svg"
+        }
       }
     ],
     "views": {
@@ -150,13 +186,8 @@
           "when": "view == liveshare.communities && viewItem =~ /^community/"
         },
         {
-          "command": "liveshare.leaveCommunity",
-          "when": "view == liveshare.communities && viewItem =~ /^community/",
-          "group": "inline@2"
-        },
-        {
           "command": "liveshare.clearMessages",
-          "when": "view == liveshare.communities && viewItem == community.founder"
+          "when": "view == liveshare.communities && viewItem =~ /^community.founder/"
         },
         {
           "command": "liveshare.inviteMemberByEmail",
@@ -220,6 +251,24 @@
           "command": "liveshare.endSession",
           "when": "view == liveshare.communities && viewItem == session.own",
           "group": "inline"
+        },
+        {
+          "command": "liveshare.muteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?$/"
+        },
+        {
+          "command": "liveshare.muteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?$/",
+          "group": "inline"
+        },
+        {
+          "command": "liveshare.unmuteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community.*muted$/"
+        },
+        {
+          "command": "liveshare.unmuteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community.*muted$/",
+          "group": "inline"
         }
       ],
       "view/title": [
@@ -232,6 +281,16 @@
           "command": "liveshare.refreshCommunities",
           "when": "view == liveshare.communities && liveshare:state != SignedOut",
           "group": "navigation@2"
+        },
+        {
+          "command": "liveshare.muteAllCommunities",
+          "when": "view == liveshare.communities && communities:allCommunitiesMuted == false",
+          "group": "navigation@3"
+        },
+        {
+          "command": "liveshare.unmuteAllCommunities",
+          "when": "view == liveshare.communities && communities:allCommunitiesMuted == true",
+          "group": "navigation@3"
         }
       ],
       "commandPalette": [

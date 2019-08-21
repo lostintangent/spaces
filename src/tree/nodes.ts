@@ -65,6 +65,10 @@ export class CommunityNode extends TreeNode {
     } else {
       this.contextValue = "community";
     }
+
+    if (community.isMuted) {
+      this.contextValue += ".muted";
+    }
   }
 }
 
@@ -186,9 +190,9 @@ export class MemberNode extends TreeNode {
     this.description = `${titles.join(", ")} ${thanks}`;
 
     if (member.thanks === 1) {
-      this.tooltip = `Thanked once`
+      this.tooltip = `Thanked once`;
     } else {
-      this.tooltip = `Thanked ${member.thanks} times`
+      this.tooltip = `Thanked ${member.thanks} times`;
     }
 
     if (!isCurrentUser) {

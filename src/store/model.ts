@@ -1,6 +1,7 @@
 export interface IStore {
   isLoading: boolean;
   isSignedIn: boolean;
+  isMuted?: boolean;
   activeSession?: IActiveSession;
   communities: ICommunity[];
 }
@@ -9,6 +10,7 @@ export interface ICommunity {
   isLoading?: boolean;
   isLeaving?: boolean;
   isExpanded?: boolean;
+  isMuted?: boolean;
   isHelpRequestsExpanded?: boolean;
   name: string;
   members: IMember[];

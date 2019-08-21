@@ -1,12 +1,19 @@
 import { call, put, select, take } from "redux-saga/effects";
-import { Uri, window } from "vscode";
+import { commands, Uri, window } from "vscode";
 import { LiveShare } from "vsls";
 import * as api from "../api";
 import { createWebSocketChannel } from "../channels/webSocket";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { LocalStorage } from "../storage/LocalStorage";
-import { joinCommunityCompleted, leaveCommunityCompleted, loadCommunitiesCompleted, updateCommunity } from "../store/actions";
+import {
+  joinCommunityCompleted,
+  leaveCommunityCompleted,
+  loadCommunitiesCompleted,
+  muteAllCommunities,
+  muteCommunity,
+  updateCommunity
+} from "../store/actions";
 import { ICommunity, IMember, ISession } from "../store/model";
 import { sessionTypeDisplayName } from "../utils";
 
@@ -20,6 +27,14 @@ export function* loadCommunitiesSaga(
   let response: ICommunity[] = [];
   if (communityNames.length > 0) {
     response = yield call(api.loadCommunities, communityNames);
+  }
+
+  for (let community of response) {
+    community.isMuted =
+      (config.mutedCommunities.includes("*") &&
+        !config.mutedCommunities.includes(`!${community.name}`)) ||
+      (!config.mutedCommunities.includes("*") &&
+        config.mutedCommunities.includes(community.name));
   }
 
   yield put(loadCommunitiesCompleted(response));
@@ -48,6 +63,7 @@ export function* joinCommunity(
     userInfo.displayName,
     userInfo.emailAddress!
   );
+
   yield put(joinCommunityCompleted(name, members, sessions));
 
   chatApi.onCommunityJoined(name);
@@ -71,7 +87,7 @@ export function* leaveCommunity(
 
 export function* updateCommunitySaga(
   vslsApi: LiveShare,
-  { name, members, sessions }: any
+  { name, members, sessions, isMuted }: any
 ) {
   const communities = yield select(s => s.communities);
   const { sessions: currentSessions } = communities.find(
@@ -79,16 +95,19 @@ export function* updateCommunitySaga(
   );
 
   yield put(joinCommunityCompleted(name, members, sessions));
-  const mutedCommunities = config.mutedCommunities;
 
-  if (mutedCommunities.includes("*") || mutedCommunities.includes(name)) {
+  const allCommunitiesMuted = yield select(s => s.isMuted);
+
+  if (isMuted || allCommunitiesMuted) {
     return;
   }
 
   const filteredSessions = sessions.filter(
     (s: ISession) => !currentSessions.find((ss: ISession) => ss.id === s.id)
   ) as ISession[];
-  const selfEmail = vslsApi.session.user ? vslsApi.session.user.emailAddress : undefined;
+  const selfEmail = vslsApi.session.user
+    ? vslsApi.session.user.emailAddress
+    : undefined;
 
   for (let s of filteredSessions) {
     if (s.host === selfEmail) {
@@ -112,9 +131,9 @@ export function* updateCommunitySaga(
     if (response === "Join") {
       vslsApi.join(Uri.parse(s.url));
     } else if (response === "Mute All") {
-      config.mutedCommunities = ["*"]
+      yield put(muteAllCommunities());
     } else {
-      config.mutedCommunities = [...mutedCommunities, name]
+      yield put(muteCommunity(name));
     }
   }
 }
@@ -122,4 +141,44 @@ export function* updateCommunitySaga(
 export function* clearMessagesSaga(chatApi: ChatApi, { payload }: any) {
   yield call(api.clearMessages, payload);
   yield call(chatApi.onMessagesCleared.bind(chatApi), payload);
+}
+
+export function muteCommunitySaga({ payload }: any) {
+  if (config.mutedCommunities.includes("*")) {
+    config.mutedCommunities = config.mutedCommunities.filter(
+      c => c !== `!${payload}`
+    );
+  } else {
+    config.mutedCommunities = [...config.mutedCommunities, payload];
+  }
+}
+
+export function unmuteCommunitySaga({ payload }: any) {
+  if (config.mutedCommunities.includes("*")) {
+    config.mutedCommunities = [...config.mutedCommunities, `!${payload}`];
+  } else {
+    config.mutedCommunities = config.mutedCommunities.filter(
+      c => c !== payload
+    );
+  }
+}
+
+export function muteAllCommunitiesSaga() {
+  config.mutedCommunities = ["*"];
+
+  commands.executeCommand(
+    "setContext",
+    "communities:allCommunitiesMuted",
+    true
+  );
+}
+
+export function unmuteAllCommunitiesSaga() {
+  config.mutedCommunities = [];
+
+  commands.executeCommand(
+    "setContext",
+    "communities:allCommunitiesMuted",
+    false
+  );
 }

@@ -83,3 +83,11 @@ export const updateCommunity = (
 ) => action(ACTION_COMMUNITY_UPDATED, { name, members, sessions });
 
 export const clearMessages = createAction<string>("messages/clear");
+
+export const muteCommunity = createAction<string>("community/mute");
+
+export const unmuteCommunity = createAction<string>("community/unmute");
+
+export const muteAllCommunities = createAction("community/muteAll");
+
+export const unmuteAllCommunities = createAction("community/unmuteAll");

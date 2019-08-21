@@ -8,7 +8,11 @@ import {
   clearMessages,
   joinCommunity,
   leaveCommunity,
-  loadCommunities
+  loadCommunities,
+  muteAllCommunities,
+  muteCommunity,
+  unmuteAllCommunities,
+  unmuteCommunity
 } from "../store/actions";
 import { IStore } from "../store/model";
 import { CommunityNode } from "../tree/nodes";
@@ -105,8 +109,59 @@ export function registerCommunityCommands(
 
   commands.registerCommand(
     `${EXTENSION_NAME}.clearMessages`,
-    async (node: CommunityNode) => {
+    (node: CommunityNode) => {
       store.dispatch(clearMessages(node.name));
     }
   );
+
+  async function getOrRequestCommunityName(
+    placeHolder: string,
+    node?: CommunityNode
+  ) {
+    let community;
+    if (!node) {
+      const { communities } = <IStore>store.getState();
+      community = await window.showQuickPick(
+        communities.map(n => n.name, {
+          placeHolder
+        })
+      );
+    } else {
+      community = node.name;
+    }
+
+    return community!;
+  }
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.muteCommunity`,
+    async (node?: CommunityNode) => {
+      let community = await getOrRequestCommunityName(
+        "Select the community to mute",
+        node
+      );
+
+      store.dispatch(muteCommunity(community));
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.unmuteCommunity`,
+    async (node?: CommunityNode) => {
+      let community = await getOrRequestCommunityName(
+        "Select the community to unmute",
+        node
+      );
+
+      store.dispatch(unmuteCommunity(community));
+    }
+  );
+
+  commands.registerCommand(`${EXTENSION_NAME}.muteAllCommunities`, () => {
+    store.dispatch(muteAllCommunities());
+  });
+
+  commands.registerCommand(`${EXTENSION_NAME}.unmuteAllCommunities`, () => {
+    store.dispatch(unmuteAllCommunities());
+  });
 }

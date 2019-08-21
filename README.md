@@ -10,7 +10,7 @@ Once you join a community, you can chat with other members, invite them into col
 
 To begin joining communities, simply perform the following steps:
 
-1. Install this extension, then reload VS Code
+1. Install <a href="https://aka.ms/vsls-communities" target="_blank">this extension</a>, then reload VS Code
 
 1. Open the Live Share activity bar, and look for the `Communities` tree view. Click the `Sign in with Live Share...` link and complete the sign in flow, using a GitHub or Microsoft Account. 
 

@@ -1,5 +1,5 @@
 import { Store } from "redux";
-import { commands, QuickPickItem, WebviewPanel, window } from "vscode";
+import { commands, env, QuickPickItem, WebviewPanel, window } from "vscode";
 import { LiveShare } from "vsls";
 import { getTopCommunities } from "../api";
 import { EXTENSION_NAME } from "../constants";
@@ -164,4 +164,26 @@ export function registerCommunityCommands(
   commands.registerCommand(`${EXTENSION_NAME}.unmuteAllCommunities`, () => {
     store.dispatch(unmuteAllCommunities());
   });
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.copyCommunityLink`,
+    async (node: CommunityNode) => {
+      const url = `http://vslscommunitieswebapp.azurewebsites.net/join_redirect/${
+        node.name
+      }`;
+
+      env.clipboard.writeText(url);
+
+      const response = await window.showInformationMessage(
+        `Join URL for the ${
+          node.name
+        } community has been copied to your clipboard!`,
+        "Copy again"
+      );
+
+      if (response === "Copy again") {
+        env.clipboard.writeText(url);
+      }
+    }
+  );
 }

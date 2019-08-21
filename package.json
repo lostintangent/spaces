@@ -153,6 +153,11 @@
           "dark": "images/dark/speaker-mute.svg",
           "light": "images/light/speaker-mute.svg"
         }
+      },
+      {
+        "command": "liveshare.copyCommunityLink",
+        "category": "Live Share Communities",
+        "title": "Copy Link to Community"
       }
     ],
     "views": {
@@ -183,6 +188,10 @@
       "view/item/context": [
         {
           "command": "liveshare.leaveCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community/"
+        },
+        {
+          "command": "liveshare.copyCommunityLink",
           "when": "view == liveshare.communities && viewItem =~ /^community/"
         },
         {
@@ -308,6 +317,10 @@
         },
         {
           "command": "liveshare.clearMessages",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.copyLinkToCommunity",
           "when": "false"
         }
       ]

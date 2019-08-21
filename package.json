@@ -320,7 +320,7 @@
           "when": "false"
         },
         {
-          "command": "liveshare.copyLinkToCommunity",
+          "command": "liveshare.copyCommunityLink",
           "when": "false"
         }
       ]

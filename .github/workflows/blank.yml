@@ -17,4 +17,5 @@ jobs:
         echo test, and deploy your project.
     - name: Run deploy script
       run: |
+        cd service
         sh deploy.sh

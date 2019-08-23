@@ -16,17 +16,21 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}   
     - run: |
         az webapp list --query "[?state=='Running']"
-    - uses: actions/docker/login@master
+    - uses: pangzineng/Github-Action-One-Click-Docker@master
+      with:
+        args: service
       env:
         DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-    - uses: actions/docker/cli@master
-      with:
-        args: build --tag live-share-can service
-    - uses: actions/docker/cli@master
-      with:
-        args: tag live-share-can vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0
-    - uses: actions/docker/cli@master
-      with:
-        args: push vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0
+        DOCKER_IMAGE_NAME: live-share-can
+        DOCKER_IMAGE_NAME: v0.1.0
+#     - uses: actions/docker/cli@master
+#       with:
+#         args: build --tag live-share-can service
+#     - uses: actions/docker/cli@master
+#       with:
+#         args: tag live-share-can vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0
+#     - uses: actions/docker/cli@master
+#       with:
+#         args: push vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0

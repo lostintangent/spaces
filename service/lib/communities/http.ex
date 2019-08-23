@@ -22,7 +22,7 @@ defmodule LiveShareCommunities.HTTP do
     conn
     |> send_resp(
       :ok,
-      "<a href=\"https://github.com/vsls-contrib/communities\">Live Share Communities</a>"
+      "<a href=\"https://github.com/vsls-contrib/communities\">VS Live Share Communities</a>"
     )
   end
 

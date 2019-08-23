@@ -1,4 +1,3 @@
-import * as vscode from "vscode";
 import { commands, ConfigurationTarget, window, workspace } from "vscode";
 
 const liveShareConfig = workspace.getConfiguration("liveshare");
@@ -33,7 +32,7 @@ export const config = {
       }
     }
 
-    await vscode.commands.executeCommand('liveshare.enable.vscode-account.auth');
+    await commands.executeCommand('liveshare.enable.vscode-account.auth');
   },
 
   get showSuggestedContacts() {

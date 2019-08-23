@@ -31,6 +31,8 @@ export const config = {
         commands.executeCommand("workbench.action.reloadWindow");
       }
     }
+
+    await commands.executeCommand('liveshare.enable.vscode-account.auth');
   },
 
   get showSuggestedContacts() {

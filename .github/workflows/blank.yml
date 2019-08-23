@@ -9,12 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+    - name: cd service
+      run: cd service
     - uses: azure/actions/login@master
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}   
@@ -25,7 +21,12 @@ jobs:
         DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Run deploy script
-      run: |
-        cd service
-        sh deploy.sh
+    - uses: actions/docker/cli@master
+      with:
+        args: build --tag live-share-can .
+    - uses: actions/docker/cli@master
+      with:
+        args: tag live-share-can vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0
+    - uses: actions/docker/cli@master
+      with:
+        args: push vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0

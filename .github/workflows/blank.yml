@@ -23,7 +23,7 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     - uses: actions/docker/cli@master
       with:
-        args: build --tag live-share-can .
+        args: build --tag live-share-can service
     - uses: actions/docker/cli@master
       with:
         args: tag live-share-can vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0

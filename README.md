@@ -10,9 +10,9 @@ Once you join a community, you can chat with other members, invite them into col
 
 To begin joining communities, simply perform the following steps:
 
-1. Install this extension, then reload VS Code
+1. Install <a href="https://aka.ms/vsls-communities" target="_blank">this extension</a>, then reload VS Code
 
-1. Open the Live Share activity bar, and look for the `Communities` tree view. Click the `Sign in with Live Share...` link and complete the sign in flow, using a GitHub or Microsoft Account. 
+1. Open the Live Share activity bar, and look for the `Communities` tree view. Click the `Sign in with Live Share...` link and complete the sign in flow, using a GitHub or Microsoft Account.
 
    > If you're already using Live Share then you won't need to sign in again. Signing in is required so that other community members can idenitify who you are.
 
@@ -32,7 +32,7 @@ To begin joining communities, simply perform the following steps:
 
 1. Once you're in the Live Share session, you'll be presented with a chat window for this session (as opposed to community-wide), and you can begin chatting, co-editing, debuging, etc. with the other developer.
 
-   <img width="600px" src="https://user-images.githubusercontent.com/116461/62503986-76af4780-b7ab-11e9-88a2-c3f677e610c5.png"> 
+   <img width="600px" src="https://user-images.githubusercontent.com/116461/62503986-76af4780-b7ab-11e9-88a2-c3f677e610c5.png">
 
 ## Communication
 
@@ -46,7 +46,7 @@ Additionally, you can leave code annotations on anyb line of code, by simply hov
 
 ## Seeking Assistance
 
-When you're ready to ask for assistance (e.g. figuring out a bug, reviewing some code), simply click the `+` button next to the `Help Requests` or `Code Reviews` node in the `Communities` tree, and specify a description. This will notify th entire community about your request and allow others to jump in to help you. 
+When you're ready to ask for assistance (e.g. figuring out a bug, reviewing some code), simply click the `+` button next to the `Help Requests` or `Code Reviews` node in the `Communities` tree, and specify a description. This will notify th entire community about your request and allow others to jump in to help you.
 
    <img width="600px" src="https://user-images.githubusercontent.com/116461/62503666-0b18aa80-b7aa-11e9-8037-3dc5ed6aa751.png">
 
@@ -55,6 +55,14 @@ When you're ready to ask for assistance (e.g. figuring out a bug, reviewing some
 If you'd like to help others within the community, simply look at any outstanding `Help Requests` or `Code Reviews` and click on the join button next to the one you'd like to jump into.
 
    <img width="200px" src="https://user-images.githubusercontent.com/116461/62503850-ebce4d00-b7aa-11e9-9f20-9d9d1c89815d.png">
+
+When someone creates a help request/broadcast/code review, you'll immediately see a notification about it, which helps to improve visibility when your'e closely working with others. From the toast, you can immediately join their session and/or mute that community.
+
+   <img width="350px" src="https://user-images.githubusercontent.com/116461/63452039-3500dc80-c3fa-11e9-8366-c193c5a8281e.png" />
+
+At any time, you can also mute a community (or all communities) directly from the `Communities` tree, which enables you to reduce noise when you're not actively participating in a community.
+
+   <img width="250px" src="https://user-images.githubusercontent.com/116461/63452124-65487b00-c3fa-11e9-8e3f-bc824cfe4bc3.png" />
 
 ## FAQ
 

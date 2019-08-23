@@ -95,9 +95,7 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   post "/v0/join" do
-    member = conn.body_params["member"]
-    community_name = conn.body_params["name"]
-
+    %{"name" => community_name, "member" => member} = conn.body_params
     LiveShareCommunities.Store.add_member(community_name, member)
 
     LiveShareCommunities.Events.send(:member_joined, community_name, %{
@@ -109,9 +107,7 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   post "/v0/leave" do
-    member = conn.body_params["member"]
-    community_name = conn.body_params["name"]
-
+    %{"name" => community_name, "member" => member} = conn.body_params
     LiveShareCommunities.Store.remove_member(community_name, member)
     LiveShareCommunities.Events.send(:member_left, community_name, %{email: member["email"]})
 
@@ -124,6 +120,12 @@ defmodule LiveShareCommunities.HTTP do
     LiveShareCommunities.Events.send(:session_start, name, %{id: conn.body_params["id"]})
 
     send_resp(conn, :ok, Poison.encode!(conn.body_params))
+  end
+
+  post "/v0/community/:name/thanks" do
+    %{"from" => from, "to" => to} = conn.body_params
+    LiveShareCommunities.Store.say_thanks(name, from, to)
+    send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   delete "/v0/community/:name/session/:session_id" do

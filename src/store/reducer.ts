@@ -11,7 +11,11 @@ import {
   ACTION_LOAD_COMMUNITIES_COMPLETED,
   ACTION_SESSION_CREATED,
   ACTION_STATUSES_UPDATED,
-  ACTION_USER_AUTHENTICATION_CHANGED
+  ACTION_USER_AUTHENTICATION_CHANGED,
+  muteAllCommunities,
+  muteCommunity,
+  unmuteAllCommunities,
+  unmuteCommunity
 } from "./actions";
 import {
   ICommunity,
@@ -33,15 +37,6 @@ const sorted = R.sortBy(R.prop("name"));
 
 const setDefaultStatus = (m: IMember) => ({ ...m, status: Status.offline });
 
-function online(sessions: ISession[], community: ICommunity) {
-  return sessions.filter(s => {
-    const member = community.members.find(m => m.email === s.host);
-    if (member && member.status && member.status !== "offline") {
-      return s;
-    }
-  });
-}
-
 export const reducer: redux.Reducer = (
   state: IStore = initialState,
   action
@@ -60,7 +55,8 @@ export const reducer: redux.Reducer = (
             codeReviews: [],
             isLoading: true,
             isLeaving: false,
-            isExpanded: false
+            isExpanded: false,
+            isMuted: true
           }
         ])
       };
@@ -73,6 +69,7 @@ export const reducer: redux.Reducer = (
             return {
               ...community,
               isLoading: false,
+              isMuted: action.isMuted,
               members: sorted(action.members.map(setDefaultStatus)),
               helpRequests: action.sessions.filter(
                 (s: any) => s.type === SessionType.HelpRequest
@@ -240,6 +237,60 @@ export const reducer: redux.Reducer = (
       return {
         ...state,
         isSignedIn: action.isSignedIn
+      };
+
+    case muteCommunity.toString():
+      return {
+        ...state,
+        communities: state.communities.map(community => {
+          if (community.name === action.payload) {
+            return {
+              ...community,
+              isMuted: true
+            };
+          } else {
+            return community;
+          }
+        })
+      };
+
+    case unmuteCommunity.toString():
+      return {
+        ...state,
+        communities: state.communities.map(community => {
+          if (community.name === action.payload) {
+            return {
+              ...community,
+              isMuted: false
+            };
+          } else {
+            return community;
+          }
+        })
+      };
+
+    case muteAllCommunities.toString():
+      return {
+        ...state,
+        isMuted: true,
+        communities: state.communities.map(community => {
+          return {
+            ...community,
+            isMuted: true
+          };
+        })
+      };
+
+    case unmuteAllCommunities.toString():
+      return {
+        ...state,
+        isMuted: false,
+        communities: state.communities.map(community => {
+          return {
+            ...community,
+            isMuted: false
+          };
+        })
       };
 
     default:

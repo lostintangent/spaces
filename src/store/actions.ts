@@ -1,3 +1,4 @@
+import { createAction } from "redux-starter-kit";
 import { Access } from "vsls";
 import {
   IActiveSession,
@@ -21,7 +22,6 @@ export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
 export const ACTION_COMMUNITY_NODE_EXPANDED = "COMMUNITY_NODE_EXPANDED";
 export const ACTION_USER_AUTHENTICATION_CHANGED = "USER_AUTHENTICATION_CHANGED";
 export const ACTION_COMMUNITY_UPDATED = "COMMUNITY_UPDATED";
-export const ACTION_CLEAR_MESSAGES = "CLEAR_MESSAGES";
 
 function action(type: string, payload = {}) {
   return { type, ...payload };
@@ -38,8 +38,10 @@ export const joinCommunity = (name: string) =>
 export const joinCommunityCompleted = (
   name: string,
   members: any,
-  sessions: any
-) => action(ACTION_JOIN_COMMUNITY_COMPLETED, { name, members, sessions });
+  sessions: any,
+  isMuted: boolean
+) =>
+  action(ACTION_JOIN_COMMUNITY_COMPLETED, { name, members, sessions, isMuted });
 
 export const leaveCommunity = (name: string) =>
   action(ACTION_LEAVE_COMMUNITY, { name });
@@ -82,5 +84,12 @@ export const updateCommunity = (
   sessions: ISession[]
 ) => action(ACTION_COMMUNITY_UPDATED, { name, members, sessions });
 
-export const clearMessages = (community: string) =>
-  action(ACTION_CLEAR_MESSAGES, { community });
+export const clearMessages = createAction<string>("messages/clear");
+
+export const muteCommunity = createAction<string>("community/mute");
+
+export const unmuteCommunity = createAction<string>("community/unmute");
+
+export const muteAllCommunities = createAction("community/muteAll");
+
+export const unmuteAllCommunities = createAction("community/unmuteAll");

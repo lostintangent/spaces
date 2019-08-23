@@ -113,6 +113,13 @@ export async function clearMessages(community: string) {
     return await deleteAsync(`${BASE_URL}/community/${community}/messages`);
 }
 
+export async function sayThanks(community: string, from: string, to: string[]) {
+  return await axios.post(`${BASE_URL}/community/${community}/thanks`, {
+    from,
+    to
+  });
+}
+
 function createCommunityRequest(
     communityName: string,
     memberName: string,

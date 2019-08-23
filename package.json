@@ -1,283 +1,364 @@
 {
-	"name": "vsls-communities",
-	"displayName": "Live Share Communities",
-	"publisher": "lostintangent",
-	"description": "Discover, share, and receive real-time assistance from developers across your favorite communities",
-	"icon": "images/icon.png",
-	"version": "0.0.7",
-	"engines": {
-		"vscode": "^1.36.0"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/vsls-contrib/communities"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"*"
-	],
-	"main": "./out/extension.js",
-	"aiKey": "APPINSIGHTS_INSTRUMENTATIONKEY",
-	"extensionDependencies": [
-		"MS-vsliveshare.vsliveshare-pack"
-	],
-	"contributes": {
-		"commands": [{
-				"command": "liveshare.joinCommunity",
-				"category": "Live Share Communities",
-				"title": "Join Community",
-				"icon": {
-					"dark": "images/dark/add.svg",
-					"light": "images/light/add.svg"
-				}
-			},
-			{
-				"command": "liveshare.leaveCommunity",
-				"category": "Live Share Communities",
-				"title": "Leave Community",
-				"icon": "images/leave.svg"
-			},
-			{
-				"command": "liveshare.refreshCommunities",
-				"category": "Live Share Communities",
-				"title": "Refresh Communities",
-				"icon": {
-					"dark": "images/dark/refresh.svg",
-					"light": "images/light/refresh.svg"
-				}
-			},
-			{
-				"command": "liveshare.inviteMember",
-				"category": "Live Share Communities",
-				"title": "Invite Member",
-				"icon": {
-					"dark": "images/dark/invite.svg",
-					"light": "images/light/invite.svg"
-				}
-			},
-			{
-				"command": "liveshare.inviteMemberByEmail",
-				"category": "Live Share Communities",
-				"title": "Invite Member By E-mail",
-				"icon": {
-					"dark": "images/dark/email.svg",
-					"light": "images/light/email.svg"
-				}
-			},
-			{
-				"command": "liveshare.createHelpRequest",
-				"category": "Live Share Communities",
-				"title": "Create Help Request...",
-				"icon": {
-					"dark": "images/dark/add.svg",
-					"light": "images/light/add.svg"
-				}
-			},
-			{
-				"command": "liveshare.startBroadcast",
-				"category": "Live Share Communities",
-				"title": "Start Broadcast...",
-				"icon": {
-					"dark": "images/dark/add.svg",
-					"light": "images/light/add.svg"
-				}
-			},
-			{
-				"command": "liveshare.createCodeReview",
-				"category": "Live Share Communities",
-				"title": "Create Code Review...",
-				"icon": {
-					"dark": "images/dark/add.svg",
-					"light": "images/light/add.svg"
-				}
-			},
-			{
-				"command": "liveshare.joinCommunitySession",
-				"category": "Live Share Communities",
-				"title": "Join Session",
-				"icon": {
-					"dark": "images/dark/join.svg",
-					"light": "images/light/join.svg"
-				}
-			},
-			{
-				"command": "liveshare.viewCommunityDetails",
-				"category": "Live Share Communities",
-				"title": "View Details"
-			},
-			{
-				"command": "liveshare.endSession",
-				"category": "Live Share Communities",
-				"title": "End Session",
-				"icon": "images/leave.svg"
-			},
-			{
-				"command": "liveshare.clearMessages",
-				"category": "Live Share Communities",
-				"title": "Clear Messages"
-			}
-		],
-		"views": {
-			"liveshare": [{
-				"id": "liveshare.communities",
-				"name": "Communities"
-			}]
-		},
-		"configuration": {
-			"type": "object",
-			"title": "Live Share Communities",
-			"properties": {
-				"liveshare.communities.showSuggestedContacts": {
-					"default": false,
-					"type": "boolean",
-					"description": "Specifies whether to show community contacts in the Live Share Suggested Contacts tree."
-				}
-			}
-		},
-		"menus": {
-			"view/item/context": [{
-					"command": "liveshare.leaveCommunity",
-					"when": "view == liveshare.communities && viewItem =~ /^community/"
-				},
-				{
-					"command": "liveshare.leaveCommunity",
-					"when": "view == liveshare.communities && viewItem =~ /^community/",
-					"group": "inline@2"
-				},
-				{
-					"command": "liveshare.clearMessages",
-					"when": "view == liveshare.communities && viewItem == community.founder"
-				},
-				{
-					"command": "liveshare.inviteMemberByEmail",
-					"when": "view == liveshare.communities && viewItem =~ /^member/"
-				},
-				{
-					"command": "liveshare.inviteMember",
-					"when": "view == liveshare.communities && viewItem == member.online"
-				},
-				{
-					"command": "liveshare.inviteMemberByEmail",
-					"when": "view == liveshare.communities && viewItem =~ /^member/",
-					"group": "inline@1"
-				},
-				{
-					"command": "liveshare.inviteMember",
-					"when": "view == liveshare.communities && viewItem == member.online",
-					"group": "inline@2"
-				},
-				{
-					"command": "liveshare.createHelpRequest",
-					"when": "view == liveshare.communities && viewItem == helpRequests && !liveshare:isCollaborating"
-				},
-				{
-					"command": "liveshare.createHelpRequest",
-					"when": "view == liveshare.communities && viewItem == helpRequests && !liveshare:isCollaborating",
-					"group": "inline"
-				},
-				{
-					"command": "liveshare.startBroadcast",
-					"when": "view == liveshare.communities && viewItem == broadcasts && !liveshare:isCollaborating"
-				},
-				{
-					"command": "liveshare.startBroadcast",
-					"when": "view == liveshare.communities && viewItem == broadcasts && !liveshare:isCollaborating",
-					"group": "inline"
-				},
-				{
-					"command": "liveshare.createCodeReview",
-					"when": "view == liveshare.communities && viewItem == codeReviews && !liveshare:isCollaborating"
-				},
-				{
-					"command": "liveshare.createCodeReview",
-					"when": "view == liveshare.communities && viewItem == codeReviews && !liveshare:isCollaborating",
-					"group": "inline"
-				},
-				{
-					"command": "liveshare.joinCommunitySession",
-					"when": "view == liveshare.communities && viewItem == session"
-				},
-				{
-					"command": "liveshare.joinCommunitySession",
-					"when": "view == liveshare.communities && viewItem == session",
-					"group": "inline"
-				},
-				{
-					"command": "liveshare.endSession",
-					"when": "view == liveshare.communities && viewItem == session.own"
-				},
-				{
-					"command": "liveshare.endSession",
-					"when": "view == liveshare.communities && viewItem == session.own",
-					"group": "inline"
-				}
-			],
-			"view/title": [{
-					"command": "liveshare.joinCommunity",
-					"when": "view == liveshare.communities && liveshare:state != SignedOut",
-					"group": "navigation@1"
-				},
-				{
-					"command": "liveshare.refreshCommunities",
-					"when": "view == liveshare.communities && liveshare:state != SignedOut",
-					"group": "navigation@2"
-				}
-			],
-			"commandPalette": [{
-					"command": "liveshare.inviteMember",
-					"when": "false"
-				},
-				{
-					"command": "liveshare.inviteMemberByEmail",
-					"when": "false"
-				},
-				{
-					"command": "liveshare.joinCommunitySession",
-					"when": "false"
-				},
-				{
-					"command": "liveshare.clearMessages",
-					"when": "false"
-				}
-			]
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "rm -rf out && webpack --mode production",
-		"compile": "npm run compile-webview && webpack --mode none",
-		"compile-webview": "cd webView && elm make Main.elm --output static/Main.js",
-		"watch": "webpack --mode none --watch",
-		"pretest": "tsc -p ./",
-		"test": "node ./out/test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/glob": "^7.1.1",
-		"@types/mocha": "^5.2.6",
-		"@types/node": "^10.12.21",
-		"@types/ramda": "^0.26.18",
-		"@types/vscode": "^1.36.0",
-		"@types/ws": "^6.0.1",
-		"glob": "^7.1.4",
-		"mocha": "^6.1.4",
-		"ts-loader": "^6.0.4",
-		"tslint": "^5.12.1",
-		"typescript": "^3.3.1",
-		"vscode-test": "^1.0.0-next.0",
-		"webpack": "^4.39.1",
-		"webpack-cli": "^3.3.6"
-	},
-	"dependencies": {
-		"@types/keytar": "^4.4.0",
-		"@vs/vscode-account": "^1.0.709-ge0eaed6e52",
-		"axios": "^0.19.0",
-		"elm": "^0.19.0-no-deps",
-		"ramda": "^0.26.1",
-		"redux": "^4.0.4",
-		"redux-saga": "^1.0.5",
-		"redux-thunk": "^2.3.0",
-		"vsls": "^0.3.1291",
-		"ws": "^7.1.1"
-	}
+  "name": "vsls-communities",
+  "displayName": "Live Share Communities",
+  "publisher": "lostintangent",
+  "description": "Discover, share, and receive real-time assistance from developers across your favorite communities",
+  "icon": "images/icon.png",
+  "version": "0.0.9",
+  "engines": {
+    "vscode": "^1.36.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vsls-contrib/communities"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "extensionDependencies": [
+    "MS-vsliveshare.vsliveshare-pack"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "liveshare.joinCommunity",
+        "category": "Live Share Communities",
+        "title": "Join Community",
+        "icon": {
+          "dark": "images/dark/add.svg",
+          "light": "images/light/add.svg"
+        }
+      },
+      {
+        "command": "liveshare.leaveCommunity",
+        "category": "Live Share Communities",
+        "title": "Leave Community",
+        "icon": "images/leave.svg"
+      },
+      {
+        "command": "liveshare.refreshCommunities",
+        "category": "Live Share Communities",
+        "title": "Refresh Communities",
+        "icon": {
+          "dark": "images/dark/refresh.svg",
+          "light": "images/light/refresh.svg"
+        }
+      },
+      {
+        "command": "liveshare.inviteMember",
+        "category": "Live Share Communities",
+        "title": "Invite Member",
+        "icon": {
+          "dark": "images/dark/invite.svg",
+          "light": "images/light/invite.svg"
+        }
+      },
+      {
+        "command": "liveshare.inviteMemberByEmail",
+        "category": "Live Share Communities",
+        "title": "Invite Member By E-mail",
+        "icon": {
+          "dark": "images/dark/email.svg",
+          "light": "images/light/email.svg"
+        }
+      },
+      {
+        "command": "liveshare.createHelpRequest",
+        "category": "Live Share Communities",
+        "title": "Create Help Request...",
+        "icon": {
+          "dark": "images/dark/add.svg",
+          "light": "images/light/add.svg"
+        }
+      },
+      {
+        "command": "liveshare.startBroadcast",
+        "category": "Live Share Communities",
+        "title": "Start Broadcast...",
+        "icon": {
+          "dark": "images/dark/add.svg",
+          "light": "images/light/add.svg"
+        }
+      },
+      {
+        "command": "liveshare.createCodeReview",
+        "category": "Live Share Communities",
+        "title": "Create Code Review...",
+        "icon": {
+          "dark": "images/dark/add.svg",
+          "light": "images/light/add.svg"
+        }
+      },
+      {
+        "command": "liveshare.joinCommunitySession",
+        "category": "Live Share Communities",
+        "title": "Join Session",
+        "icon": {
+          "dark": "images/dark/join.svg",
+          "light": "images/light/join.svg"
+        }
+      },
+      {
+        "command": "liveshare.viewCommunityDetails",
+        "category": "Live Share Communities",
+        "title": "View Details"
+      },
+      {
+        "command": "liveshare.endSession",
+        "category": "Live Share Communities",
+        "title": "End Session",
+        "icon": "images/leave.svg"
+      },
+      {
+        "command": "liveshare.clearMessages",
+        "category": "Live Share Communities",
+        "title": "Clear Messages"
+      },
+      {
+        "command": "liveshare.muteCommunity",
+        "category": "Live Share Communities",
+        "title": "Mute Community",
+        "icon": {
+          "dark": "images/dark/speaker.svg",
+          "light": "images/light/speaker.svg"
+        }
+      },
+      {
+        "command": "liveshare.unmuteCommunity",
+        "category": "Live Share Communities",
+        "title": "Unmute Community",
+        "icon": {
+          "dark": "images/dark/speaker-mute.svg",
+          "light": "images/light/speaker-mute.svg"
+        }
+      },
+      {
+        "command": "liveshare.muteAllCommunities",
+        "category": "Live Share Communities",
+        "title": "Mute All Communities",
+        "icon": {
+          "dark": "images/dark/speaker.svg",
+          "light": "images/light/speaker.svg"
+        }
+      },
+      {
+        "command": "liveshare.unmuteAllCommunities",
+        "category": "Live Share Communities",
+        "title": "Unmute All Communities",
+        "icon": {
+          "dark": "images/dark/speaker-mute.svg",
+          "light": "images/light/speaker-mute.svg"
+        }
+      },
+      {
+        "command": "liveshare.copyCommunityLink",
+        "category": "Live Share Communities",
+        "title": "Copy Link to Community"
+      }
+    ],
+    "views": {
+      "liveshare": [
+        {
+          "id": "liveshare.communities",
+          "name": "Communities"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Live Share Communities",
+      "properties": {
+        "liveshare.communities.showSuggestedContacts": {
+          "default": false,
+          "type": "boolean",
+          "description": "Specifies whether to show community contacts in the Live Share Suggested Contacts tree."
+        },
+        "liveshare.communities.mutedCommunities": {
+          "default": [],
+          "type": "array",
+          "description": "Specifies which communities to mute notifications for (specify * to mute all)."
+        }
+      }
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "liveshare.leaveCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community/"
+        },
+        {
+          "command": "liveshare.copyCommunityLink",
+          "when": "view == liveshare.communities && viewItem =~ /^community/"
+        },
+        {
+          "command": "liveshare.clearMessages",
+          "when": "view == liveshare.communities && viewItem =~ /^community.founder/"
+        },
+        {
+          "command": "liveshare.inviteMemberByEmail",
+          "when": "view == liveshare.communities && viewItem =~ /^member/"
+        },
+        {
+          "command": "liveshare.inviteMember",
+          "when": "view == liveshare.communities && viewItem == member.online"
+        },
+        {
+          "command": "liveshare.inviteMemberByEmail",
+          "when": "view == liveshare.communities && viewItem =~ /^member/",
+          "group": "inline@1"
+        },
+        {
+          "command": "liveshare.inviteMember",
+          "when": "view == liveshare.communities && viewItem == member.online",
+          "group": "inline@2"
+        },
+        {
+          "command": "liveshare.createHelpRequest",
+          "when": "view == liveshare.communities && viewItem == helpRequests && !liveshare:isCollaborating"
+        },
+        {
+          "command": "liveshare.createHelpRequest",
+          "when": "view == liveshare.communities && viewItem == helpRequests && !liveshare:isCollaborating",
+          "group": "inline"
+        },
+        {
+          "command": "liveshare.startBroadcast",
+          "when": "view == liveshare.communities && viewItem == broadcasts && !liveshare:isCollaborating"
+        },
+        {
+          "command": "liveshare.startBroadcast",
+          "when": "view == liveshare.communities && viewItem == broadcasts && !liveshare:isCollaborating",
+          "group": "inline"
+        },
+        {
+          "command": "liveshare.createCodeReview",
+          "when": "view == liveshare.communities && viewItem == codeReviews && !liveshare:isCollaborating"
+        },
+        {
+          "command": "liveshare.createCodeReview",
+          "when": "view == liveshare.communities && viewItem == codeReviews && !liveshare:isCollaborating",
+          "group": "inline"
+        },
+        {
+          "command": "liveshare.joinCommunitySession",
+          "when": "view == liveshare.communities && viewItem == session"
+        },
+        {
+          "command": "liveshare.joinCommunitySession",
+          "when": "view == liveshare.communities && viewItem == session",
+          "group": "inline"
+        },
+        {
+          "command": "liveshare.endSession",
+          "when": "view == liveshare.communities && viewItem == session.own"
+        },
+        {
+          "command": "liveshare.endSession",
+          "when": "view == liveshare.communities && viewItem == session.own",
+          "group": "inline"
+        },
+        {
+          "command": "liveshare.muteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?$/"
+        },
+        {
+          "command": "liveshare.muteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?$/",
+          "group": "inline"
+        },
+        {
+          "command": "liveshare.unmuteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community.*muted$/"
+        },
+        {
+          "command": "liveshare.unmuteCommunity",
+          "when": "view == liveshare.communities && viewItem =~ /^community.*muted$/",
+          "group": "inline"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "liveshare.joinCommunity",
+          "when": "view == liveshare.communities && liveshare:state != SignedOut",
+          "group": "navigation@1"
+        },
+        {
+          "command": "liveshare.refreshCommunities",
+          "when": "view == liveshare.communities && liveshare:state != SignedOut",
+          "group": "navigation@2"
+        },
+        {
+          "command": "liveshare.muteAllCommunities",
+          "when": "view == liveshare.communities && communities:allCommunitiesMuted == false",
+          "group": "navigation@3"
+        },
+        {
+          "command": "liveshare.unmuteAllCommunities",
+          "when": "view == liveshare.communities && communities:allCommunitiesMuted == true",
+          "group": "navigation@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "liveshare.inviteMember",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.inviteMemberByEmail",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.joinCommunitySession",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.clearMessages",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.copyCommunityLink",
+          "when": "false"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "rm -rf out && webpack --mode production",
+    "compile": "npm run compile-webview && webpack --mode none",
+    "compile-webview": "cd webView && elm make Main.elm --output static/Main.js",
+    "watch": "webpack --mode none --watch",
+    "pretest": "tsc -p ./",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.1",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^10.12.21",
+    "@types/ramda": "^0.26.18",
+    "@types/vscode": "^1.36.0",
+    "@types/ws": "^6.0.1",
+    "glob": "^7.1.4",
+    "mocha": "^6.1.4",
+    "ts-loader": "^6.0.4",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
+    "vscode-test": "^1.0.0-next.0",
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6"
+  },
+  "dependencies": {
+    "axios": "^0.19.0",
+    "elm": "^0.19.0-no-deps",
+    "ramda": "^0.26.1",
+    "redux": "^4.0.4",
+    "redux-saga": "^1.0.5",
+    "redux-starter-kit": "^0.6.3",
+    "redux-thunk": "^2.3.0",
+    "vsls": "^0.3.1291",
+    "ws": "^7.1.1"
+  }
 }

@@ -65,6 +65,10 @@ export class CommunityNode extends TreeNode {
     } else {
       this.contextValue = "community";
     }
+
+    if (community.isMuted) {
+      this.contextValue += ".muted";
+    }
   }
 }
 
@@ -177,12 +181,19 @@ export class MemberNode extends TreeNode {
     );
     const isCurrentUser = member.email === api.session.user!.emailAddress;
     let titles: string[] = member.title ? [member.title] : [];
+    let thanks: string = member.thanks > 0 ? `(${member.thanks})` : ``;
 
     if (isCurrentUser) {
       titles.push("You");
     }
 
-    this.description = titles.join(", ");
+    this.description = `${titles.join(", ")} ${thanks}`;
+
+    if (member.thanks === 1) {
+      this.tooltip = `Thanked once`;
+    } else {
+      this.tooltip = `Thanked ${member.thanks} times`;
+    }
 
     if (!isCurrentUser) {
       if (this.member.status === Status.offline) {

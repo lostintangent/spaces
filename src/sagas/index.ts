@@ -10,22 +10,31 @@ import * as vsls from "vsls";
 import { createAuthenticationChannel } from "../channels/authentication";
 import { ISessionStateChannel } from "../channels/sessionState";
 import { ChatApi } from "../chatApi";
+import { config } from "../config";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
-  ACTION_CLEAR_MESSAGES,
   ACTION_COMMUNITY_UPDATED,
   ACTION_CREATE_SESSION,
   ACTION_JOIN_COMMUNITY,
   ACTION_LEAVE_COMMUNITY,
   ACTION_LOAD_COMMUNITIES,
+  clearMessages,
   loadCommunities,
+  muteAllCommunities,
+  muteCommunity,
+  unmuteAllCommunities,
+  unmuteCommunity,
   userAuthenticationChanged
 } from "../store/actions";
 import {
-  clearMessages,
+  clearMessagesSaga,
   joinCommunity,
   leaveCommunity,
   loadCommunitiesSaga,
+  muteAllCommunitiesSaga,
+  muteCommunitySaga,
+  unmuteAllCommunitiesSaga,
+  unmuteCommunitySaga,
   updateCommunitySaga
 } from "./communities";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
@@ -50,10 +59,16 @@ function* childSagas(
       ACTION_COMMUNITY_UPDATED,
       updateCommunitySaga.bind(null, vslsApi)
     ),
-    takeEvery(ACTION_CLEAR_MESSAGES, clearMessages.bind(null, chatApi)),
+    takeEvery(clearMessages, clearMessagesSaga.bind(null, chatApi)),
 
     takeEvery(ACTION_CREATE_SESSION, createSession.bind(null, vslsApi)),
     takeEvery(sessionStateChannel, endActiveSession),
+
+    takeEvery(muteCommunity, muteCommunitySaga),
+    takeEvery(unmuteCommunity, unmuteCommunitySaga),
+
+    takeEvery(muteAllCommunities, muteAllCommunitiesSaga),
+    takeEvery(unmuteAllCommunities, unmuteAllCommunitiesSaga),
 
     takeLatest(
       ACTION_LOAD_COMMUNITIES,
@@ -84,6 +99,11 @@ export function* rootSaga(
         chatApi,
         sessionStateChannel
       );
+
+      if (config.mutedCommunities.includes("*")) {
+        yield put(muteAllCommunities());
+      }
+
       yield put(<any>loadCommunities());
     } else {
       task && task.cancel();

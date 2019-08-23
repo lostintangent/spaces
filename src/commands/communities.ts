@@ -1,5 +1,5 @@
 import { Store } from "redux";
-import { commands, QuickPickItem, WebviewPanel, window } from "vscode";
+import { commands, env, QuickPickItem, WebviewPanel, window } from "vscode";
 import { LiveShare } from "vsls";
 import { getTopCommunities } from "../api";
 import { EXTENSION_NAME } from "../constants";
@@ -8,7 +8,11 @@ import {
   clearMessages,
   joinCommunity,
   leaveCommunity,
-  loadCommunities
+  loadCommunities,
+  muteAllCommunities,
+  muteCommunity,
+  unmuteAllCommunities,
+  unmuteCommunity
 } from "../store/actions";
 import { IStore } from "../store/model";
 import { CommunityNode } from "../tree/nodes";
@@ -105,8 +109,81 @@ export function registerCommunityCommands(
 
   commands.registerCommand(
     `${EXTENSION_NAME}.clearMessages`,
-    async (node: CommunityNode) => {
+    (node: CommunityNode) => {
       store.dispatch(clearMessages(node.name));
+    }
+  );
+
+  async function getOrRequestCommunityName(
+    placeHolder: string,
+    node?: CommunityNode
+  ) {
+    let community;
+    if (!node) {
+      const { communities } = <IStore>store.getState();
+      community = await window.showQuickPick(
+        communities.map(n => n.name, {
+          placeHolder
+        })
+      );
+    } else {
+      community = node.name;
+    }
+
+    return community!;
+  }
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.muteCommunity`,
+    async (node?: CommunityNode) => {
+      let community = await getOrRequestCommunityName(
+        "Select the community to mute",
+        node
+      );
+
+      store.dispatch(muteCommunity(community));
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.unmuteCommunity`,
+    async (node?: CommunityNode) => {
+      let community = await getOrRequestCommunityName(
+        "Select the community to unmute",
+        node
+      );
+
+      store.dispatch(unmuteCommunity(community));
+    }
+  );
+
+  commands.registerCommand(`${EXTENSION_NAME}.muteAllCommunities`, () => {
+    store.dispatch(muteAllCommunities());
+  });
+
+  commands.registerCommand(`${EXTENSION_NAME}.unmuteAllCommunities`, () => {
+    store.dispatch(unmuteAllCommunities());
+  });
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.copyCommunityLink`,
+    async (node: CommunityNode) => {
+      const url = `http://vslscommunitieswebapp.azurewebsites.net/join_redirect/${
+        node.name
+      }`;
+
+      env.clipboard.writeText(url);
+
+      const response = await window.showInformationMessage(
+        `The join URL for the "${
+          node.name
+        }" community has been copied to your clipboard!`,
+        "Copy again"
+      );
+
+      if (response === "Copy again") {
+        env.clipboard.writeText(url);
+      }
     }
   );
 }

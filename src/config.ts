@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 import { ConfigurationTarget, workspace } from "vscode";
 
 const liveShareConfig = workspace.getConfiguration("liveshare");
@@ -8,7 +9,7 @@ const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
 const INSIDERS = "insiders";
 
 export const config = {
-  ensureLiveShareInsiders() {
+  async ensureLiveShareInsiders() {
     const featureSet = liveShareConfig.get(FEATURE_SET_SETTING);
 
     if (featureSet !== INSIDERS) {
@@ -18,6 +19,8 @@ export const config = {
         ConfigurationTarget.Global
       );
     }
+
+    await vscode.commands.executeCommand('liveshare.enable.vscode-account.auth');
   },
 
   get showSuggestedContacts() {

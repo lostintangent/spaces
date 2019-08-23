@@ -17,7 +17,7 @@ import { registerUriHandler } from "./uriHandler";
 let sessionStateChannel: ISessionStateChannel;
 
 export async function activate(context: ExtensionContext) {
-  config.ensureLiveShareInsiders();
+  await config.ensureLiveShareInsiders();
 
   const storage = new LocalStorage(context.globalState);
 

@@ -27,7 +27,9 @@ export async function activate(context: ExtensionContext) {
   const api = (await getVslsApi())!;
   const chatApi = new ChatApi(api, store);
 
-  await auth.init(context);
+  // need to cast `api` to `any` until new `vsls` npm package is published
+  const authStrategies = (api as any).authStrategies || [];
+  await auth.init(context, authStrategies);
 
   sessionStateChannel = createSessionStateChannel(api);
 

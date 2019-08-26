@@ -64,15 +64,15 @@ At any time, you can also mute a community (or all communities) directly from th
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/63452124-65487b00-c3fa-11e9-8e3f-bc824cfe4bc3.png" />
 
-## Deep-Linking Your Community
+## Deep Linking Your Community
 
-In order to simplify the process for new members to join your community, you could provide a "deep link" to it, using one (or both) of the following techniques:
+To simplify the onboarding process for your community, you can provide a deep link to it, using one (or both) of the following techniques:
 
 1. Right-click your community in the `Communities` tree, and select `Copy Link to Community`. This will generate a URL that you can send to someone (e.g. via e-mail, Slack), and when clicked, it will automatically join them to the community. Additionally, you can publish this URL, along with the Live Share Communities badge, on a webpage, or GitHub repository (like this one!), so that visitors can easily discover your community.
 
    <img width="200px" src="https://user-images.githubusercontent.com/116461/63655942-2c364080-c743-11e9-9a5e-554bb5e631d7.png" />
 
-2. If you've built a VS Code extension (or extension pack), that represents your community (e.g. an opinionated set of extensions/tools for a classroom), then you can add an extension dependency to this extension (`lostintangent.vsls-communities`), as well as a `liveshare.communities` contribution point to your extenison's `package.json` file. When others install your extension, it will install Live Share + Communities, and then automaticatically join them to the specified communities.
+2. If you've built a VS Code extension (or extension pack), that represents your community (e.g. an opinionated set of extensions/tools for a classroom), then you can add an extension dependency to this extension (`lostintangent.vsls-communities`), as well as a `liveshare.communities` contribution point to your extenison's `package.json` file. When others install your extension, it will install Live Share + Communities, and then automatically join them to the specified communities.
 
    ```json
    "contributes": {

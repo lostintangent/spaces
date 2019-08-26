@@ -9,8 +9,17 @@ export enum ExtensionEventType {
 }
 
 export interface IExtensionEvent {
+  id: string;
   type: ExtensionEventType;
   communities: string[];
+}
+
+function extensionAddedEvent(id: string, communities: string[]) {
+  return { id, type: ExtensionEventType.extensionAdded, communities };
+}
+
+function extensionRemovedEvent(id: string, communities: string[]) {
+  return { id, type: ExtensionEventType.extensionRemoved, communities };
 }
 
 const extensionMap = new Map<string, string[]>();
@@ -36,14 +45,14 @@ function processExtensions(
     ([id, _]) => !extensions.find(e => e.id === id)
   );
 
-  newExtensions.forEach(({ id, communities }) => {
+  newExtensions.forEach(({ id, communities = [] }) => {
     extensionMap.set(id, communities);
-    emit({ type: ExtensionEventType.extensionAdded, communities });
+    emit(extensionAddedEvent(id, communities));
   });
 
-  removedExtensions.forEach(([id, communities]) => {
+  removedExtensions.forEach(([id, communities = []]) => {
     extensionMap.delete(id);
-    emit({ type: ExtensionEventType.extensionRemoved, communities });
+    emit(extensionRemovedEvent(id, communities));
   });
 }
 

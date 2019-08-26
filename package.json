@@ -178,6 +178,16 @@
           "type": "boolean",
           "description": "Specifies whether to show community contacts in the Live Share Suggested Contacts tree."
         },
+        "liveshare.communities.extensionContributionBehavior": {
+          "default": "join",
+          "type": "string",
+          "enum": [
+            "ignore",
+            "join",
+            "prompt"
+          ],
+          "description": "Specifies how to respond when 3rd-party extensions declare they have an associated community."
+        },
         "liveshare.communities.mutedCommunities": {
           "default": [],
           "type": "array",

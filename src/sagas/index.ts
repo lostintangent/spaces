@@ -38,9 +38,10 @@ import {
   updateCommunitySaga
 } from "./communities";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
+import { extensionsSaga } from "./extensions";
 import { createSession, endActiveSession } from "./sessions";
 
-function* childSagas(
+function* workerSagas(
   storage: LocalStorage,
   vslsApi: vsls.LiveShare,
   chatApi: ChatApi,
@@ -86,14 +87,14 @@ export function* rootSaga(
 ) {
   const authChannel = createAuthenticationChannel(vslsApi);
 
-  let task;
+  let workersTask, extensionsTask;
   while (true) {
     const isSignedIn = yield take(authChannel);
     yield put(userAuthenticationChanged(isSignedIn));
 
     if (isSignedIn) {
-      task = yield fork(
-        childSagas,
+      workersTask = yield fork(
+        workerSagas,
         storage,
         vslsApi,
         chatApi,
@@ -105,8 +106,11 @@ export function* rootSaga(
       }
 
       yield put(<any>loadCommunities());
+
+      extensionsTask = yield fork(extensionsSaga);
     } else {
-      task && task.cancel();
+      workersTask && workersTask.cancel();
+      extensionsTask && extensionsTask.cancel();
     }
   }
 }

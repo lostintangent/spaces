@@ -247,28 +247,113 @@ defmodule LiveShareCommunities.Authentication do
   def is_valid_token?(arg) do
     case arg do
       {:ok, token} ->
-        try do
-          payload = JOSE.JWT.peek_payload(token)
-          iss = payload.fields["iss"]
-          if iss == "https://insiders.liveshare.vsengsaas.visualstudio.com/" do
-            {:ok, token} |> is_valid_cascade_token?
-          else
-            {:ok, token} |> is_valid_aad_token?
-          end
-        rescue
-          e in Poison.ParseError ->
-            {:error, "Failed to parse payload."}
-          e in ArgumentError ->
-            {:error, "Failed to parse payload."}
+        case is_cascade_token?(token) do
+          {:ok, is_cascade} ->
+            if is_cascade do
+              {:ok, token} |> is_valid_cascade_token?
+            else
+              {:ok, token} |> is_valid_aad_token?
+            end
+          {:error, reason} -> {:error, reason}
         end
+    end
+  end
+
+  def get_token?(arg) do
+    case arg do
+      {:ok, conn} ->
+        {:ok, conn}
+          |> is_auth_header_present?
       {:error, reason} -> {:error, reason}
     end
   end
 
   def authenticated?(conn) do
     {:ok, conn}
-      |> is_auth_header_present?
+      |> get_token?
       |> is_valid_token?
+  end
+
+  def set_user_claims?(conn) do
+    result = {:ok, conn}
+      |> get_token?
+      |> get_user_claims?
+
+    case result do
+      {:ok, claims} ->
+        Map.merge(conn, %{ auth_context: claims })
+      {:error, reason} -> 
+        Map.merge(conn, %{ auth_context: nil })
+    end
+  end
+
+  def is_cascade_token?(token) do
+    try do
+      payload = JOSE.JWT.peek_payload(token)
+      iss = payload.fields["iss"]
+      is_cascade = (iss == "https://insiders.liveshare.vsengsaas.visualstudio.com/")
+      {:ok, is_cascade}
+    rescue
+      e in Poison.ParseError ->
+        {:error, "Failed to parse payload."}
+      e in ArgumentError ->
+        {:error, "Failed to parse payload."}
+    end
+  end
+
+  def get_user_claims?(arg) do
+    case arg do
+      {:ok, token} ->
+        case is_cascade_token?(token) do
+          {:ok, true} ->
+            {:ok, token} |> get_cascade_claims?
+          {:ok, false} ->
+            {:ok, token} |> get_aad_claims?
+          {:error, reason} -> {:error, reason}
+        end
+          
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def get_cascade_claims?(arg) do
+    case arg do
+      {:ok, token} ->
+        payload = JOSE.JWT.peek_payload(token)
+        IO.inspect payload
+        iss = payload.fields["iss"]
+        claims = %{}
+        {:ok, claims}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def create_user_payload(id, name, email) do
+    %{
+      id: id,
+      name: name,
+      email: email
+    }
+  end
+
+  def get_aad_claims?(arg) do
+    case arg do
+      {:ok, token} ->
+        # headers = JOSE.JWT.peek_protected(token)
+        # IO.inspect headers
+        payload = JOSE.JWT.peek_payload(token)
+        # IO.inspect payload
+        name = payload.fields["name"]
+        email = payload.fields["preferred_username"]
+        tid = payload.fields["tid"]
+        uti = payload.fields["uti"]
+        id = "#{uti}_#{tid}"
+
+        claims = create_user_payload(id, name, email)
+
+        {:ok, claims}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   def authenticateRoute(conn) do
@@ -286,6 +371,8 @@ defmodule LiveShareCommunities.Authentication do
   def call(conn, _opts) do
     authed_routes = ["v0"]
     prefix = Enum.at(conn.path_info, 0)
+    
+    conn = set_user_claims?(conn)
 
     if prefix == nil or !Enum.member?(authed_routes, prefix) do
       conn

@@ -8,7 +8,7 @@ defmodule LiveShareCommunities.HTTP do
 
   plug(Plug.Logger)
   plug(Plug.Parsers, parsers: [:json], json_decoder: Poison)
-  plug Authentication
+  plug(Authentication)
   plug(:match)
   plug(:dispatch)
 
@@ -22,6 +22,15 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   get "/" do
+    conn
+    |> send_resp(
+      :ok,
+      "<a href=\"https://github.com/vsls-contrib/communities\">Live Share Communities</a>"
+    )
+  end
+
+  get "/profile" do
+    IO.inspect conn
     conn
     |> send_resp(
       :ok,

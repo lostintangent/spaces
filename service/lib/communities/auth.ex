@@ -271,7 +271,7 @@ defmodule LiveShareCommunities.Authentication do
       |> is_valid_token?
   end
 
-  def call(conn, _opts) do
+  def authenticateRoute(conn) do
     case authenticated?(conn) do
       {:ok, claims} ->
         conn
@@ -280,6 +280,18 @@ defmodule LiveShareCommunities.Authentication do
         conn
           |> send_resp(401, "")
           |> halt
+    end
+  end
+
+  def call(conn, _opts) do
+    authed_routes = ["v0"]
+    prefix = Enum.at(conn.path_info, 0)
+
+    if prefix == nil or !Enum.member?(authed_routes, prefix) do
+      conn
+    else
+      conn
+       |> authenticateRoute
     end
   end
 end

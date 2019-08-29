@@ -112,7 +112,8 @@ defmodule LiveShareCommunities.Authentication do
             raise reason
         end
 
-        if DateTime.utc_now() > expDate do
+
+        if DateTime.diff(expDate, DateTime.utc_now) <= 0 do
           {:error, "AAD token is expired."}
         else
           {:ok, claims}
@@ -282,8 +283,7 @@ defmodule LiveShareCommunities.Authentication do
     case result do
       {:ok, claims} ->
         Map.merge(conn, %{ auth_context: claims })
-      {:error, reason} -> 
-        Map.merge(conn, %{ auth_context: nil })
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -321,35 +321,40 @@ defmodule LiveShareCommunities.Authentication do
       {:ok, token} ->
         payload = JOSE.JWT.peek_payload(token)
         IO.inspect payload
-        iss = payload.fields["iss"]
-        claims = %{}
+        # name = payload.fields["name"]
+        # email = payload.fields["preferred_username"]
+        name = ""
+        email = ""
+        id = payload.fields["userId"]
+
+        claims = create_user_payload(id, name, email, "cascade")
+
         {:ok, claims}
+
       {:error, reason} -> {:error, reason}
     end
   end
 
-  def create_user_payload(id, name, email) do
+  def create_user_payload(id, name, email, type) do
     %{
       id: id,
       name: name,
-      email: email
+      email: email,
+      type: type
     }
   end
 
   def get_aad_claims?(arg) do
     case arg do
       {:ok, token} ->
-        # headers = JOSE.JWT.peek_protected(token)
-        # IO.inspect headers
         payload = JOSE.JWT.peek_payload(token)
-        # IO.inspect payload
         name = payload.fields["name"]
         email = payload.fields["preferred_username"]
         tid = payload.fields["tid"]
-        uti = payload.fields["uti"]
-        id = "#{uti}_#{tid}"
+        oid = payload.fields["oid"]
+        id = "#{oid}_#{tid}"
 
-        claims = create_user_payload(id, name, email)
+        claims = create_user_payload(id, name, email, "aad")
 
         {:ok, claims}
       {:error, reason} -> {:error, reason}
@@ -359,7 +364,7 @@ defmodule LiveShareCommunities.Authentication do
   def authenticateRoute(conn) do
     case authenticated?(conn) do
       {:ok, claims} ->
-        conn
+        set_user_claims?(conn)
       {:error, reason} ->
         IO.inspect reason
         conn
@@ -371,8 +376,10 @@ defmodule LiveShareCommunities.Authentication do
   def call(conn, _opts) do
     authed_routes = ["v0"]
     prefix = Enum.at(conn.path_info, 0)
-    
-    conn = set_user_claims?(conn)
+
+    # set the `auth_context` to `nil` initially,
+    # update to real one if user is authenticated
+    conn = Map.merge(conn, %{ auth_context: nil })
 
     if prefix == nil or !Enum.member?(authed_routes, prefix) do
       conn

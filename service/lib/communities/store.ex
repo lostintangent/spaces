@@ -1,8 +1,9 @@
 defmodule LiveShareCommunities.Store do
   @top_communities_count 5
+  @key_prefix "communitiy"
 
   def everything() do
-    {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
+    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
 
     Enum.map(keys, fn x ->
       {:ok, value} = Redix.command(:redix, ["GET", x])
@@ -15,7 +16,8 @@ defmodule LiveShareCommunities.Store do
   end
 
   defp update(name, fun) do
-    {:ok, value} = Redix.command(:redix, ["GET", name])
+    communitiy_key = get_community_key(name)
+    {:ok, value} = Redix.command(:redix, ["GET", communitiy_key])
 
     community =
       if value do
@@ -25,7 +27,7 @@ defmodule LiveShareCommunities.Store do
       end
 
     updated_community = fun.(community)
-    {:ok, _} = Redix.command(:redix, ["SET", name, Poison.encode!(updated_community)])
+    {:ok, _} = Redix.command(:redix, ["SET", communitiy_key, Poison.encode!(updated_community)])
     inform_subscribers(name)
   end
 
@@ -44,7 +46,7 @@ defmodule LiveShareCommunities.Store do
   end
 
   def community(name) do
-    {:ok, value} = Redix.command(:redix, ["GET", name])
+    {:ok, value} = Redix.command(:redix, ["GET", get_community_key(name)])
 
     community =
       if value do
@@ -54,12 +56,12 @@ defmodule LiveShareCommunities.Store do
       end
 
     community
-    |> Map.update("name", name, & &1)
-    |> Map.update("members", [], & &1)
-    |> Map.update("sessions", [], & &1)
-    |> Map.update("messages", [], & &1)
-    |> update_with_titles()
-    |> update_with_thanks_count()
+      |> Map.update("name", name, & &1)
+      |> Map.update("members", [], & &1)
+      |> Map.update("sessions", [], & &1)
+      |> Map.update("messages", [], & &1)
+      |> update_with_titles()
+      |> update_with_thanks_count()
   end
 
   def update_with_titles(community) do
@@ -103,7 +105,7 @@ defmodule LiveShareCommunities.Store do
 
   def top_communities() do
     # TODO: We can optimize this by sorting inside Redis, and not load all results
-    {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
+    {:ok, keys} = Redix.command(:redix, ["KEYS", "communitiy:*"])
 
     communities =
       Enum.map(keys, fn x ->
@@ -260,4 +262,9 @@ defmodule LiveShareCommunities.Store do
   defp now() do
     DateTime.utc_now() |> DateTime.to_iso8601()
   end
+  
+  defp get_community_key(name) do
+    "#{@key_prefix}:#{name}"
+  end
+  
 end

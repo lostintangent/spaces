@@ -272,7 +272,13 @@ defmodule LiveShareCommunities.Authentication do
   end
 
   def call(conn, _opts) do
-    case authenticated?(conn) do
+    dt1 = DateTime.utc_now()
+    res = authenticated?(conn)
+    dt2 = DateTime.utc_now()
+    
+    IO.inspect "auth time: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+
+    case res do
       {:ok, claims} ->
         conn
       {:error, reason} ->

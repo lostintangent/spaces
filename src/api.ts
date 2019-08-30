@@ -2,11 +2,16 @@ import axios from "axios";
 import { auth } from "./auth/auth";
 import { ICommunity } from "./store/model";
 
-// const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0";
-const BASE_URL = "http://localhost:4000/v0";
+const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net/v0";
+// const BASE_URL = "http://localhost:4000/v0";
 
 const getAuthHeader = async () => {
+    const t1 = Date.now();
     const tokens = await auth.API.getTokensOrAskToSignIn();
+    const t2 = Date.now();
+
+    console.log(`** Get tokens time: ${t2 - t1}ms`);
+
     if (tokens.length === 0) {
         throw new Error('Please authenticate and try again.');
     }

@@ -13,7 +13,7 @@ defmodule LiveShareCommunities.Authentication do
         keys = jsonBody["keys"]
         dt2 = DateTime.utc_now()
     
-        IO.inspect "** Get AAD public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+        IO.inspect "** Get AAD public key: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
         {:ok, kid, token, keys}
       {:error, reason} -> {:error, reason}
@@ -31,7 +31,7 @@ defmodule LiveShareCommunities.Authentication do
         keys = jsonBody["keys"]
         dt2 = DateTime.utc_now()
 
-        IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+        IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
         {:ok, certKey, token}
       {:error, reason} -> {:error, reason}
@@ -287,7 +287,7 @@ defmodule LiveShareCommunities.Authentication do
     res = authenticated?(conn)
     dt2 = DateTime.utc_now()
     
-    IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+    IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
     case res do
       {:ok, claims} ->

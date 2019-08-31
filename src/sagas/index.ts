@@ -20,6 +20,8 @@ import {
   ACTION_LOAD_COMMUNITIES,
   clearMessages,
   loadCommunities,
+  makeCommunityPrivate,
+  makeCommunityPublic,
   muteAllCommunities,
   muteCommunity,
   unmuteAllCommunities,
@@ -28,9 +30,11 @@ import {
 } from "../store/actions";
 import {
   clearMessagesSaga,
-  joinCommunity,
+  joinCommunitySaga,
   leaveCommunity,
   loadCommunitiesSaga,
+  makeCommunityPrivateSaga,
+  makeCommunityPublicSaga,
   muteAllCommunitiesSaga,
   muteCommunitySaga,
   unmuteAllCommunitiesSaga,
@@ -50,7 +54,7 @@ function* workerSagas(
   yield all([
     takeEvery(
       ACTION_JOIN_COMMUNITY,
-      joinCommunity.bind(null, storage, vslsApi, chatApi)
+      joinCommunitySaga.bind(null, storage, vslsApi, chatApi)
     ),
     takeEvery(
       ACTION_LEAVE_COMMUNITY,
@@ -70,6 +74,9 @@ function* workerSagas(
 
     takeEvery(muteAllCommunities, muteAllCommunitiesSaga),
     takeEvery(unmuteAllCommunities, unmuteAllCommunitiesSaga),
+
+    takeEvery(makeCommunityPrivate, makeCommunityPrivateSaga),
+    takeEvery(makeCommunityPublic, makeCommunityPublicSaga),
 
     takeLatest(
       ACTION_LOAD_COMMUNITIES,

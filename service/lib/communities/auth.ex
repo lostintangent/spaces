@@ -2,14 +2,39 @@ defmodule LiveShareCommunities.Authentication do
   import Plug.Conn
   use Memoize
 
+  @aad_keys_file "./aad-public-keys.json"
+  @cascade_keys_file "./cascade-public-keys.json"
+
+  @aad_keys_url "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+  @cascade_keys_url "https://prod.liveshare.vsengsaas.visualstudio.com/api/authenticatemetadata"
+
   def init(opts), do: opts
+
+  def save_keys(url, fileName) do
+    response = HTTPotion.get url
+    File.write!(Path.absname(fileName), response.body)
+  end
+
+  defmemo read_keys(file) do
+    contents = File.read!(file)
+    Poison.decode!(contents)
+  end
 
   defmemo get_aad_keys?(arg) do
     case arg do
       {:ok, kid, token} ->
-        response = HTTPotion.get "https://login.microsoftonline.com/common/discovery/v2.0/keys"
-        jsonBody = Poison.decode!(response.body)
+        dt1 = DateTime.utc_now()
+
+        if !File.exists?(@aad_keys_file) do
+          save_keys(@aad_keys_url, @aad_keys_file)
+        end
+
+        jsonBody = read_keys(@aad_keys_file)
         keys = jsonBody["keys"]
+
+        dt2 = DateTime.utc_now()
+        IO.inspect "** Get AAD public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+
         {:ok, kid, token, keys}
       {:error, reason} -> {:error, reason}
     end
@@ -18,10 +43,21 @@ defmodule LiveShareCommunities.Authentication do
   defmemo find_cascade_public_key?(arg) do
     case arg do
       {:ok, token} ->
-        response = HTTPotion.get "https://prod.liveshare.vsengsaas.visualstudio.com/api/authenticatemetadata"
-        jsonBody = Poison.decode!(response.body)
+
+        dt1 = DateTime.utc_now()
+
+        if !File.exists?(@cascade_keys_file) do
+          save_keys(@cascade_keys_url, @cascade_keys_file)
+        end
+
+        jsonBody = read_keys(@cascade_keys_file)
         keys = jsonBody["jwtPublicKeys"]
         certKey = Enum.at(keys, 0)
+        keys = jsonBody["keys"]
+
+        dt2 = DateTime.utc_now()
+        IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+
         {:ok, certKey, token}
       {:error, reason} -> {:error, reason}
     end
@@ -43,7 +79,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def find_aad_public_key?(arg) do
+  defmemo find_aad_public_key?(arg) do
     case arg do
       {:ok, kid, token} ->
         {:ok, kid, token}
@@ -362,7 +398,13 @@ defmodule LiveShareCommunities.Authentication do
   end
 
   def authenticateRoute(conn) do
-    case authenticated?(conn) do
+    dt1 = DateTime.utc_now()
+    res = authenticated?(conn)
+    dt2 = DateTime.utc_now()
+    
+    IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+
+    case res do
       {:ok, claims} ->
         set_user_claims?(conn)
       {:error, reason} ->

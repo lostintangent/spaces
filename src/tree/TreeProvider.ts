@@ -1,31 +1,10 @@
 import * as R from "ramda";
 import * as redux from "redux";
-import {
-  Disposable,
-  Event,
-  EventEmitter,
-  ProviderResult,
-  TreeDataProvider,
-  TreeItem,
-  window
-} from "vscode";
+import { Disposable, Event, EventEmitter, ProviderResult, TreeDataProvider, TreeItem, window } from "vscode";
 import { LiveShare } from "vsls";
 import { communityNodeExpanded } from "../store/actions";
 import { IStore } from "../store/model";
-import {
-  CommunityBroadcastsNode,
-  CommunityCodeReviewsNode,
-  CommunityHelpRequestsNode,
-  CommunityMembersNode,
-  CommunityNode,
-  CreateSessionNode,
-  LoadingNode,
-  MemberNode,
-  NoCommunitiesNode,
-  SessionNode,
-  SignInNode,
-  TreeNode
-} from "./nodes";
+import { CommunityBroadcastsNode, CommunityCodeReviewsNode, CommunityHelpRequestsNode, CommunityMembersNode, CommunityNode, CreateSessionNode, LoadingNode, MemberNode, NoCommunitiesNode, SessionNode, SignInNode, TreeNode } from "./nodes";
 
 class CommunitiesTreeProvider
   implements TreeDataProvider<TreeNode>, Disposable {
@@ -59,7 +38,7 @@ class CommunitiesTreeProvider
         return [new NoCommunitiesNode()];
       } else {
         return state.communities.map(
-          community => new CommunityNode(community, this.api)
+          community => new CommunityNode(community, this.api, this.extensionPath)
         );
       }
     } else {

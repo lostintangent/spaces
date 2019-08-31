@@ -12,6 +12,9 @@ import {
   ACTION_SESSION_CREATED,
   ACTION_STATUSES_UPDATED,
   ACTION_USER_AUTHENTICATION_CHANGED,
+  joinCommunityFailed,
+  makeCommunityPrivate,
+  makeCommunityPublic,
   muteAllCommunities,
   muteCommunity,
   unmuteAllCommunities,
@@ -56,6 +59,8 @@ export const reducer: redux.Reducer = (
             isLoading: true,
             isLeaving: false,
             isExpanded: false,
+            isPrivate: !!action.key,
+            key: action.key,
             isMuted: true
           }
         ])
@@ -85,6 +90,14 @@ export const reducer: redux.Reducer = (
             return community;
           }
         })
+      };
+
+    case joinCommunityFailed.toString():
+      return {
+        ...state,
+        communities: state.communities.filter(
+          community => community.name !== action.payload
+        )
       };
 
     case ACTION_LEAVE_COMMUNITY:
@@ -290,6 +303,38 @@ export const reducer: redux.Reducer = (
             ...community,
             isMuted: false
           };
+        })
+      };
+
+    case makeCommunityPrivate.toString():
+      return {
+        ...state,
+        communities: state.communities.map(community => {
+          if (community.name === action.payload.community) {
+            return {
+              ...community,
+              isPrivate: true,
+              key: action.payload.key
+            };
+          } else {
+            return community;
+          }
+        })
+      };
+
+    case makeCommunityPublic.toString():
+      return {
+        ...state,
+        communities: state.communities.map(community => {
+          if (community.name === action.payload) {
+            return {
+              ...community,
+              isPrivate: false,
+              key: null
+            };
+          } else {
+            return community;
+          }
         })
       };
 

@@ -1,13 +1,6 @@
 import { createAction } from "redux-starter-kit";
 import { Access } from "vsls";
-import {
-  IActiveSession,
-  ICommunity,
-  IMember,
-  IMemberStatus,
-  ISession,
-  SessionType
-} from "./model";
+import { IActiveSession, ICommunity, IMember, IMemberStatus, ISession, SessionType } from "./model";
 
 export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
 export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
@@ -32,8 +25,8 @@ export const loadCommunities = () => action(ACTION_LOAD_COMMUNITIES);
 export const loadCommunitiesCompleted = (communities: ICommunity[]) =>
   action(ACTION_LOAD_COMMUNITIES_COMPLETED, { communities });
 
-export const joinCommunity = (name: string) =>
-  action(ACTION_JOIN_COMMUNITY, { name: name.toLowerCase() });
+export const joinCommunity = (name: string, key?: string) =>
+  action(ACTION_JOIN_COMMUNITY, { name: name.toLowerCase(), key });
 
 export const joinCommunityCompleted = (
   name: string,
@@ -93,3 +86,9 @@ export const unmuteCommunity = createAction<string>("community/unmute");
 export const muteAllCommunities = createAction("community/muteAll");
 
 export const unmuteAllCommunities = createAction("community/unmuteAll");
+
+export const makeCommunityPrivate = createAction("community/makePrivate");
+
+export const makeCommunityPublic = createAction("community/makePublic");
+
+export const joinCommunityFailed = createAction<string>("community/joinFailed");

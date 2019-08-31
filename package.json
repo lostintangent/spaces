@@ -4,7 +4,7 @@
   "publisher": "lostintangent",
   "description": "Discover, share, and receive real-time assistance from developers across your favorite communities",
   "icon": "images/icon.png",
-  "version": "0.0.9",
+  "version": "0.2.1",
   "engines": {
     "vscode": "^1.36.0"
   },
@@ -159,6 +159,16 @@
         "command": "liveshare.copyCommunityLink",
         "category": "Live Share Communities",
         "title": "Copy Link to Community"
+      },
+      {
+        "command": "liveshare.makeCommunityPrivate",
+        "category": "Live Share Communities",
+        "title": "Make Private"
+      },
+      {
+        "command": "liveshare.makeCommunityPublic",
+        "category": "Live Share Communities",
+        "title": "Make Public"
       }
     ],
     "views": {
@@ -199,15 +209,28 @@
       "view/item/context": [
         {
           "command": "liveshare.leaveCommunity",
-          "when": "view == liveshare.communities && viewItem =~ /^community/"
+          "when": "view == liveshare.communities && viewItem =~ /^community/",
+          "group": "base@4"
         },
         {
           "command": "liveshare.copyCommunityLink",
-          "when": "view == liveshare.communities && viewItem =~ /^community/"
+          "when": "view == liveshare.communities && viewItem =~ /^community/",
+          "group": "base@2"
         },
         {
           "command": "liveshare.clearMessages",
-          "when": "view == liveshare.communities && viewItem =~ /^community.founder/"
+          "when": "view == liveshare.communities && viewItem =~ /^community.founder/",
+          "group": "founder@1"
+        },
+        {
+          "command": "liveshare.makeCommunityPrivate",
+          "when": "view == liveshare.communities && viewItem =~ /^community.founder(\\.muted)?$/",
+          "group": "founder@2"
+        },
+        {
+          "command": "liveshare.makeCommunityPublic",
+          "when": "view == liveshare.communities && viewItem =~ /^community.founder.private/",
+          "group": "founder@2"
         },
         {
           "command": "liveshare.inviteMemberByEmail",
@@ -274,16 +297,18 @@
         },
         {
           "command": "liveshare.muteCommunity",
-          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?$/"
+          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?(.private)?$/",
+          "group": "base@3"
         },
         {
           "command": "liveshare.muteCommunity",
-          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?$/",
+          "when": "view == liveshare.communities && viewItem =~ /^community(.founder)?(.private)?$/",
           "group": "inline"
         },
         {
           "command": "liveshare.unmuteCommunity",
-          "when": "view == liveshare.communities && viewItem =~ /^community.*muted$/"
+          "when": "view == liveshare.communities && viewItem =~ /^community.*muted$/",
+          "group": "base@3"
         },
         {
           "command": "liveshare.unmuteCommunity",
@@ -333,6 +358,14 @@
         {
           "command": "liveshare.copyCommunityLink",
           "when": "false"
+        },
+        {
+          "command": "liveshare.makeCommunityPrivate",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.makeCommunityPublic",
+          "when": "false"
         }
       ]
     }
@@ -363,6 +396,7 @@
   },
   "dependencies": {
     "@types/keytar": "^4.4.0",
+    "@types/uuid": "^3.4.5",
     "@vs/vscode-account": "^1.0.711",
     "axios": "^0.19.0",
     "elm": "^0.19.0-no-deps",
@@ -372,6 +406,7 @@
     "redux-saga": "^1.0.5",
     "redux-starter-kit": "^0.6.3",
     "redux-thunk": "^2.3.0",
+    "uuid": "^3.3.3",
     "vsls": "^0.3.1291",
     "ws": "^7.1.1"
   }

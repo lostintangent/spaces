@@ -111,12 +111,13 @@ defmodule LiveShareCommunities.Store do
       Enum.map(keys, fn x ->
         %{
           name: x,
-          member_count: community(x) |> Map.get("members", []) |> length
+          member_count: community(x) |> Map.get("members", []) |> length,
+          is_private: community(x) |> Map.get("isPrivate", false)
         }
       end)
 
     communities
-    |> Enum.filter(&(&1.member_count > 0))
+    |> Enum.filter(&(&1.member_count > 0 && &1.is_private === false))
     |> Enum.sort_by(& &1.member_count, &>=/2)
     |> Enum.take(@top_communities_count)
   end
@@ -256,6 +257,20 @@ defmodule LiveShareCommunities.Store do
         &1,
         Enum.map(to, fn x -> %{"to" => x, "from" => from, "timestamp" => now()} end)
       )
+    )
+  end
+
+  def make_private(name, key) do
+    update(
+      name,
+      &Map.merge(&1, %{"isPrivate" => true, "key" => key})
+    )
+  end
+
+  def make_public(name) do
+    update(
+      name,
+      &Map.merge(&1, %{"isPrivate" => false, "key" => ""})
     )
   end
 

@@ -66,11 +66,13 @@ At any time, you can also mute a community (or all communities) directly from th
 
 ## Private Communities
 
-By default, any community you join is public. However, if you're the founder of the community (i.e. the first person to join it), you can choose to make it private by simply right-clicking it and selecting `Make Private`. You can identify private communities because they display a lock icon next to their names.
+By default, any community you join is public. However, if you're the founder of the community (i.e. the first person to join it), you can choose to make it private by simply right-clicking it and selecting `Make Private`.
 
    <img width="200px" src="https://user-images.githubusercontent.com/116461/64066583-f547ab00-cbd8-11e9-8f61-357f54ab8d42.png" />
 
-In order to invite members to a private community, right-click the community, select `Copy Link to Community` and send/publish that invitation URL to the intended members. They can simply click that URL, which will deep-link them into VS Code, and automatically join the community.
+> Note: You can easily identify private communities within the `Communities` tree, because they display a lock icon next to their names.
+
+In order to invite members to a private community, right-click the community, select `Copy Link to Community` and send/publish the invitation URL to the intended members. They can simply click that URL, which will deep-link them into VS Code, and automatically join the community.
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/64066592-15776a00-cbd9-11e9-8a95-1eb531eafefd.png" />
 

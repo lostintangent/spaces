@@ -7,9 +7,14 @@ defmodule LiveShareCommunities.Authentication do
   defmemo get_aad_keys?(arg) do
     case arg do
       {:ok, kid, token} ->
+        dt1 = DateTime.utc_now()
         response = HTTPotion.get "https://login.microsoftonline.com/common/discovery/v2.0/keys"
         jsonBody = Poison.decode!(response.body)
         keys = jsonBody["keys"]
+        dt2 = DateTime.utc_now()
+    
+        IO.inspect "** Get AAD public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+
         {:ok, kid, token, keys}
       {:error, reason} -> {:error, reason}
     end
@@ -18,10 +23,16 @@ defmodule LiveShareCommunities.Authentication do
   defmemo find_cascade_public_key?(arg) do
     case arg do
       {:ok, token} ->
+        dt1 = DateTime.utc_now()
         response = HTTPotion.get "https://prod.liveshare.vsengsaas.visualstudio.com/api/authenticatemetadata"
         jsonBody = Poison.decode!(response.body)
         keys = jsonBody["jwtPublicKeys"]
         certKey = Enum.at(keys, 0)
+        keys = jsonBody["keys"]
+        dt2 = DateTime.utc_now()
+
+        IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+
         {:ok, certKey, token}
       {:error, reason} -> {:error, reason}
     end
@@ -272,7 +283,13 @@ defmodule LiveShareCommunities.Authentication do
   end
 
   def authenticateRoute(conn) do
-    case authenticated?(conn) do
+    dt1 = DateTime.utc_now()
+    res = authenticated?(conn)
+    dt2 = DateTime.utc_now()
+    
+    IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+
+    case res do
       {:ok, claims} ->
         conn
       {:error, reason} ->

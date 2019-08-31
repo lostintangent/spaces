@@ -49,7 +49,7 @@ defmodule LiveShareCommunities.Authentication do
         if !File.exists?(@cascade_keys_file) do
           save_keys(@cascade_keys_url, @cascade_keys_file)
         end
-        
+
         jsonBody = read_keys(@cascade_keys_file)
         keys = jsonBody["jwtPublicKeys"]
         certKey = Enum.at(keys, 0)
@@ -63,7 +63,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  defmemo find_aad_public_key_in_keys?(arg) do
+  def find_aad_public_key_in_keys?(arg) do
     case arg do
       {:ok, kid, token, keys} ->
         certItem = Enum.find(keys, fn key ->

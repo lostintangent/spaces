@@ -1,9 +1,10 @@
 import axios from "axios";
 import { auth } from "./auth/auth";
+import { SERVICE_URL } from "./constants";
 import { ICommunity } from "./store/model";
 
-//const BASE_URL = `${SERVICE_URL}/v0`;
-const BASE_URL = "http://localhost:4000/v0";
+const BASE_URL = `${SERVICE_URL}/v0`;
+//const BASE_URL = "http://localhost:4000/v0";
 
 const getAuthHeader = async () => {
   const t1 = Date.now();

@@ -117,7 +117,7 @@ defmodule LiveShareCommunities.HTTP do
 
     community = LiveShareCommunities.Store.community(community_name)
 
-    isPrivate = community["isPrivate"] === true
+    is_private = community["isPrivate"] === true
 
     key =
       if Map.has_key?(conn.body_params, "key") do
@@ -126,7 +126,7 @@ defmodule LiveShareCommunities.HTTP do
         ""
       end
 
-    if isPrivate and key !== community["key"] do
+    if is_private and key !== community["key"] do
       send_resp(conn, 403, "Unauthorized")
     else
       join_community(community_name, member, conn)

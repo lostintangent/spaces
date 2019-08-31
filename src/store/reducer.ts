@@ -1,7 +1,34 @@
 import * as R from "ramda";
 import * as redux from "redux";
-import { ACTION_ACTIVE_SESSION_ENDED, ACTION_COMMUNITY_NODE_EXPANDED, ACTION_JOIN_COMMUNITY, ACTION_JOIN_COMMUNITY_COMPLETED, ACTION_LEAVE_COMMUNITY, ACTION_LEAVE_COMMUNITY_COMPLETED, ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED, ACTION_SESSION_CREATED, ACTION_STATUSES_UPDATED, ACTION_USER_AUTHENTICATION_CHANGED, joinCommunityFailed, makeCommunityPrivate, makeCommunityPublic, muteAllCommunities, muteCommunity, unmuteAllCommunities, unmuteCommunity } from "./actions";
-import { ICommunity, IMember, IMemberStatus, ISession, IStore, SessionType, Status } from "./model";
+import {
+  ACTION_ACTIVE_SESSION_ENDED,
+  ACTION_COMMUNITY_NODE_EXPANDED,
+  ACTION_JOIN_COMMUNITY,
+  ACTION_JOIN_COMMUNITY_COMPLETED,
+  ACTION_LEAVE_COMMUNITY,
+  ACTION_LEAVE_COMMUNITY_COMPLETED,
+  ACTION_LOAD_COMMUNITIES,
+  ACTION_LOAD_COMMUNITIES_COMPLETED,
+  ACTION_SESSION_CREATED,
+  ACTION_STATUSES_UPDATED,
+  ACTION_USER_AUTHENTICATION_CHANGED,
+  joinCommunityFailed,
+  makeCommunityPrivate,
+  makeCommunityPublic,
+  muteAllCommunities,
+  muteCommunity,
+  unmuteAllCommunities,
+  unmuteCommunity
+} from "./actions";
+import {
+  ICommunity,
+  IMember,
+  IMemberStatus,
+  ISession,
+  IStore,
+  SessionType,
+  Status
+} from "./model";
 
 const initialState: IStore = {
   isLoading: true,
@@ -32,7 +59,7 @@ export const reducer: redux.Reducer = (
             isLoading: true,
             isLeaving: false,
             isExpanded: false,
-            isPrivate: (action.key != null),
+            isPrivate: !action.key,
             ket: action.key,
             isMuted: true
           }
@@ -68,7 +95,9 @@ export const reducer: redux.Reducer = (
     case joinCommunityFailed.toString():
       return {
         ...state,
-        communities: state.communities.filter(community => community.name !== action.payload)
+        communities: state.communities.filter(
+          community => community.name !== action.payload
+        )
       };
 
     case ACTION_LEAVE_COMMUNITY:

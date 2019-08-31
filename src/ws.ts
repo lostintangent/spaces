@@ -1,6 +1,5 @@
 import * as WebSocket from "ws";
-
-const BASE_URL = "http://vslscommunitieswebapp.azurewebsites.net";
+import { SERVICE_URL } from "./constants";
 
 export class WebsocketClient {
   ws: WebSocket | undefined;
@@ -16,7 +15,7 @@ export class WebsocketClient {
 
   connect() {
     console.log("Websocket connecting");
-    this.ws = new WebSocket(`${BASE_URL}/ws?${this.userEmail}`);
+    this.ws = new WebSocket(`${SERVICE_URL}/ws?${this.userEmail}`);
 
     this.ws.on("open", () => {
       console.log("Websocket open");

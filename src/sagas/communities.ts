@@ -7,7 +7,16 @@ import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { JOIN_URL_PATTERN } from "../constants";
 import { LocalStorage } from "../storage/LocalStorage";
-import { joinCommunity, joinCommunityCompleted, joinCommunityFailed, leaveCommunityCompleted, loadCommunitiesCompleted, muteAllCommunities, muteCommunity, updateCommunity } from "../store/actions";
+import {
+  joinCommunity,
+  joinCommunityCompleted,
+  joinCommunityFailed,
+  leaveCommunityCompleted,
+  loadCommunitiesCompleted,
+  muteAllCommunities,
+  muteCommunity,
+  updateCommunity
+} from "../store/actions";
 import { ICommunity, IMember, ISession } from "../store/model";
 import { sessionTypeDisplayName } from "../utils";
 
@@ -73,14 +82,24 @@ export function* joinCommunitySaga(
   } catch {
     yield put(joinCommunityFailed(name));
 
-    // @ts-ignore
-    let response = yield call(window.showErrorMessage, "This community is private and requires an invitation URL in order to join.", PRIVATE_COMMUNITY_RESPONSE);
+    let response = yield call(
+      // @ts-ignore
+      window.showErrorMessage,
+      "This community is private and requires an invitation URL in order to join.",
+      PRIVATE_COMMUNITY_RESPONSE
+    );
     if (response === PRIVATE_COMMUNITY_RESPONSE) {
       const clipboardContents = yield call(env.clipboard.readText);
-      let response = yield call(window.showInputBox, { placeHolder: "Specify the invitation URL or key in order to join this community.", value: clipboardContents });
+      response = yield call(window.showInputBox, {
+        placeHolder:
+          "Specify the invitation URL or key in order to join this community.",
+        value: clipboardContents
+      });
 
       if (response) {
-        key = JOIN_URL_PATTERN.test(response) ? (<any>JOIN_URL_PATTERN.exec(response)).groups.key : response;
+        key = JOIN_URL_PATTERN.test(response)
+          ? (<any>JOIN_URL_PATTERN.exec(response)).groups.key
+          : response;
         yield put(joinCommunity(name, key));
       }
     }

@@ -59,8 +59,8 @@ export const reducer: redux.Reducer = (
             isLoading: true,
             isLeaving: false,
             isExpanded: false,
-            isPrivate: !action.key,
-            ket: action.key,
+            isPrivate: !!action.key,
+            key: action.key,
             isMuted: true
           }
         ])

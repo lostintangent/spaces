@@ -89,7 +89,9 @@ export function* joinCommunitySaga(
       PRIVATE_COMMUNITY_RESPONSE
     );
     if (response === PRIVATE_COMMUNITY_RESPONSE) {
-      const clipboardContents = yield call(env.clipboard.readText);
+      const clipboardContents = yield call(
+        env.clipboard.readText.bind(env.clipboard)
+      );
       response = yield call(window.showInputBox, {
         placeHolder:
           "Specify the invitation URL or key in order to join this community.",

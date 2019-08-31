@@ -8,7 +8,7 @@ defmodule LiveShareCommunities.HTTP do
 
   plug(Plug.Logger)
   plug(Plug.Parsers, parsers: [:json], json_decoder: Poison)
-  plug Authentication
+  plug(Authentication)
   plug(:match)
   plug(:dispatch)
 
@@ -39,8 +39,15 @@ defmodule LiveShareCommunities.HTTP do
         "vscode://"
       end
 
+    suffix =
+      if Map.has_key?(conn.params, "key") do
+        "##{conn.params.key}"
+      else
+        ""
+      end
+
     conn
-    |> put_resp_header("Location", "#{prefix}#{redirect_url}")
+    |> put_resp_header("Location", "#{prefix}#{redirect_url}#{suffix}")
     |> send_resp(:found, "")
   end
 
@@ -94,8 +101,7 @@ defmodule LiveShareCommunities.HTTP do
     |> send_resp(:ok, Poison.encode!(result))
   end
 
-  post "/v0/join" do
-    %{"name" => community_name, "member" => member} = conn.body_params
+  defp join_community(community_name, member, conn) do
     LiveShareCommunities.Store.add_member(community_name, member)
 
     LiveShareCommunities.Events.send(:member_joined, community_name, %{
@@ -104,6 +110,27 @@ defmodule LiveShareCommunities.HTTP do
 
     community = LiveShareCommunities.Store.community(community_name)
     send_resp(conn, :ok, Poison.encode!(community))
+  end
+
+  post "/v0/join" do
+    %{"name" => community_name, "member" => member} = conn.body_params
+
+    community = LiveShareCommunities.Store.community(community_name)
+
+    is_private = community["isPrivate"] === true
+
+    key =
+      if Map.has_key?(conn.body_params, "key") do
+        conn.body_params["key"]
+      else
+        ""
+      end
+
+    if is_private and key !== community["key"] do
+      send_resp(conn, 403, "Unauthorized")
+    else
+      join_community(community_name, member, conn)
+    end
   end
 
   post "/v0/leave" do
@@ -150,6 +177,19 @@ defmodule LiveShareCommunities.HTTP do
   get "/v0/debug" do
     store = LiveShareCommunities.Store.everything()
     send_resp(conn, :ok, Poison.encode!(store))
+  end
+
+  # TODO: Ensure the following are only callable by
+  # the specified community's founder
+  post "/v0/community/:name/private" do
+    %{"key" => key} = conn.body_params
+    LiveShareCommunities.Store.make_private(name, key)
+    send_resp(conn, :ok, Poison.encode!(%{}))
+  end
+
+  post "/v0/community/:name/public" do
+    LiveShareCommunities.Store.make_public(name)
+    send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   match _ do

@@ -1,19 +1,13 @@
 import { call, put, select, take } from "redux-saga/effects";
-import { commands, Uri, window } from "vscode";
+import { commands, env, Uri, window } from "vscode";
 import { LiveShare } from "vsls";
 import * as api from "../api";
 import { createWebSocketChannel } from "../channels/webSocket";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
+import { JOIN_URL_PATTERN } from "../constants";
 import { LocalStorage } from "../storage/LocalStorage";
-import {
-  joinCommunityCompleted,
-  leaveCommunityCompleted,
-  loadCommunitiesCompleted,
-  muteAllCommunities,
-  muteCommunity,
-  updateCommunity
-} from "../store/actions";
+import { joinCommunity, joinCommunityCompleted, joinCommunityFailed, leaveCommunityCompleted, loadCommunitiesCompleted, muteAllCommunities, muteCommunity, updateCommunity } from "../store/actions";
 import { ICommunity, IMember, ISession } from "../store/model";
 import { sessionTypeDisplayName } from "../utils";
 
@@ -52,27 +46,45 @@ export function* loadCommunitiesSaga(
   }
 }
 
-export function* joinCommunity(
+const PRIVATE_COMMUNITY_RESPONSE = "Redeem invitation URL";
+export function* joinCommunitySaga(
   storage: LocalStorage,
   vslsApi: LiveShare,
   chatApi: ChatApi,
-  { name }: any
-) {
+  { name, key }: any
+): any {
   const userInfo = vslsApi.session.user!;
 
-  storage.joinCommunity(name);
+  try {
+    const { members, sessions } = yield call(
+      api.joinCommunity,
+      name,
+      userInfo.displayName,
+      userInfo.emailAddress!,
+      key
+    );
 
-  const { members, sessions } = yield call(
-    api.joinCommunity,
-    name,
-    userInfo.displayName,
-    userInfo.emailAddress!
-  );
+    storage.joinCommunity(name);
 
-  const isMuted = isCommunityMuted(name);
-  yield put(joinCommunityCompleted(name, members, sessions, isMuted));
+    const isMuted = isCommunityMuted(name);
+    yield put(joinCommunityCompleted(name, members, sessions, isMuted));
 
-  chatApi.onCommunityJoined(name);
+    chatApi.onCommunityJoined(name);
+  } catch {
+    yield put(joinCommunityFailed(name));
+
+    // @ts-ignore
+    let response = yield call(window.showErrorMessage, "This community is private and requires an invitation URL in order to join.", PRIVATE_COMMUNITY_RESPONSE);
+    if (response === PRIVATE_COMMUNITY_RESPONSE) {
+      const clipboardContents = yield call(env.clipboard.readText);
+      let response = yield call(window.showInputBox, { placeHolder: "Specify the invitation URL or key in order to join this community.", value: clipboardContents });
+
+      if (response) {
+        key = JOIN_URL_PATTERN.test(response) ? (<any>JOIN_URL_PATTERN.exec(response)).groups.key : response;
+        yield put(joinCommunity(name, key));
+      }
+    }
+  }
 }
 
 export function* leaveCommunity(
@@ -190,4 +202,12 @@ export function unmuteAllCommunitiesSaga() {
     "communities:allCommunitiesMuted",
     false
   );
+}
+
+export function* makeCommunityPrivateSaga({ payload }: any) {
+  yield call(api.makePrivate, payload.community, payload.key);
+}
+
+export function* makeCommunityPublicSaga({ payload }: any) {
+  yield call(api.makePublic, payload);
 }

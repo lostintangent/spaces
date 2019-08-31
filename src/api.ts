@@ -63,14 +63,20 @@ export async function loadCommunities(
 export async function joinCommunity(
     community: string,
     name: string,
-    email: string
+    email: string,
+    key?: string
 ): Promise<any> {
-    const { data } = await postAsync(
-        `${BASE_URL}/join`,
-        createCommunityRequest(community, name, email)
-    );
-    const { members, sessions } = data;
-    return { members, sessions };
+    try {
+        const { data, status } = await postAsync(
+            `${BASE_URL}/join`,
+            createCommunityRequest(community, name, email, key)
+        );
+
+        const { members, sessions } = data;
+        return { members, sessions };
+    } catch (e) {
+        throw e;
+    }
 }
 
 export async function leaveCommunity(
@@ -114,22 +120,32 @@ export async function clearMessages(community: string) {
 }
 
 export async function sayThanks(community: string, from: string, to: string[]) {
-  return await axios.post(`${BASE_URL}/community/${community}/thanks`, {
-    from,
-    to
-  });
+    return await axios.post(`${BASE_URL}/community/${community}/thanks`, {
+        from,
+        to
+    });
+}
+
+export async function makePrivate(community: string, key: string) {
+    return await postAsync(`${BASE_URL}/community/${community}/private`, { key });
+}
+
+export async function makePublic(community: string) {
+    return await postAsync(`${BASE_URL}/community/${community}/public`, {});
 }
 
 function createCommunityRequest(
     communityName: string,
     memberName: string,
-    memberEmail: string
+    memberEmail: string,
+    key?: string
 ) {
     return {
         name: communityName,
         member: {
             name: memberName,
             email: memberEmail
-        }
+        },
+        key
     };
 }

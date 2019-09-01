@@ -43,11 +43,6 @@ export function registerCommunityCommands(
     list.items = communityItems;
 
     list.onDidChangeValue(searchString => {
-      if (JOIN_URL_PATTERN.test(searchString)) {
-        searchString = (<any>JOIN_URL_PATTERN.exec(searchString)).groups
-          .community;
-      }
-
       list.items = searchString
         ? [{ label: searchString }, ...communityItems]
         : communityItems;

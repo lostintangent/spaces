@@ -133,12 +133,13 @@ export function* updateCommunitySaga(
     helpRequests,
     broadcasts,
     codeReviews,
-    isMuted
+    isMuted,
+    isLoading
   }: ICommunity = communities.find((c: any) => c.name === name);
 
   yield put(joinCommunityCompleted(name, members, newSessions, isMuted!));
 
-  if (isCommunityMuted(name)) {
+  if (isLoading || isCommunityMuted(name)) {
     return;
   }
 

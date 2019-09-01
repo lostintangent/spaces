@@ -13,6 +13,7 @@ import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
+  ACTION_CLEAR_ZOMBIE_SESSIONS,
   ACTION_COMMUNITY_UPDATED,
   ACTION_CREATE_SESSION,
   ACTION_JOIN_COMMUNITY,
@@ -20,6 +21,7 @@ import {
   ACTION_LOAD_COMMUNITIES,
   ACTION_LOAD_COMMUNITIES_COMPLETED,
   clearMessages,
+  clearZombieSessions,
   loadCommunities,
   makeCommunityPrivate,
   makeCommunityPublic,
@@ -44,7 +46,11 @@ import {
 } from "./communities";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
 import { extensionsSaga } from "./extensions";
-import { createSession, endActiveSession } from "./sessions";
+import {
+  cleanZombieSession,
+  createSession,
+  endActiveSession
+} from "./sessions";
 
 function* workerSagas(
   storage: LocalStorage,
@@ -67,8 +73,15 @@ function* workerSagas(
     ),
     takeEvery(clearMessages, clearMessagesSaga.bind(null, chatApi)),
 
-    takeEvery(ACTION_CREATE_SESSION, createSession.bind(null, vslsApi)),
-    takeEvery(sessionStateChannel, endActiveSession),
+    takeEvery(
+      ACTION_CREATE_SESSION,
+      createSession.bind(null, storage, vslsApi)
+    ),
+    takeEvery(sessionStateChannel, endActiveSession.bind(null, storage)),
+    takeEvery(
+      ACTION_CLEAR_ZOMBIE_SESSIONS,
+      cleanZombieSession.bind(null, storage)
+    ),
 
     takeEvery(muteCommunity, muteCommunitySaga),
     takeEvery(unmuteCommunity, unmuteCommunitySaga),
@@ -94,8 +107,8 @@ export function* rootSaga(
   sessionStateChannel: ISessionStateChannel
 ) {
   const authChannel = createAuthenticationChannel(vslsApi);
-
   let workersTask, extensionsTask;
+
   while (true) {
     const isSignedIn = yield take(authChannel);
     yield put(userAuthenticationChanged(isSignedIn));
@@ -114,6 +127,8 @@ export function* rootSaga(
       }
 
       yield put(<any>loadCommunities());
+
+      yield put(<any>clearZombieSessions());
 
       yield take(ACTION_LOAD_COMMUNITIES_COMPLETED);
 

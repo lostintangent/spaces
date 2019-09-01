@@ -3,7 +3,10 @@ import createSagaMiddleware from "redux-saga";
 import { ExtensionContext } from "vscode";
 import { getApi as getVslsApi } from "vsls";
 import { auth } from "./auth/auth";
-import { createSessionStateChannel, ISessionStateChannel } from "./channels/sessionState";
+import {
+  createSessionStateChannel,
+  ISessionStateChannel
+} from "./channels/sessionState";
 import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";

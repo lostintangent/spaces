@@ -1,11 +1,13 @@
 import { call, put, select } from "redux-saga/effects";
 import { LiveShare } from "vsls";
 import * as api from "../api";
+import { LocalStorage } from "../storage/LocalStorage";
 import { activeSessionEnded, sessionCreated } from "../store/actions";
 import { ISession } from "../store/model";
 import { getCurrentSessionUrl } from "../utils";
 
 export function* createSession(
+  storage: LocalStorage,
   vslsApi: LiveShare,
   { description, sessionType, community, access }: any
 ) {
@@ -17,8 +19,9 @@ export function* createSession(
     sessionUrl = getCurrentSessionUrl(vslsApi);
   }
 
+  const sessionId = vslsApi.session.id!;
   const session: ISession = {
-    id: vslsApi.session.id!,
+    id: sessionId,
     host: vslsApi.session.user!.emailAddress!,
     startTime: new Date(),
     description,
@@ -27,11 +30,11 @@ export function* createSession(
   };
 
   yield put(sessionCreated({ community, session }));
-
+  storage.saveActiveSession(sessionId, community);
   yield call(api.createSession, community, session);
 }
 
-export function* endActiveSession() {
+export function* endActiveSession(storage: LocalStorage) {
   const activeSession = yield select(s => s.activeSession);
 
   if (activeSession) {
@@ -40,6 +43,17 @@ export function* endActiveSession() {
       activeSession.community,
       activeSession.session.id
     );
+
+    storage.clearActiveSession();
     yield put(activeSessionEnded());
+  }
+}
+
+export function* cleanZombieSession(storage: LocalStorage) {
+  const session: any = storage.getActiveSession();
+
+  if (session) {
+    yield call(api.deleteSession, session.name, session.id);
+    storage.clearActiveSession();
   }
 }

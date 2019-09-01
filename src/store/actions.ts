@@ -12,6 +12,7 @@ export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
 export const ACTION_CREATE_SESSION = "CREATE_SESSION";
 export const ACTION_SESSION_CREATED = "SESSION_CREATED";
 export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
+export const ACTION_CLEAR_ZOMBIE_SESSIONS = "CLEAR_ZOMBIE_SESSIONS";
 export const ACTION_COMMUNITY_NODE_EXPANDED = "COMMUNITY_NODE_EXPANDED";
 export const ACTION_USER_AUTHENTICATION_CHANGED = "USER_AUTHENTICATION_CHANGED";
 export const ACTION_COMMUNITY_UPDATED = "COMMUNITY_UPDATED";
@@ -62,6 +63,8 @@ export const sessionCreated = (activeSession: IActiveSession) =>
   action(ACTION_SESSION_CREATED, { activeSession });
 
 export const activeSessionEnded = () => action(ACTION_ACTIVE_SESSION_ENDED);
+
+export const clearZombieSessions = () => action(ACTION_CLEAR_ZOMBIE_SESSIONS);
 
 export const communityNodeExpanded = (
   community: ICommunity,

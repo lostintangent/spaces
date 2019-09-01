@@ -3,14 +3,16 @@ import createSagaMiddleware from "redux-saga";
 import { ExtensionContext } from "vscode";
 import { getApi as getVslsApi } from "vsls";
 import { auth } from "./auth/auth";
-import { createSessionStateChannel, ISessionStateChannel } from "./channels/sessionState";
+import {
+  createSessionStateChannel,
+  ISessionStateChannel
+} from "./channels/sessionState";
 import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
 import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
-import { clearZombieSessions } from "./store/actions";
 import { reducer } from "./store/reducer";
 import { registerTreeProvider } from "./tree/TreeProvider";
 import { registerUriHandler } from "./uriHandler";
@@ -49,9 +51,6 @@ export async function activate(context: ExtensionContext) {
   }
 
   saga.run(rootSaga, storage, api, chatApi, sessionStateChannel);
-
-  console.log(storage.getActiveSession()); // TODO: this is to be removed
-  store.dispatch(<any>clearZombieSessions());
 
   return chatApi;
 }

@@ -30,7 +30,7 @@ export function* createSession(
   };
 
   yield put(sessionCreated({ community, session }));
-  storage.saveActiveSession(sessionId, community)
+  storage.saveActiveSession(sessionId, community);
   yield call(api.createSession, community, session);
 }
 
@@ -50,10 +50,10 @@ export function* endActiveSession(storage: LocalStorage) {
 }
 
 export function* cleanZombieSession(storage: LocalStorage) {
-  const { id, name }: any = storage.getActiveSession();
+  const session: any = storage.getActiveSession();
 
-  if (id && name) {
-    yield call(api.deleteSession, name, id);
+  if (session) {
+    yield call(api.deleteSession, session.name, session.id);
     storage.clearActiveSession();
   }
 }

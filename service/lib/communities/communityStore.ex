@@ -133,7 +133,7 @@ defmodule LiveShareCommunities.CommunityStore do
 
   def top_communities() do
     # TODO: We can optimize this by sorting inside Redis, and not load all results
-    {:ok, keys} = Redix.command(:redix, ["KEYS", "communitiy:*"])
+    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
 
     communities =
       Enum.map(keys, fn x ->

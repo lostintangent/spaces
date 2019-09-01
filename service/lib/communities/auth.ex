@@ -296,6 +296,7 @@ defmodule LiveShareCommunities.Authentication do
             end
           {:error, reason} -> {:error, reason}
         end
+      {:error, reason} -> {:error, reason}
     end
   end
 

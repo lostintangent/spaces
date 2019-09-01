@@ -1,14 +1,17 @@
 import { Store } from "redux";
+import { v4 } from "uuid";
 import { commands, env, QuickPickItem, WebviewPanel, window } from "vscode";
 import { LiveShare } from "vsls";
 import { getTopCommunities } from "../api";
-import { EXTENSION_NAME } from "../constants";
+import { EXTENSION_NAME, JOIN_URL_PATTERN, SERVICE_URL } from "../constants";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   clearMessages,
   joinCommunity,
   leaveCommunity,
   loadCommunities,
+  makeCommunityPrivate,
+  makeCommunityPublic,
   muteAllCommunities,
   muteCommunity,
   unmuteAllCommunities,
@@ -50,6 +53,11 @@ export function registerCommunityCommands(
     list.items = communityItems;
 
     list.onDidChangeValue(searchString => {
+      if (JOIN_URL_PATTERN.test(searchString)) {
+        searchString = (<any>JOIN_URL_PATTERN.exec(searchString)).groups
+          .community;
+      }
+
       list.items = searchString
         ? [{ label: searchString }, ...communityItems]
         : communityItems;
@@ -57,9 +65,17 @@ export function registerCommunityCommands(
 
     list.onDidAccept(() => {
       const userInfo = api.session.user;
-      const community = list.selectedItems[0].label;
+      let community = list.selectedItems[0].label;
       if (community && userInfo && userInfo.emailAddress) {
-        store.dispatch(<any>joinCommunity(community));
+        let key;
+        if (JOIN_URL_PATTERN.test(community)) {
+          const { groups }: any = JOIN_URL_PATTERN.exec(community);
+
+          community = groups.community;
+          key = groups.key;
+        }
+
+        store.dispatch(<any>joinCommunity(community, key));
       }
       list.hide();
     });
@@ -166,18 +182,35 @@ export function registerCommunityCommands(
   });
 
   commands.registerCommand(
+    `${EXTENSION_NAME}.makeCommunityPrivate`,
+    (node?: CommunityNode) => {
+      const key = v4();
+      store.dispatch(
+        makeCommunityPrivate({ community: node!.community.name, key })
+      );
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.makeCommunityPublic`,
+    (node?: CommunityNode) => {
+      store.dispatch(makeCommunityPublic(node!.community.name));
+    }
+  );
+
+  commands.registerCommand(
     `${EXTENSION_NAME}.copyCommunityLink`,
     async (node: CommunityNode) => {
-      const url = `http://vslscommunitieswebapp.azurewebsites.net/join_redirect/${
-        node.name
-      }`;
+      let url = `${SERVICE_URL}/join_redirect/${node.name}`;
+
+      if (node.community.isPrivate) {
+        url += `?key=${node.community.key}`;
+      }
 
       env.clipboard.writeText(url);
 
       const response = await window.showInformationMessage(
-        `The join URL for the "${
-          node.name
-        }" community has been copied to your clipboard!`,
+        `The join URL for the "${node.name}" community has been copied to your clipboard!`,
         "Copy again"
       );
 

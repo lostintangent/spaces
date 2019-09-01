@@ -2,9 +2,10 @@ import { commands, ConfigurationTarget, window, workspace } from "vscode";
 
 const liveShareConfig = workspace.getConfiguration("liveshare");
 
+const EXTENSION_CONTRIBUTION_BEHAVIOR = "extensionContributionBehavior";
 const FEATURE_SET_SETTING = "featureSet";
-const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
 const MUTED_COMMUNITIES = "mutedCommunities";
+const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
 const INSIDERS = "insiders";
 
 export const config = {
@@ -31,6 +32,20 @@ export const config = {
         commands.executeCommand("workbench.action.reloadWindow");
       }
     }
+
+    await commands.executeCommand("liveshare.enable.vscode-account.auth");
+  },
+
+  get extensionContributionBehavior() {
+    return this.getConfig().get<string>(EXTENSION_CONTRIBUTION_BEHAVIOR)!;
+  },
+
+  set extensionContributionBehavior(value: string) {
+    this.getConfig().update(
+      EXTENSION_CONTRIBUTION_BEHAVIOR,
+      value,
+      ConfigurationTarget.Global
+    );
   },
 
   get showSuggestedContacts() {

@@ -24,3 +24,6 @@ vsls_can-*.tar
 
 .elixir_ls
 **/dump.rdb
+dump.rdb
+
+*-public-keys.json

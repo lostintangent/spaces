@@ -64,6 +64,46 @@ At any time, you can also mute a community (or all communities) directly from th
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/63452124-65487b00-c3fa-11e9-8e3f-bc824cfe4bc3.png" />
 
+## Private Communities
+
+By default, any community you join is public. However, if you're the founder of the community (i.e. the first person to join it), you can choose to make it private by simply right-clicking it and selecting `Make Private`.
+
+   <img width="200px" src="https://user-images.githubusercontent.com/116461/64066583-f547ab00-cbd8-11e9-8f61-357f54ab8d42.png" />
+
+> Note: You can easily identify private communities within the `Communities` tree, because they display a lock icon next to their names.
+
+In order to invite members to a private community, right-click the community, select `Copy Link to Community` and send/publish the invitation URL to the intended members. They can simply click that URL, which will deep-link them into VS Code, and automatically join the community.
+
+   <img width="250px" src="https://user-images.githubusercontent.com/116461/64066592-15776a00-cbd9-11e9-8a95-1eb531eafefd.png" />
+
+> Note: As opposed to directly clicking the link, users can also paste the invitation link into the `Join community` input box as well.
+
+Only users that have an invitation link can join the community. If anyone tries to join, and doesn't have the invitation link, they'll be denied access to the community.
+
+   <img width="400px" src="https://user-images.githubusercontent.com/116461/64066612-3b047380-cbd9-11e9-8bcd-c223fcfe3651.png" />
+
+If at any time, you decide that you'd like to make the community public, simply right-click the community and select `Make Public`. Then, anyone can join the community, regardless if they've been invited or not.
+
+   <img width="250px" src="https://user-images.githubusercontent.com/116461/64066605-2d4eee00-cbd9-11e9-9225-cb4e2777f5fb.png" />
+
+## Deep Linking Your Community
+
+To simplify the onboarding process for your community, you can provide a deep link to it, using one (or both) of the following techniques:
+
+1. Right-click your community in the `Communities` tree, and select `Copy Link to Community`. This will generate a URL that you can send to someone (e.g. via e-mail, Slack), and when clicked, it will automatically join them to the community. Additionally, you can publish this URL, along with the Live Share Communities badge, on a webpage, or GitHub repository (like this one!), so that visitors can easily discover your community.
+
+   <img width="200px" src="https://user-images.githubusercontent.com/116461/63655942-2c364080-c743-11e9-9a5e-554bb5e631d7.png" />
+
+2. If you've built a VS Code extension (or extension pack), that represents your community (e.g. an opinionated set of extensions/tools for a classroom), then you can add an extension dependency to this extension (`lostintangent.vsls-communities`), as well as a `liveshare.communities` contribution point to your extenison's `package.json` file. When others install your extension, it will install Live Share + Communities, and then automatically join them to the specified communities.
+
+   ```json
+   "contributes": {
+      "liveshare.communities": ["<name>"]
+   }
+   ```
+
+   _Note: You can see an example of this in the [Live Share Counter](https://github.com/vsls-contrib/counter/blob/master/package.json#L46) sample_.
+
 ## FAQ
 
 **How do I create a community?**

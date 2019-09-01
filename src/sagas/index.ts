@@ -20,6 +20,8 @@ import {
   ACTION_LOAD_COMMUNITIES,
   clearMessages,
   loadCommunities,
+  makeCommunityPrivate,
+  makeCommunityPublic,
   muteAllCommunities,
   muteCommunity,
   unmuteAllCommunities,
@@ -28,9 +30,11 @@ import {
 } from "../store/actions";
 import {
   clearMessagesSaga,
-  joinCommunity,
+  joinCommunitySaga,
   leaveCommunity,
   loadCommunitiesSaga,
+  makeCommunityPrivateSaga,
+  makeCommunityPublicSaga,
   muteAllCommunitiesSaga,
   muteCommunitySaga,
   unmuteAllCommunitiesSaga,
@@ -38,9 +42,10 @@ import {
   updateCommunitySaga
 } from "./communities";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
+import { extensionsSaga } from "./extensions";
 import { createSession, endActiveSession } from "./sessions";
 
-function* childSagas(
+function* workerSagas(
   storage: LocalStorage,
   vslsApi: vsls.LiveShare,
   chatApi: ChatApi,
@@ -49,7 +54,7 @@ function* childSagas(
   yield all([
     takeEvery(
       ACTION_JOIN_COMMUNITY,
-      joinCommunity.bind(null, storage, vslsApi, chatApi)
+      joinCommunitySaga.bind(null, storage, vslsApi, chatApi)
     ),
     takeEvery(
       ACTION_LEAVE_COMMUNITY,
@@ -70,6 +75,9 @@ function* childSagas(
     takeEvery(muteAllCommunities, muteAllCommunitiesSaga),
     takeEvery(unmuteAllCommunities, unmuteAllCommunitiesSaga),
 
+    takeEvery(makeCommunityPrivate, makeCommunityPrivateSaga),
+    takeEvery(makeCommunityPublic, makeCommunityPublicSaga),
+
     takeLatest(
       ACTION_LOAD_COMMUNITIES,
       loadCommunitiesSaga.bind(null, storage, vslsApi, chatApi)
@@ -86,14 +94,14 @@ export function* rootSaga(
 ) {
   const authChannel = createAuthenticationChannel(vslsApi);
 
-  let task;
+  let workersTask, extensionsTask;
   while (true) {
     const isSignedIn = yield take(authChannel);
     yield put(userAuthenticationChanged(isSignedIn));
 
     if (isSignedIn) {
-      task = yield fork(
-        childSagas,
+      workersTask = yield fork(
+        workerSagas,
         storage,
         vslsApi,
         chatApi,
@@ -105,8 +113,11 @@ export function* rootSaga(
       }
 
       yield put(<any>loadCommunities());
+
+      extensionsTask = yield fork(extensionsSaga);
     } else {
-      task && task.cancel();
+      workersTask && workersTask.cancel();
+      extensionsTask && extensionsTask.cancel();
     }
   }
 }

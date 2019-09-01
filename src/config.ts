@@ -1,4 +1,5 @@
 import { commands, ConfigurationTarget, window, workspace } from "vscode";
+import { LOCAL_SERVICE_URL, PROD_SERVICE_URL } from "./constants";
 
 const liveShareConfig = workspace.getConfiguration("liveshare");
 
@@ -7,6 +8,7 @@ const FEATURE_SET_SETTING = "featureSet";
 const MUTED_COMMUNITIES = "mutedCommunities";
 const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
 const INSIDERS = "insiders";
+const SERVICE_URI_SETTING = "serviceUri";
 
 export const config = {
   getConfig() {
@@ -62,5 +64,13 @@ export const config = {
       value,
       ConfigurationTarget.Global
     );
+  },
+
+  get serviceUri() {
+    const value = this.getConfig().get<string>(SERVICE_URI_SETTING)!;
+
+    return (value === 'prod')
+      ? PROD_SERVICE_URL
+      : LOCAL_SERVICE_URL;
   }
 };

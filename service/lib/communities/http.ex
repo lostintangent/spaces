@@ -61,7 +61,7 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   get "/badge/:name" do
-    members = LiveShareCommunities.Store.members_of(name) |> length
+    members = LiveShareCommunities.CommunityStore.members_of(name) |> length
 
     prefix =
       if Map.has_key?(conn.params, "insiders") do
@@ -94,7 +94,7 @@ defmodule LiveShareCommunities.HTTP do
         |> Map.get("names")
         |> String.split(",")
         |> Enum.filter(fn x -> String.length(x) > 0 end)
-        |> Enum.map(&LiveShareCommunities.Store.community(&1))
+        |> Enum.map(&LiveShareCommunities.CommunityStore.community(&1))
       else
         []
       end
@@ -104,27 +104,27 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   get "/v0/top_communities" do
-    result = LiveShareCommunities.Store.top_communities()
+    result = LiveShareCommunities.CommunityStore.top_communities()
 
     conn
     |> send_resp(:ok, Poison.encode!(result))
   end
 
   defp join_community(community_name, member, conn) do
-    LiveShareCommunities.Store.add_member(community_name, member)
+    LiveShareCommunities.CommunityStore.add_member(community_name, member)
 
     LiveShareCommunities.Events.send(:member_joined, community_name, %{
       email: member["email"]
     })
 
-    community = LiveShareCommunities.Store.community(community_name)
+    community = LiveShareCommunities.CommunityStore.community(community_name)
     send_resp(conn, :ok, Poison.encode!(community))
   end
 
   post "/v0/join" do
     %{"name" => community_name, "member" => member} = conn.body_params
 
-    community = LiveShareCommunities.Store.community(community_name)
+    community = LiveShareCommunities.CommunityStore.community(community_name)
 
     is_private = community["isPrivate"] === true
 
@@ -144,14 +144,14 @@ defmodule LiveShareCommunities.HTTP do
 
   post "/v0/leave" do
     %{"name" => community_name, "member" => member} = conn.body_params
-    LiveShareCommunities.Store.remove_member(community_name, member)
+    LiveShareCommunities.CommunityStore.remove_member(community_name, member)
     LiveShareCommunities.Events.send(:member_left, community_name, %{email: member["email"]})
 
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   post "/v0/community/:name/session" do
-    LiveShareCommunities.Store.add_session(name, conn.body_params)
+    LiveShareCommunities.CommunityStore.add_session(name, conn.body_params)
 
     LiveShareCommunities.Events.send(:session_start, name, %{id: conn.body_params["id"]})
 
@@ -160,31 +160,31 @@ defmodule LiveShareCommunities.HTTP do
 
   post "/v0/community/:name/thanks" do
     %{"from" => from, "to" => to} = conn.body_params
-    LiveShareCommunities.Store.say_thanks(name, from, to)
+    LiveShareCommunities.CommunityStore.say_thanks(name, from, to)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   delete "/v0/community/:name/session/:session_id" do
-    session = LiveShareCommunities.Store.session(name, session_id)
+    session = LiveShareCommunities.CommunityStore.session(name, session_id)
 
-    LiveShareCommunities.Store.remove_session(name, session_id)
+    LiveShareCommunities.CommunityStore.remove_session(name, session_id)
     LiveShareCommunities.Events.send(:session_end, name, %{session: session})
 
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   get "/v0/community/:name/messages" do
-    messages = LiveShareCommunities.Store.messages_of(name)
+    messages = LiveShareCommunities.CommunityStore.messages_of(name)
     send_resp(conn, :ok, Poison.encode!(messages))
   end
 
   delete "/v0/community/:name/messages" do
-    LiveShareCommunities.Store.clear_messages(name)
+    LiveShareCommunities.CommunityStore.clear_messages(name)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   get "/v0/debug" do
-    store = LiveShareCommunities.Store.everything()
+    store = LiveShareCommunities.CommunityStore.everything()
     send_resp(conn, :ok, Poison.encode!(store))
   end
 
@@ -208,12 +208,12 @@ defmodule LiveShareCommunities.HTTP do
   # the specified community's founder
   post "/v0/community/:name/private" do
     %{"key" => key} = conn.body_params
-    LiveShareCommunities.Store.make_private(name, key)
+    LiveShareCommunities.CommunityStore.make_private(name, key)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   post "/v0/community/:name/public" do
-    LiveShareCommunities.Store.make_public(name)
+    LiveShareCommunities.CommunityStore.make_public(name)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 

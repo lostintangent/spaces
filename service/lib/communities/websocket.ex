@@ -21,7 +21,7 @@ defmodule LiveShareCommunities.Websocket do
     type = incoming["type"]
 
     if type == "message" do
-      LiveShareCommunities.Store.add_message(incoming["name"], incoming, state[:registry_key])
+      LiveShareCommunities.CommunityStore.add_message(incoming["name"], incoming, state[:registry_key])
     end
 
     {:ok, state}

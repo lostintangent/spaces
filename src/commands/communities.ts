@@ -3,20 +3,10 @@ import { v4 } from "uuid";
 import { commands, env, QuickPickItem, WebviewPanel, window } from "vscode";
 import { LiveShare } from "vsls";
 import { getTopCommunities } from "../api";
-import { EXTENSION_NAME, JOIN_URL_PATTERN, SERVICE_URL } from "../constants";
+import { config } from "../config";
+import { EXTENSION_NAME, JOIN_URL_PATTERN } from "../constants";
 import { LocalStorage } from "../storage/LocalStorage";
-import {
-  clearMessages,
-  joinCommunity,
-  leaveCommunity,
-  loadCommunities,
-  makeCommunityPrivate,
-  makeCommunityPublic,
-  muteAllCommunities,
-  muteCommunity,
-  unmuteAllCommunities,
-  unmuteCommunity
-} from "../store/actions";
+import { clearMessages, joinCommunity, leaveCommunity, loadCommunities, makeCommunityPrivate, makeCommunityPublic, muteAllCommunities, muteCommunity, unmuteAllCommunities, unmuteCommunity } from "../store/actions";
 import { IStore } from "../store/model";
 import { CommunityNode } from "../tree/nodes";
 import { createWebView } from "../webView";
@@ -196,7 +186,7 @@ export function registerCommunityCommands(
   commands.registerCommand(
     `${EXTENSION_NAME}.copyCommunityLink`,
     async (node: CommunityNode) => {
-      let url = `${SERVICE_URL}/join_redirect/${node.name}`;
+      let url = `${config.serviceUri}/join_redirect/${node.name}`;
 
       if (node.community.isPrivate) {
         url += `?key=${node.community.key}`;

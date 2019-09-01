@@ -1,5 +1,5 @@
 import * as WebSocket from "ws";
-import { SERVICE_URL } from "./constants";
+import { config } from "./config";
 
 export class WebsocketClient {
   ws: WebSocket | undefined;
@@ -15,7 +15,7 @@ export class WebsocketClient {
 
   connect() {
     console.log("Websocket connecting");
-    this.ws = new WebSocket(`${SERVICE_URL}/ws?${this.userEmail}`);
+    this.ws = new WebSocket(`${config.serviceUri}/ws?${this.userEmail}`);
 
     this.ws.on("open", () => {
       console.log("Websocket open");

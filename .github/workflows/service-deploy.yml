@@ -4,6 +4,8 @@ on:
   push:
     branches:    
       - master
+    paths:
+      - 'service/*'
 
 jobs:
   build:
@@ -11,10 +13,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
     - uses: pangzineng/Github-Action-One-Click-Docker@master
       with:
         args: service

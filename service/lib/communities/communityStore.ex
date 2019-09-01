@@ -1,6 +1,6 @@
 defmodule LiveShareCommunities.CommunityStore do
   @top_communities_count 5
-  @key_prefix "communitiy"
+  @key_prefix "community"
 
   def migrate_old_community_keys() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
@@ -44,8 +44,8 @@ defmodule LiveShareCommunities.CommunityStore do
   end
 
   defp update(name, fun) do
-    communitiy_key = get_community_key(name)
-    {:ok, value} = Redix.command(:redix, ["GET", communitiy_key])
+    community_key = get_community_key(name)
+    {:ok, value} = Redix.command(:redix, ["GET", community_key])
 
     community =
       if value do
@@ -55,7 +55,7 @@ defmodule LiveShareCommunities.CommunityStore do
       end
 
     updated_community = fun.(community)
-    {:ok, _} = Redix.command(:redix, ["SET", communitiy_key, Poison.encode!(updated_community)])
+    {:ok, _} = Redix.command(:redix, ["SET", community_key, Poison.encode!(updated_community)])
     inform_subscribers(name)
   end
 

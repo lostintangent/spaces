@@ -23,7 +23,7 @@ defmodule LiveShareCommunities.Authentication do
     Poison.decode!(contents)
   end
 
-  defmemo get_aad_keys?(arg) do
+  defmemo get_aad_keys(arg) do
     case arg do
       {:ok, kid, token} ->
         dt1 = DateTime.utc_now()
@@ -43,7 +43,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  defmemo find_cascade_public_key?(arg) do
+  defmemo find_cascade_public_key(arg) do
     case arg do
       {:ok, token} ->
 
@@ -66,7 +66,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def find_aad_public_key_in_keys?(arg) do
+  def find_aad_public_key_in_keys(arg) do
     case arg do
       {:ok, kid, token, keys} ->
         certItem = Enum.find(keys, fn key ->
@@ -82,12 +82,12 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  defmemo find_aad_public_key?(arg) do
+  defmemo find_aad_public_key(arg) do
     case arg do
       {:ok, kid, token} ->
         {:ok, kid, token}
-          |> get_aad_keys?
-          |> find_aad_public_key_in_keys?
+          |> get_aad_keys
+          |> find_aad_public_key_in_keys
       {:error, reason} -> {:error, reason}
     end
   end
@@ -128,7 +128,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  def validCascadeAudience?(arg) do
+  def valid_cascade_audience?(arg) do
     case arg do
       {:ok, claims} ->
         if claims.fields["aud"] == "https://insiders.liveshare.vsengsaas.visualstudio.com/" do
@@ -176,7 +176,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def get_aad_kid?(arg) do
+  def get_aad_kid(arg) do
     case arg do
       {:ok, token} ->
         try do
@@ -191,7 +191,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def create_cert?(arg) do
+  def create_cert(arg) do
     case arg do
       {:ok, certKey, token} ->
         cert = "-----BEGIN CERTIFICATE-----\n#{certKey}\n-----END CERTIFICATE-----"
@@ -206,7 +206,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def verify_token?(arg) do
+  def verify_token(arg) do
     case arg do
       {:ok, jwk, token} ->
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
@@ -226,7 +226,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
   
-  def verify_cascade_token?(arg) do
+  def verify_cascade_token(arg) do
     case arg do
       {:ok, jwk, token} ->
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
@@ -236,7 +236,7 @@ defmodule LiveShareCommunities.Authentication do
             else
               {:ok, claims}
                 |> valid_cascade_issuer?
-                |> validCascadeAudience?
+                |> valid_cascade_audience?
                 |> valid_cascade_expiration?
             end
           {:error, error} ->
@@ -248,17 +248,17 @@ defmodule LiveShareCommunities.Authentication do
 
   def is_valid_aad_token?(arg) do
     arg
-      |> get_aad_kid?
-      |> find_aad_public_key?
-      |> create_cert?
-      |> verify_token?
+      |> get_aad_kid
+      |> find_aad_public_key
+      |> create_cert
+      |> verify_token
   end
   
   def is_valid_cascade_token?(arg) do
     arg
-      |> find_cascade_public_key?
-      |> create_cert?
-      |> verify_cascade_token?
+      |> find_cascade_public_key
+      |> create_cert
+      |> verify_cascade_token
   end
 
   def is_auth_header_present?(arg) do
@@ -300,7 +300,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def get_token?(arg) do
+  def get_token(arg) do
     case arg do
       {:ok, conn} ->
         {:ok, conn}
@@ -311,14 +311,14 @@ defmodule LiveShareCommunities.Authentication do
 
   def authenticated?(conn) do
     {:ok, conn}
-      |> get_token?
+      |> get_token
       |> is_valid_token?
   end
 
-  def set_user_claims?(conn) do
+  def set_user_claims(conn) do
     result = {:ok, conn}
-      |> get_token?
-      |> get_user_claims?
+      |> get_token
+      |> get_user_claims
 
     case result do
       {:ok, claims} ->
@@ -341,14 +341,14 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def get_user_claims?(arg) do
+  def get_user_claims(arg) do
     case arg do
       {:ok, token} ->
         case is_cascade_token?(token) do
           {:ok, true} ->
-            {:ok, token} |> get_cascade_claims?
+            {:ok, token} |> get_cascade_claims
           {:ok, false} ->
-            {:ok, token} |> get_aad_claims?
+            {:ok, token} |> get_aad_claims
           {:error, reason} -> {:error, reason}
         end
           
@@ -356,7 +356,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def get_cascade_user_info_live_share?(arg) do
+  def get_cascade_user_info_live_share(arg) do
     case arg do
       {:ok, token, id} ->
         response = HTTPotion.get "#{@ls_service_uri}/api/v0.2/profile", [headers: ["Authorization": "Bearer #{token}"]]
@@ -373,7 +373,7 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
-  def get_cascade_user_info?(arg) do
+  def get_cascade_user_info(arg) do
     case arg do
       {:ok, token, id} ->
         profile = LiveShareCommunities.ProfileStore.get_profile(id)
@@ -384,13 +384,13 @@ defmodule LiveShareCommunities.Authentication do
           claims = create_user_payload(id, name, email, "cascade")
           {:ok, claims}
         else
-          {:ok, token, id} |> get_cascade_user_info_live_share?
+          {:ok, token, id} |> get_cascade_user_info_live_share
         end
       {:error, reason} -> {:error, reason}
       end
   end
 
-  def get_cascade_claims?(arg) do
+  def get_cascade_claims(arg) do
     case arg do
       {:ok, token} ->
         dt1 = DateTime.utc_now()
@@ -399,7 +399,7 @@ defmodule LiveShareCommunities.Authentication do
         id = payload.fields["userId"]
         result =
           {:ok, token, id}
-            |> get_cascade_user_info?
+            |> get_cascade_user_info
         
         dt2 = DateTime.utc_now()
         IO.inspect "** Get Cascade user claims: #{DateTime.diff(dt2, dt1, :millisecond)}"
@@ -419,7 +419,7 @@ defmodule LiveShareCommunities.Authentication do
     }
   end
 
-  def get_aad_claims?(arg) do
+  def get_aad_claims(arg) do
     case arg do
       {:ok, token} ->
         dt1 = DateTime.utc_now()
@@ -450,7 +450,7 @@ defmodule LiveShareCommunities.Authentication do
 
     case res do
       {:ok, claims} ->
-        set_user_claims?(conn)
+        set_user_claims(conn)
       {:error, reason} ->
         IO.inspect reason
         conn

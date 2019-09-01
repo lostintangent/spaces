@@ -5,7 +5,11 @@ on:
     branches:
       - master
     paths:
-      - "service/**"
+      - "service/*"
+      - "service/*/*"
+      - "service/*/*/*"
+      - "service/*/*/*/*"
+      - "service/*/*/*/*/*"
 
 jobs:
   build:

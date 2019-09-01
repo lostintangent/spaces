@@ -165,7 +165,6 @@ defmodule LiveShareCommunities.HTTP do
       LiveShareCommunities.Events.send(:session_end, name, %{session: session})
     end
 
-    #
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 

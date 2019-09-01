@@ -29,15 +29,6 @@ defmodule LiveShareCommunities.HTTP do
     )
   end
 
-  get "/profile" do
-    IO.inspect conn
-    conn
-    |> send_resp(
-      :ok,
-      "<a href=\"https://github.com/vsls-contrib/communities\">Live Share Communities</a>"
-    )
-  end
-
   get "/join_redirect/:name" do
     redirect_url = "lostintangent.vsls-communities/join?#{name}"
 

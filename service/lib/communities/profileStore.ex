@@ -32,11 +32,7 @@ defmodule LiveShareCommunities.ProfileStore do
       nil
     end
   end
-
-  def delete_all() do
-    {:ok, value} = Redix.command(:redix, ["FLUSHALL"])
-  end
-
+  
   def create_profile(id, name, email) do
     profile = %{ id: id, name: name, email: email }
     {:ok, _} = Redix.command(:redix, ["SET", get_profile_key(id), Poison.encode!(profile)])

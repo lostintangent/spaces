@@ -24,13 +24,5 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         DOCKER_IMAGE_NAME: live-share-can
+        DOCKER_NAMESPACE: ''
         DOCKER_IMAGE_TAG: v0.2.0
-#     - uses: actions/docker/cli@master
-#       with:
-#         args: build --tag live-share-can service
-#     - uses: actions/docker/cli@master
-#       with:
-#         args: tag live-share-can vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0
-#     - uses: actions/docker/cli@master
-#       with:
-#         args: push vslsCommunitiesRegistry.azurecr.io/live-share-can:v0.1.0

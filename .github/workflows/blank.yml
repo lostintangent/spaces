@@ -9,13 +9,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: cd service
-      run: cd service
-    - uses: azure/actions/login@master
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}   
-    - run: |
-        az webapp list --query "[?state=='Running']"
     - uses: pangzineng/Github-Action-One-Click-Docker@master
       with:
         args: service

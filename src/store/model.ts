@@ -1,6 +1,7 @@
 export interface IStore {
   isLoading: boolean;
   isSignedIn: boolean;
+  isMuted?: boolean;
   activeSession?: IActiveSession;
   communities: ICommunity[];
 }
@@ -9,18 +10,22 @@ export interface ICommunity {
   isLoading?: boolean;
   isLeaving?: boolean;
   isExpanded?: boolean;
+  isMuted?: boolean;
+  isPrivate?: boolean;
   isHelpRequestsExpanded?: boolean;
   name: string;
   members: IMember[];
   helpRequests: ISession[];
   codeReviews: ISession[];
   broadcasts: ISession[];
+  key: string;
 }
 
 export interface IMember {
   name: string;
   email: string;
   status: Status;
+  thanks: number;
   title: string | undefined;
 }
 

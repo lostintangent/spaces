@@ -2,10 +2,8 @@ import { applyMiddleware, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { ExtensionContext } from "vscode";
 import { getApi as getVslsApi } from "vsls";
-import {
-  createSessionStateChannel,
-  ISessionStateChannel
-} from "./channels/sessionState";
+import { auth } from "./auth/auth";
+import { createSessionStateChannel, ISessionStateChannel } from "./channels/sessionState";
 import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";
@@ -20,7 +18,7 @@ import { registerUriHandler } from "./uriHandler";
 let sessionStateChannel: ISessionStateChannel;
 
 export async function activate(context: ExtensionContext) {
-  config.ensureLiveShareInsiders();
+  await config.ensureLiveShareInsiders();
 
   const storage = new LocalStorage(context.globalState);
 
@@ -29,6 +27,10 @@ export async function activate(context: ExtensionContext) {
 
   const api = (await getVslsApi())!;
   const chatApi = new ChatApi(api, store);
+
+  // need to cast `api` to `any` until new `vsls` npm package is published
+  const authStrategies = (api as any).authStrategies || [];
+  await auth.init(context, authStrategies);
 
   sessionStateChannel = createSessionStateChannel(api);
 
@@ -54,6 +56,6 @@ export async function activate(context: ExtensionContext) {
   return chatApi;
 }
 
-export function deactivate() {
-  sessionStateChannel.endActiveSession();
+export async function deactivate() {
+  return sessionStateChannel.endActiveSession();
 }

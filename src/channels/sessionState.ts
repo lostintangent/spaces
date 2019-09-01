@@ -2,7 +2,7 @@ import { channel, Channel } from "redux-saga";
 import { LiveShare } from "vsls";
 
 export interface ISessionStateChannel extends Channel<boolean> {
-  endActiveSession: () => void;
+  endActiveSession: () => Promise<void>;
 }
 
 export function createSessionStateChannel(
@@ -17,9 +17,9 @@ export function createSessionStateChannel(
 
   return {
     ...sessionChannel,
-    endActiveSession: () => {
+    endActiveSession: async (): Promise<void> => {
       if (api.session.id) {
-        api.end();
+        await api.end();
       } else {
         sessionChannel.put(false);
       }

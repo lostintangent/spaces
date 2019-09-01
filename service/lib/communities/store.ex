@@ -59,6 +59,7 @@ defmodule LiveShareCommunities.Store do
     |> Map.update("sessions", [], & &1)
     |> Map.update("messages", [], & &1)
     |> update_with_titles()
+    |> update_with_thanks_count()
   end
 
   def update_with_titles(community) do
@@ -83,6 +84,23 @@ defmodule LiveShareCommunities.Store do
     Map.merge(community, %{"members" => with_titles})
   end
 
+  def update_with_thanks_count(community) do
+    thanks = community |> Map.get("thanks", [])
+
+    with_count =
+      community
+      |> Map.get("members")
+      |> Enum.map(
+        &Map.merge(&1, %{
+          "thanks" => thanks |> Enum.filter(fn y -> y["to"] == &1["email"] end) |> length
+        })
+      )
+
+    community
+    |> Map.merge(%{"members" => with_count})
+    |> Map.delete("thanks")
+  end
+
   def top_communities() do
     # TODO: We can optimize this by sorting inside Redis, and not load all results
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
@@ -91,12 +109,13 @@ defmodule LiveShareCommunities.Store do
       Enum.map(keys, fn x ->
         %{
           name: x,
-          member_count: community(x) |> Map.get("members", []) |> length
+          member_count: community(x) |> Map.get("members", []) |> length,
+          is_private: community(x) |> Map.get("isPrivate", false)
         }
       end)
 
     communities
-    |> Enum.filter(&(&1.member_count > 0))
+    |> Enum.filter(&(&1.member_count > 0 && &1.is_private === false))
     |> Enum.sort_by(& &1.member_count, &>=/2)
     |> Enum.take(@top_communities_count)
   end
@@ -109,6 +128,11 @@ defmodule LiveShareCommunities.Store do
   def sessions_of(name) do
     community(name)
     |> Map.get("sessions", [])
+  end
+
+  def session(name, id) do
+    sessions_of(name)
+    |> Enum.find(nil, fn x -> x["id"] == id end)
   end
 
   def messages_of(name) do
@@ -208,8 +232,44 @@ defmodule LiveShareCommunities.Store do
     )
   end
 
+  def add_info_message(name, content, member_email) do
+    add_message(name, %{"content" => content, "type" => "info_message"}, member_email)
+  end
+
   def clear_messages(name) do
     update(name, fn x -> Map.merge(x, %{"messages" => []}) end)
+  end
+
+  defp say_thanks_helper(community, values) do
+    thanks =
+      Map.get(community, "thanks", [])
+      |> Enum.concat(values)
+
+    Map.merge(community, %{"thanks" => thanks})
+  end
+
+  def say_thanks(name, from, to) do
+    update(
+      name,
+      &say_thanks_helper(
+        &1,
+        Enum.map(to, fn x -> %{"to" => x, "from" => from, "timestamp" => now()} end)
+      )
+    )
+  end
+
+  def make_private(name, key) do
+    update(
+      name,
+      &Map.merge(&1, %{"isPrivate" => true, "key" => key})
+    )
+  end
+
+  def make_public(name) do
+    update(
+      name,
+      &Map.merge(&1, %{"isPrivate" => false, "key" => ""})
+    )
   end
 
   defp now() do

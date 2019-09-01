@@ -23,4 +23,7 @@ erl_crash.dump
 vsls_can-*.tar
 
 .elixir_ls
-store.sqlite3
+**/dump.rdb
+dump.rdb
+
+*-public-keys.json

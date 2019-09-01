@@ -1,0 +1,24 @@
+name: Service deployment
+
+on:
+  push:
+    branches:    
+      - master
+    paths:
+      - 'service/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: pangzineng/Github-Action-One-Click-Docker@master
+      with:
+        args: service
+      env:
+        DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_IMAGE_NAME: live-share-can
+        DOCKER_IMAGE_TAG: v0.2.0

@@ -1,13 +1,7 @@
 import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState } from "vscode";
 import { LiveShare } from "vsls";
-import {
-  ICommunity,
-  IMember,
-  ISession,
-  MemberTitles,
-  Status
-} from "../store/model";
+import { ICommunity, IMember, ISession, MemberTitles, Status } from "../store/model";
 
 export abstract class TreeNode extends TreeItem {
   constructor(
@@ -43,7 +37,7 @@ export class NoCommunitiesNode extends TreeNode {
 export class CommunityNode extends TreeNode {
   name: string;
 
-  constructor(public community: ICommunity, vslsApi: LiveShare) {
+  constructor(public community: ICommunity, vslsApi: LiveShare, extensionPath: string) {
     super(
       `${community.name} (${community.members.length})`,
       TreeItemCollapsibleState.Expanded
@@ -64,6 +58,19 @@ export class CommunityNode extends TreeNode {
       this.contextValue = "community.founder";
     } else {
       this.contextValue = "community";
+    }
+
+    if (community.isPrivate) {
+      this.iconPath = {
+        dark: path.join(extensionPath, `images/dark/lock.svg`),
+        light: path.join(extensionPath, `images/light/lock.svg`)
+      };
+
+      this.contextValue += ".private";
+    }
+
+    if (community.isMuted) {
+      this.contextValue += ".muted";
     }
   }
 }
@@ -177,12 +184,19 @@ export class MemberNode extends TreeNode {
     );
     const isCurrentUser = member.email === api.session.user!.emailAddress;
     let titles: string[] = member.title ? [member.title] : [];
+    let thanks: string = member.thanks > 0 ? `(${member.thanks})` : ``;
 
     if (isCurrentUser) {
       titles.push("You");
     }
 
-    this.description = titles.join(", ");
+    this.description = `${titles.join(", ")} ${thanks}`;
+
+    if (member.thanks === 1) {
+      this.tooltip = `Thanked once`;
+    } else {
+      this.tooltip = `Thanked ${member.thanks} times`;
+    }
 
     if (!isCurrentUser) {
       if (this.member.status === Status.offline) {

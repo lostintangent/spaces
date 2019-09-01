@@ -30,7 +30,7 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   get "/join_redirect/:name" do
-    redirect_url = "lostintangent.vsls-communities/join?#{name}"
+    redirect_url = "lostintangent.vsls-communities/join?community=#{name}"
 
     prefix =
       if Map.has_key?(conn.params, "insiders") do
@@ -41,7 +41,8 @@ defmodule LiveShareCommunities.HTTP do
 
     suffix =
       if Map.has_key?(conn.params, "key") do
-        "##{conn.params.key}"
+        key = Map.get(conn.params, "key")
+        "&key=#{key}"
       else
         ""
       end

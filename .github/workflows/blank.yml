@@ -17,5 +17,4 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         DOCKER_IMAGE_NAME: live-share-can
-        DOCKER_NAMESPACE: ''
         DOCKER_IMAGE_TAG: v0.2.0

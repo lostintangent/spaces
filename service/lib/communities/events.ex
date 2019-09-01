@@ -1,7 +1,9 @@
 defmodule LiveShareCommunities.Events do
   def create(community, message, email) do
+    LiveShareCommunities.CommunityStore.migrate_old_community_keys()
+
     Task.async(fn ->
-      LiveShareCommunities.Store.add_info_message(community, message, email)
+      LiveShareCommunities.CommunityStore.add_info_message(community, message, email)
     end)
   end
 
@@ -15,7 +17,7 @@ defmodule LiveShareCommunities.Events do
 
   def send(:session_start, community, %{id: id}) do
     %{"type" => type, "description" => description, "host" => host} =
-      LiveShareCommunities.Store.session(community, id)
+      LiveShareCommunities.CommunityStore.session(community, id)
 
     create(community, "Started #{label(type)}: #{description}", host)
   end

@@ -15,8 +15,17 @@ defmodule LiveShareCommunities.ProfileStore do
     end)
   end
 
-  defp get_profile(name) do
-    {:ok, value} = Redix.command(:redix, ["GET", get_profile_key(name)])
+  def get_profile(id) do
+    dt1 = DateTime.utc_now()
+
+    {:ok, value} = Redix.command(:redix, ["GET", get_profile_key(id)])
+
+    dt2 = DateTime.utc_now()
+    if value do
+      Poison.decode!(value)
+    end
+    IO.inspect "** Profile lookup time: #{DateTime.diff(dt2, dt1, :millisecond)}"
+
     if value do
       Poison.decode!(value)
     else
@@ -24,33 +33,17 @@ defmodule LiveShareCommunities.ProfileStore do
     end
   end
 
-#   defp update(name, fun) do
-#     {:ok, value} = Redix.command(:redix, ["GET", name])
-
-#     community =
-#       if value do
-#         Poison.decode!(value)
-#       else
-#         %{}
-#       end
-
-#     updated_community = fun.(community)
-#     {:ok, _} = Redix.command(:redix, ["SET", name, Poison.encode!(updated_community)])
-#     inform_subscribers(name)
-#   end
-
-  def create_profile(auth_context) do
-    profile = get_profile(auth_context.id)
-
-    if profile != nil do
-      auth_context = Map.merge(profile, auth_context)
-    end
-
-    {:ok, _} = Redix.command(:redix, ["SET", get_profile_key(auth_context.id), Poison.encode!(auth_context)])
+  def delete_all() do
+    {:ok, value} = Redix.command(:redix, ["FLUSHALL"])
   end
 
-  defp get_profile_key(name) do
-    "#{@key_prefix}:#{name}"
+  def create_profile(id, name, email) do
+    profile = %{ id: id, name: name, email: email }
+    {:ok, _} = Redix.command(:redix, ["SET", get_profile_key(id), Poison.encode!(profile)])
+  end
+
+  defp get_profile_key(id) do
+    "#{@key_prefix}:#{id}"
   end
 
 end

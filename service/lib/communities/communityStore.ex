@@ -1,6 +1,19 @@
-defmodule LiveShareCommunities.Store do
+defmodule LiveShareCommunities.CommunityStore do
   @top_communities_count 5
   @key_prefix "communitiy"
+
+  def migrate_old_community_keys() do
+    {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
+
+    Enum.each(keys, fn key ->
+      # old keys do not have the `prefix:` pattern and contain only `communities`
+      if key =~ ":" do
+        {:ok, value} = Redix.command(:redix, ["GET", key])
+        {:ok, _} = Redix.command(:redix, ["DEL", key])
+        {:ok, _} = Redix.command(:redix, ["SET", get_community_key(key), value])
+      end
+    end)
+  end
 
   def everything() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])

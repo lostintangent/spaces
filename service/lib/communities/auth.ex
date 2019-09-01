@@ -7,6 +7,9 @@ defmodule LiveShareCommunities.Authentication do
 
   @aad_keys_url "https://login.microsoftonline.com/common/discovery/v2.0/keys"
   @cascade_keys_url "https://prod.liveshare.vsengsaas.visualstudio.com/api/authenticatemetadata"
+  
+  @ls_service_uri "https://prod.liveshare.vsengsaas.visualstudio.com"
+
 
   def init(opts), do: opts
 
@@ -33,7 +36,7 @@ defmodule LiveShareCommunities.Authentication do
         keys = jsonBody["keys"]
 
         dt2 = DateTime.utc_now()
-        IO.inspect "** Get AAD public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+        IO.inspect "** Get AAD public key: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
         {:ok, kid, token, keys}
       {:error, reason} -> {:error, reason}
@@ -56,7 +59,7 @@ defmodule LiveShareCommunities.Authentication do
         keys = jsonBody["keys"]
 
         dt2 = DateTime.utc_now()
-        IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+        IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
         {:ok, certKey, token}
       {:error, reason} -> {:error, reason}
@@ -352,20 +355,55 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
+  def get_cascade_user_info_live_share?(arg) do
+    case arg do
+      {:ok, token, id} ->
+        response = HTTPotion.get "#{@ls_service_uri}/api/v0.2/profile", [headers: ["Authorization": "Bearer #{token}"]]
+        if response.status_code != 200 do
+          {:error, "Could not get LS profile for email."}
+        else
+          response = Poison.decode!(response.body)
+          name = response["name"]
+          email = response["userName"]
+          LiveShareCommunities.ProfileStore.create_profile(id, name, email)
+          claims = create_user_payload(id, name, email, "cascade")
+          {:ok, claims}
+        end
+    end
+  end
+
+  def get_cascade_user_info?(arg) do
+    case arg do
+      {:ok, token, id} ->
+        profile = LiveShareCommunities.ProfileStore.get_profile(id)
+
+        if profile != nil do
+          name = profile["name"]
+          email = profile["email"]
+          claims = create_user_payload(id, name, email, "cascade")
+          {:ok, claims}
+        else
+          {:ok, token, id} |> get_cascade_user_info_live_share?
+        end
+      {:error, reason} -> {:error, reason}
+      end
+  end
+
   def get_cascade_claims?(arg) do
     case arg do
       {:ok, token} ->
+        dt1 = DateTime.utc_now()
+
         payload = JOSE.JWT.peek_payload(token)
-        IO.inspect payload
-        # name = payload.fields["name"]
-        # email = payload.fields["preferred_username"]
-        name = ""
-        email = ""
         id = payload.fields["userId"]
+        result =
+          {:ok, token, id}
+            |> get_cascade_user_info?
+        
+        dt2 = DateTime.utc_now()
+        IO.inspect "** Get Cascade user claims: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
-        claims = create_user_payload(id, name, email, "cascade")
-
-        {:ok, claims}
+        result
 
       {:error, reason} -> {:error, reason}
     end
@@ -383,14 +421,19 @@ defmodule LiveShareCommunities.Authentication do
   def get_aad_claims?(arg) do
     case arg do
       {:ok, token} ->
+        dt1 = DateTime.utc_now()
+
         payload = JOSE.JWT.peek_payload(token)
         name = payload.fields["name"]
         email = payload.fields["preferred_username"]
         tid = payload.fields["tid"]
         oid = payload.fields["oid"]
-        id = "#{oid}_#{tid}"
+        id = "#{tid}_#{oid}"
 
         claims = create_user_payload(id, name, email, "aad")
+
+        dt2 = DateTime.utc_now()
+        IO.inspect "** Get AAD user claims: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
         {:ok, claims}
       {:error, reason} -> {:error, reason}
@@ -402,7 +445,7 @@ defmodule LiveShareCommunities.Authentication do
     res = authenticated?(conn)
     dt2 = DateTime.utc_now()
     
-    IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :milliseconds)}"
+    IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
     case res do
       {:ok, claims} ->

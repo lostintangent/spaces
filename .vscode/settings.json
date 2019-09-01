@@ -12,3 +12,4 @@
   "typescript.tsc.autoDetect": "off",
   "elixirLS.projectDir": "service"
 }
+

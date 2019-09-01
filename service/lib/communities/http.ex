@@ -160,7 +160,10 @@ defmodule LiveShareCommunities.HTTP do
     session = LiveShareCommunities.CommunityStore.session(name, session_id)
 
     LiveShareCommunities.CommunityStore.remove_session(name, session_id)
-    LiveShareCommunities.Events.send(:session_end, name, %{session: session})
+
+    if session do
+      LiveShareCommunities.Events.send(:session_end, name, %{session: session})
+    end
 
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
@@ -201,6 +204,7 @@ defmodule LiveShareCommunities.HTTP do
     case result do
       {:ok, message} ->
         send_resp(conn, :ok, "")
+
       {:error, reason} ->
         send_resp(conn, :error, "")
     end

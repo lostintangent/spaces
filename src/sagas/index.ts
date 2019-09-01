@@ -18,6 +18,7 @@ import {
   ACTION_JOIN_COMMUNITY,
   ACTION_LEAVE_COMMUNITY,
   ACTION_LOAD_COMMUNITIES,
+  ACTION_LOAD_COMMUNITIES_COMPLETED,
   clearMessages,
   loadCommunities,
   makeCommunityPrivate,
@@ -113,6 +114,8 @@ export function* rootSaga(
       }
 
       yield put(<any>loadCommunities());
+
+      yield take(ACTION_LOAD_COMMUNITIES_COMPLETED);
 
       extensionsTask = yield fork(extensionsSaga);
     } else {

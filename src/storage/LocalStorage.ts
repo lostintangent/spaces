@@ -4,7 +4,7 @@ const COMMUNITIES_STORAGE_KEY = "liveshare.communities";
 const SESSION_STORAGE_KEY = "liveshare.session";
 
 export class LocalStorage {
-  constructor(private storage: Memento) {}
+  constructor(private storage: Memento) { }
 
   public getCommunities() {
     return this.storage.get<string[]>(COMMUNITIES_STORAGE_KEY, []);

@@ -19,8 +19,9 @@ export function* createSession(
     sessionUrl = getCurrentSessionUrl(vslsApi);
   }
 
+  const sessionId = vslsApi.session.id!;
   const session: ISession = {
-    id: vslsApi.session.id!,
+    id: sessionId,
     host: vslsApi.session.user!.emailAddress!,
     startTime: new Date(),
     description,
@@ -29,7 +30,7 @@ export function* createSession(
   };
 
   yield put(sessionCreated({ community, session }));
-
+  storage.saveActiveSession(sessionId, community)
   yield call(api.createSession, community, session);
 }
 

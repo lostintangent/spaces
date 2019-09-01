@@ -1,50 +1,15 @@
-import {
-  all,
-  fork,
-  put,
-  take,
-  takeEvery,
-  takeLatest
-} from "redux-saga/effects";
+import { all, fork, put, take, takeEvery, takeLatest } from "redux-saga/effects";
 import * as vsls from "vsls";
 import { createAuthenticationChannel } from "../channels/authentication";
 import { ISessionStateChannel } from "../channels/sessionState";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { LocalStorage } from "../storage/LocalStorage";
-import {
-  ACTION_COMMUNITY_UPDATED,
-  ACTION_CREATE_SESSION,
-  ACTION_JOIN_COMMUNITY,
-  ACTION_LEAVE_COMMUNITY,
-  ACTION_LOAD_COMMUNITIES,
-  ACTION_LOAD_COMMUNITIES_COMPLETED,
-  clearMessages,
-  loadCommunities,
-  makeCommunityPrivate,
-  makeCommunityPublic,
-  muteAllCommunities,
-  muteCommunity,
-  unmuteAllCommunities,
-  unmuteCommunity,
-  userAuthenticationChanged
-} from "../store/actions";
-import {
-  clearMessagesSaga,
-  joinCommunitySaga,
-  leaveCommunity,
-  loadCommunitiesSaga,
-  makeCommunityPrivateSaga,
-  makeCommunityPublicSaga,
-  muteAllCommunitiesSaga,
-  muteCommunitySaga,
-  unmuteAllCommunitiesSaga,
-  unmuteCommunitySaga,
-  updateCommunitySaga
-} from "./communities";
+import { ACTION_CLEAR_ZOMBIE_SESSIONS, ACTION_COMMUNITY_UPDATED, ACTION_CREATE_SESSION, ACTION_JOIN_COMMUNITY, ACTION_LEAVE_COMMUNITY, ACTION_LOAD_COMMUNITIES, ACTION_LOAD_COMMUNITIES_COMPLETED, clearMessages, loadCommunities, makeCommunityPrivate, makeCommunityPublic, muteAllCommunities, muteCommunity, unmuteAllCommunities, unmuteCommunity, userAuthenticationChanged } from "../store/actions";
+import { clearMessagesSaga, joinCommunitySaga, leaveCommunity, loadCommunitiesSaga, makeCommunityPrivateSaga, makeCommunityPublicSaga, muteAllCommunitiesSaga, muteCommunitySaga, unmuteAllCommunitiesSaga, unmuteCommunitySaga, updateCommunitySaga } from "./communities";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
 import { extensionsSaga } from "./extensions";
-import { createSession, endActiveSession } from "./sessions";
+import { cleanZombieSession, createSession, endActiveSession } from "./sessions";
 
 function* workerSagas(
   storage: LocalStorage,
@@ -67,15 +32,9 @@ function* workerSagas(
     ),
     takeEvery(clearMessages, clearMessagesSaga.bind(null, chatApi)),
 
-    takeEvery(
-      ACTION_CREATE_SESSION,
-      createSession.bind(null, storage, vslsApi)
-    ),
+    takeEvery(ACTION_CREATE_SESSION, createSession.bind(null, storage, vslsApi)),
     takeEvery(sessionStateChannel, endActiveSession.bind(null, storage)),
-    // takeEvery(
-    //   ACTION_CLEAR_ZOMBIE_SESSIONS,
-    //   cleanZombieSession.bind(null, storage)
-    // ),
+    takeEvery(ACTION_CLEAR_ZOMBIE_SESSIONS, cleanZombieSession.bind(null, storage)),
 
     takeEvery(muteCommunity, muteCommunitySaga),
     takeEvery(unmuteCommunity, unmuteCommunitySaga),

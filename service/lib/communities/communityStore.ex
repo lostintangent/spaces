@@ -5,9 +5,11 @@ defmodule LiveShareCommunities.CommunityStore do
   def migrate_old_community_keys() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
+
     Enum.each(keys, fn key ->
       # old keys do not have the `prefix:` pattern and contain only `communities`
-      if key =~ ":" do
+      is_new_key = (key =~ ":")
+      if !is_new_key do
         {:ok, value} = Redix.command(:redix, ["GET", key])
         {:ok, _} = Redix.command(:redix, ["DEL", key])
         {:ok, _} = Redix.command(:redix, ["SET", get_community_key(key), value])
@@ -17,6 +19,19 @@ defmodule LiveShareCommunities.CommunityStore do
 
   def everything() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
+
+    Enum.map(keys, fn x ->
+      {:ok, value} = Redix.command(:redix, ["GET", x])
+
+      %{
+        "name" => x,
+        "value" => Poison.decode!(value)
+      }
+    end)
+  end
+
+  def total_everything do
+    {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
     Enum.map(keys, fn x ->
       {:ok, value} = Redix.command(:redix, ["GET", x])

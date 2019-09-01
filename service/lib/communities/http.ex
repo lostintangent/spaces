@@ -184,6 +184,16 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   get "/v0/debug" do
+    store = LiveShareCommunities.CommunityStore.total_everything()
+    send_resp(conn, :ok, Poison.encode!(store))
+  end
+
+  get "/v0/debug-communities" do
+    store = LiveShareCommunities.CommunityStore.everything()
+    send_resp(conn, :ok, Poison.encode!(store))
+  end
+
+  get "/v0/debug-profiles" do
     store = LiveShareCommunities.CommunityStore.everything()
     send_resp(conn, :ok, Poison.encode!(store))
   end

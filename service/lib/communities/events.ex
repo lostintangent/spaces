@@ -1,7 +1,5 @@
 defmodule LiveShareCommunities.Events do
   def create(community, message, email) do
-    LiveShareCommunities.CommunityStore.migrate_old_community_keys()
-
     Task.async(fn ->
       LiveShareCommunities.CommunityStore.add_info_message(community, message, email)
     end)

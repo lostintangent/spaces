@@ -1,3 +1,5 @@
+alias LiveShareCommunities.CommunityStore
+
 defmodule LiveShareCommunities do
   @moduledoc "The main OTP application for LiveShareCommunities"
 
@@ -20,7 +22,12 @@ defmodule LiveShareCommunities do
     ]
 
     opts = [strategy: :one_for_one, name: HexVersion.Supervisor]
-    Supervisor.start_link(children, opts)
+    result = Supervisor.start_link(children, opts)
+
+    # temporary call to migrate the old community keys
+    LiveShareCommunities.CommunityStore.migrate_old_community_keys()
+
+    result
   end
 
   defp dispatch do

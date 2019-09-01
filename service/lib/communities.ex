@@ -1,5 +1,3 @@
-alias LiveShareCommunities.CommunityStore
-
 defmodule LiveShareCommunities do
   @moduledoc "The main OTP application for LiveShareCommunities"
 

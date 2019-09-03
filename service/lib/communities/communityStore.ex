@@ -139,8 +139,8 @@ defmodule LiveShareCommunities.CommunityStore do
       Enum.map(keys, fn x ->
         %{
           name: remove_prefix(x),
-          member_count: community(x) |> Map.get("members", []) |> length,
-          is_private: community(x) |> Map.get("isPrivate", false)
+          member_count: community(remove_prefix(x)) |> Map.get("members", []) |> length,
+          is_private: community(remove_prefix(x)) |> Map.get("isPrivate", false)
         }
       end)
 

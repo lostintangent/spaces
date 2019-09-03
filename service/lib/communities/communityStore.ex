@@ -5,10 +5,10 @@ defmodule LiveShareCommunities.CommunityStore do
   def migrate_old_community_keys() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
-
     Enum.each(keys, fn key ->
       # old keys do not have the `prefix:` pattern and contain only `communities`
-      is_new_key = (key =~ ":")
+      is_new_key = key =~ ":"
+
       if !is_new_key do
         {:ok, value} = Redix.command(:redix, ["GET", key])
         {:ok, _} = Redix.command(:redix, ["DEL", key])
@@ -24,7 +24,7 @@ defmodule LiveShareCommunities.CommunityStore do
       {:ok, value} = Redix.command(:redix, ["GET", x])
 
       %{
-        "name" => x,
+        "name" => remove_prefix(x),
         "value" => Poison.decode!(value)
       }
     end)
@@ -84,12 +84,12 @@ defmodule LiveShareCommunities.CommunityStore do
       end
 
     community
-      |> Map.update("name", name, & &1)
-      |> Map.update("members", [], & &1)
-      |> Map.update("sessions", [], & &1)
-      |> Map.update("messages", [], & &1)
-      |> update_with_titles()
-      |> update_with_thanks_count()
+    |> Map.update("name", name, & &1)
+    |> Map.update("members", [], & &1)
+    |> Map.update("sessions", [], & &1)
+    |> Map.update("messages", [], & &1)
+    |> update_with_titles()
+    |> update_with_thanks_count()
   end
 
   def update_with_titles(community) do
@@ -148,6 +148,51 @@ defmodule LiveShareCommunities.CommunityStore do
     |> Enum.filter(&(&1.member_count > 0 && &1.is_private === false))
     |> Enum.sort_by(& &1.member_count, &>=/2)
     |> Enum.take(@top_communities_count)
+  end
+
+  def cleanup_zombie_sessions(by_email) do
+    lookup =
+      Registry.LiveShareCommunities
+      |> Registry.lookup(by_email)
+
+    if length(lookup) == 0 do
+      sessions_by(by_email)
+      |> Enum.map(
+        &if session_active?(&1) do
+          remove_session(&1["community"], &1["id"])
+        end
+      )
+    end
+  end
+
+  defp session_active?(session) do
+    response = HTTPotion.get(session["url"])
+
+    if HTTPotion.Response.success?(response) do
+      :binary.match(response.body, "Session is not active") != :nomatch
+    else
+      true
+    end
+  end
+
+  def sessions_by(email) do
+    everything()
+    |> Enum.map(&Map.merge(&1, %{"value" => Map.get(&1["value"], "sessions", [])}))
+    |> Enum.map(fn x ->
+      Map.merge(
+        x,
+        %{
+          "value" =>
+            x["value"]
+            |> Enum.map(fn y ->
+              Map.merge(y, %{"community" => x["name"]})
+            end)
+        }
+      )
+    end)
+    |> Enum.map(fn x -> x["value"] end)
+    |> List.flatten()
+    |> Enum.filter(fn x -> x["host"] == email end)
   end
 
   def members_of(name) do
@@ -305,9 +350,12 @@ defmodule LiveShareCommunities.CommunityStore do
   defp now() do
     DateTime.utc_now() |> DateTime.to_iso8601()
   end
-  
+
   defp get_community_key(name) do
     "#{@key_prefix}:#{name}"
   end
-  
+
+  defp remove_prefix(name) do
+    String.replace_prefix(name, "#{@key_prefix}:", "")
+  end
 end

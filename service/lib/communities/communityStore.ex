@@ -5,10 +5,10 @@ defmodule LiveShareCommunities.CommunityStore do
   def migrate_old_community_keys() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
-
     Enum.each(keys, fn key ->
       # old keys do not have the `prefix:` pattern and contain only `communities`
-      is_new_key = (key =~ ":")
+      is_new_key = key =~ ":"
+
       if !is_new_key do
         {:ok, value} = Redix.command(:redix, ["GET", key])
         {:ok, _} = Redix.command(:redix, ["DEL", key])
@@ -84,12 +84,12 @@ defmodule LiveShareCommunities.CommunityStore do
       end
 
     community
-      |> Map.update("name", name, & &1)
-      |> Map.update("members", [], & &1)
-      |> Map.update("sessions", [], & &1)
-      |> Map.update("messages", [], & &1)
-      |> update_with_titles()
-      |> update_with_thanks_count()
+    |> Map.update("name", name, & &1)
+    |> Map.update("members", [], & &1)
+    |> Map.update("sessions", [], & &1)
+    |> Map.update("messages", [], & &1)
+    |> update_with_titles()
+    |> update_with_thanks_count()
   end
 
   def update_with_titles(community) do
@@ -138,7 +138,7 @@ defmodule LiveShareCommunities.CommunityStore do
     communities =
       Enum.map(keys, fn x ->
         %{
-          name: x,
+          name: remove_prefix(x),
           member_count: community(x) |> Map.get("members", []) |> length,
           is_private: community(x) |> Map.get("isPrivate", false)
         }
@@ -305,9 +305,12 @@ defmodule LiveShareCommunities.CommunityStore do
   defp now() do
     DateTime.utc_now() |> DateTime.to_iso8601()
   end
-  
+
   defp get_community_key(name) do
     "#{@key_prefix}:#{name}"
   end
-  
+
+  defp remove_prefix(name) do
+    String.replace_prefix(name, "#{@key_prefix}:", "")
+  end
 end

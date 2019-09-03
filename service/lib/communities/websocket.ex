@@ -1,6 +1,6 @@
 defmodule LiveShareCommunities.Websocket do
   @behaviour :cowboy_websocket
-  @zombie_timeout 10 * 60 * 1000
+  @zombie_timeout 5 * 60 * 1000
 
   def init(request, _state) do
     # The websocket connection is to be setup at /ws?user_email
@@ -25,7 +25,7 @@ defmodule LiveShareCommunities.Websocket do
       LiveShareCommunities.CommunityStore.add_message(
         incoming["name"],
         incoming,
-        state[:registry_key]
+        state.registry_key
       )
     end
 

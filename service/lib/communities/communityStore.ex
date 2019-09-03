@@ -2,6 +2,8 @@ defmodule LiveShareCommunities.CommunityStore do
   @top_communities_count 5
   @key_prefix "community"
 
+  @ls_service_uri "https://prod.liveshare.vsengsaas.visualstudio.com"
+
   def migrate_old_community_keys() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
@@ -151,27 +153,31 @@ defmodule LiveShareCommunities.CommunityStore do
   end
 
   def cleanup_zombie_sessions(by_email) do
-    lookup =
+    connected_sockets =
       Registry.LiveShareCommunities
       |> Registry.lookup(by_email)
 
-    if length(lookup) == 0 do
+    if length(connected_sockets) == 0 do
       sessions_by(by_email)
       |> Enum.map(
-        &if session_active?(&1) do
+        &if session_inactive?(&1) do
           remove_session(&1["community"], &1["id"])
         end
       )
     end
   end
 
-  defp session_active?(session) do
-    response = HTTPotion.get(session["url"])
+  defp session_inactive?(session) do
+    response = HTTPotion.get("#{@ls_service_uri}/api/v0.2/workspace/#{session["id"]}/owner/")
 
     if HTTPotion.Response.success?(response) do
-      :binary.match(response.body, "Session is not active") != :nomatch
+      response.body
+      |> Poison.decode!()
+      |> Map.get("connected", true)
+      |> Kernel.not()
     else
-      true
+      # Assuming 404 means session has been deleted
+      response.status_code == 404
     end
   end
 

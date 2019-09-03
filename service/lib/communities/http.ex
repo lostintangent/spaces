@@ -198,18 +198,6 @@ defmodule LiveShareCommunities.HTTP do
     send_resp(conn, :ok, Poison.encode!(store))
   end
 
-  post "/v0/profile" do
-    result = LiveShareCommunities.ProfileStore.create_profile(conn.auth_context)
-
-    case result do
-      {:ok, message} ->
-        send_resp(conn, :ok, "")
-
-      {:error, reason} ->
-        send_resp(conn, :error, "")
-    end
-  end
-
   # TODO: Ensure the following are only callable by
   # the specified community's founder
   post "/v0/community/:name/private" do

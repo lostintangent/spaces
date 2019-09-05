@@ -1,12 +1,10 @@
+import { IAuthStrategy } from "@vs/vscode-account";
 import { applyMiddleware, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { ExtensionContext } from "vscode";
 import { getApi as getVslsApi } from "vsls";
 import { auth } from "./auth/auth";
-import {
-  createSessionStateChannel,
-  ISessionStateChannel
-} from "./channels/sessionState";
+import { createSessionStateChannel, ISessionStateChannel } from "./channels/sessionState";
 import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";
@@ -31,7 +29,11 @@ export async function activate(context: ExtensionContext) {
   const chatApi = new ChatApi(api, store);
 
   // need to cast `api` to `any` until new `vsls` npm package is published
-  const authStrategies = (api as any).authStrategies || [];
+  const lsAuthStrategies = (api as any).authStrategies || [];
+  const authStrategies = lsAuthStrategies.filter((strategy: IAuthStrategy) => {
+    const strategyName = strategy.name.toLowerCase();
+    return (strategyName.indexOf('anonymous') === -1);
+  });
   await auth.init(context, authStrategies);
 
   sessionStateChannel = createSessionStateChannel(api);

@@ -85,7 +85,8 @@ defmodule LiveShareCommunities.HTTP do
         conn.params
         |> Map.get("names")
         |> String.split(",")
-        |> Enum.filter(fn x -> String.length(x) > 0 end)
+        |> Enum.filter(&(String.length(&1) > 0))
+        |> Enum.map(&URI.decode(&1))
         |> Enum.map(&LiveShareCommunities.CommunityStore.community(&1))
       else
         []
@@ -143,6 +144,7 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   post "/v0/community/:name/session" do
+    name = URI.decode(name)
     LiveShareCommunities.CommunityStore.add_session(name, conn.body_params)
 
     LiveShareCommunities.Events.send(:session_start, name, %{id: conn.body_params["id"]})
@@ -151,12 +153,14 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   post "/v0/community/:name/thanks" do
+    name = URI.decode(name)
     %{"from" => from, "to" => to} = conn.body_params
     LiveShareCommunities.CommunityStore.say_thanks(name, from, to)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   delete "/v0/community/:name/session/:session_id" do
+    name = URI.decode(name)
     session = LiveShareCommunities.CommunityStore.session(name, session_id)
 
     LiveShareCommunities.CommunityStore.remove_session(name, session_id)
@@ -169,11 +173,13 @@ defmodule LiveShareCommunities.HTTP do
   end
 
   get "/v0/community/:name/messages" do
+    name = URI.decode(name)
     messages = LiveShareCommunities.CommunityStore.messages_of(name)
     send_resp(conn, :ok, Poison.encode!(messages))
   end
 
   delete "/v0/community/:name/messages" do
+    name = URI.decode(name)
     LiveShareCommunities.CommunityStore.clear_messages(name)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
@@ -201,12 +207,14 @@ defmodule LiveShareCommunities.HTTP do
   # TODO: Ensure the following are only callable by
   # the specified community's founder
   post "/v0/community/:name/private" do
+    name = URI.decode(name)
     %{"key" => key} = conn.body_params
     LiveShareCommunities.CommunityStore.make_private(name, key)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
   post "/v0/community/:name/public" do
+    name = URI.decode(name)
     LiveShareCommunities.CommunityStore.make_public(name)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end

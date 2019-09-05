@@ -49,8 +49,9 @@ const deleteAsync = async (route: string) => {
 export async function loadCommunities(
   communities: string[]
 ): Promise<ICommunity[]> {
+  const urlEncodedNames = communities.map(name => encodeURIComponent(name));
   const { data } = await getAsync(
-    `${BASE_URL}/load?names=${communities.join(",")}`
+    `${BASE_URL}/load?names=${urlEncodedNames.join(",")}`
   );
   return data;
 }
@@ -64,7 +65,7 @@ export async function joinCommunity(
   try {
     const { data, status } = await postAsync(
       `${BASE_URL}/join`,
-      createCommunityRequest(community, name, email, key)
+      createCommunityRequestBody(community, name, email, key)
     );
 
     const { members, sessions } = data;
@@ -81,24 +82,26 @@ export async function leaveCommunity(
 ) {
   return await postAsync(
     `${BASE_URL}/leave`,
-    createCommunityRequest(community, name, email)
+    createCommunityRequestBody(community, name, email)
   );
 }
 
+function communityEndpoint(name: string, endpoint: string) {
+  return `${BASE_URL}/community/${encodeURIComponent(name)}/${endpoint}`;
+}
+
 export async function createSession(community: string, session: any) {
-  return await postAsync(`${BASE_URL}/community/${community}/session`, session);
+  return await postAsync(communityEndpoint(community, "session"), session);
 }
 
 export async function deleteSession(community: string, sessionId: string) {
   return await deleteAsync(
-    `${BASE_URL}/community/${community}/session/${sessionId}`
+    communityEndpoint(community, `session/${sessionId}`)
   );
 }
 
 export async function getMessages(community: string) {
-  const { data } = await getAsync(
-    `${BASE_URL}/community/${community}/messages`
-  );
+  const { data } = await getAsync(communityEndpoint(community, "messages"));
   return data;
 }
 
@@ -108,25 +111,25 @@ export async function getTopCommunities() {
 }
 
 export async function clearMessages(community: string) {
-  return await deleteAsync(`${BASE_URL}/community/${community}/messages`);
+  return await deleteAsync(communityEndpoint(community, "messages"));
 }
 
 export async function sayThanks(community: string, from: string, to: string[]) {
-  return await axios.post(`${BASE_URL}/community/${community}/thanks`, {
+  return await postAsync(communityEndpoint(community, "thanks"), {
     from,
     to
   });
 }
 
 export async function makePrivate(community: string, key: string) {
-  return await postAsync(`${BASE_URL}/community/${community}/private`, { key });
+  return await postAsync(communityEndpoint(community, "private"), { key });
 }
 
 export async function makePublic(community: string) {
-  return await postAsync(`${BASE_URL}/community/${community}/public`, {});
+  return await postAsync(communityEndpoint(community, "public"), {});
 }
 
-function createCommunityRequest(
+function createCommunityRequestBody(
   communityName: string,
   memberName: string,
   memberEmail: string,

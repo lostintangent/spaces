@@ -20,16 +20,22 @@ defmodule LiveShareCommunities.CommunityStore do
   end
 
   def everything() do
-    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
-
-    Enum.map(keys, fn x ->
-      {:ok, value} = Redix.command(:redix, ["GET", x])
+    all_community_names()
+    |> Enum.map(fn x ->
+      {:ok, value} = Redix.command(:redix, ["GET", get_community_key(x)])
 
       %{
-        "name" => remove_prefix(x),
+        "name" => x,
         "value" => Poison.decode!(value)
       }
     end)
+  end
+
+  defp all_community_names() do
+    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
+
+    keys
+    |> Enum.map(&remove_prefix(&1))
   end
 
   def total_everything do
@@ -135,18 +141,14 @@ defmodule LiveShareCommunities.CommunityStore do
 
   def top_communities() do
     # TODO: We can optimize this by sorting inside Redis, and not load all results
-    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
-
-    communities =
-      Enum.map(keys, fn x ->
-        %{
-          name: remove_prefix(x),
-          member_count: community(remove_prefix(x)) |> Map.get("members", []) |> length,
-          is_private: community(remove_prefix(x)) |> Map.get("isPrivate", false)
-        }
-      end)
-
-    communities
+    all_community_names()
+    |> Enum.map(fn x ->
+      %{
+        name: x,
+        member_count: community(x) |> Map.get("members", []) |> length,
+        is_private: community(x) |> Map.get("isPrivate", false)
+      }
+    end)
     |> Enum.filter(&(&1.member_count > 0 && &1.is_private === false))
     |> Enum.sort_by(& &1.member_count, &>=/2)
     |> Enum.take(@top_communities_count)

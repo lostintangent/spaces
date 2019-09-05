@@ -7,7 +7,7 @@ defmodule LiveShareCommunities.Authentication do
 
   @aad_keys_url "https://login.microsoftonline.com/common/discovery/v2.0/keys"
   @cascade_keys_url "https://prod.liveshare.vsengsaas.visualstudio.com/api/authenticatemetadata"
-  
+
   @ls_service_uri "https://prod.liveshare.vsengsaas.visualstudio.com"
 
 
@@ -42,7 +42,7 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
-  
+
   defmemo find_cascade_public_key(arg) do
     case arg do
       {:ok, token} ->
@@ -56,7 +56,7 @@ defmodule LiveShareCommunities.Authentication do
         jsonBody = read_keys(@cascade_keys_file)
         keys = jsonBody["jwtPublicKeys"]
         certKey = Enum.at(keys, 0)
-        keys = jsonBody["keys"]
+        _keys = jsonBody["keys"]
 
         dt2 = DateTime.utc_now()
         IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :millisecond)}"
@@ -103,7 +103,7 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason}  -> {:error, reason}
     end
   end
-  
+
   def valid_cascade_issuer?(arg) do
     case arg do
       {:ok, claims} ->
@@ -127,7 +127,7 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
-  
+
   def valid_cascade_audience?(arg) do
     case arg do
       {:ok, claims} ->
@@ -160,13 +160,13 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
-  
+
   def valid_cascade_expiration?(arg) do
     case arg do
       {:ok, claims} ->
         expDate = claims.fields["exp"] * 1000
         now = :os.system_time() / 1000 / 1000
-        
+
         if now > expDate do
           {:error, "Cascade token is expired."}
         else
@@ -184,7 +184,7 @@ defmodule LiveShareCommunities.Authentication do
           kid = protected.fields["kid"]
           {:ok, kid, token}
         rescue
-          e in ArgumentError ->
+          _e in ArgumentError ->
             {:error, "Failed to parse kid."}
         end
       {:error, reason} -> {:error, reason}
@@ -199,7 +199,7 @@ defmodule LiveShareCommunities.Authentication do
           jwk = JOSE.JWK.from_pem(cert)
           {:ok, jwk, token}
         rescue
-          e in ArgumentError ->
+          _e in ArgumentError ->
             {:error, "Failed to create cert."}
         end
       {:error, reason} -> {:error, reason}
@@ -225,7 +225,7 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
-  
+
   def verify_cascade_token(arg) do
     case arg do
       {:ok, jwk, token} ->
@@ -253,7 +253,7 @@ defmodule LiveShareCommunities.Authentication do
       |> create_cert
       |> verify_token
   end
-  
+
   def is_valid_cascade_token?(arg) do
     arg
       |> find_cascade_public_key
@@ -272,7 +272,7 @@ defmodule LiveShareCommunities.Authentication do
           auth_header = Enum.at(auth_header_list, 0)
           values = String.split(auth_header, " ")
 
-          type = Enum.at(values, 0)
+          _type = Enum.at(values, 0)
           token = Enum.at(values, 1)
           if token == nil do
             {:error, "No authorization token found."}
@@ -283,7 +283,7 @@ defmodule LiveShareCommunities.Authentication do
       {:error, reason} -> {:error, reason}
     end
   end
-  
+
   def is_valid_token?(arg) do
     case arg do
       {:ok, token} ->
@@ -334,9 +334,9 @@ defmodule LiveShareCommunities.Authentication do
       is_cascade = (iss == "https://insiders.liveshare.vsengsaas.visualstudio.com/")
       {:ok, is_cascade}
     rescue
-      e in Poison.ParseError ->
+      _e in Poison.ParseError ->
         {:error, "Failed to parse payload."}
-      e in ArgumentError ->
+      _e in ArgumentError ->
         {:error, "Failed to parse payload."}
     end
   end
@@ -351,7 +351,7 @@ defmodule LiveShareCommunities.Authentication do
             {:ok, token} |> get_aad_claims
           {:error, reason} -> {:error, reason}
         end
-          
+
       {:error, reason} -> {:error, reason}
     end
   end
@@ -400,7 +400,7 @@ defmodule LiveShareCommunities.Authentication do
         result =
           {:ok, token, id}
             |> get_cascade_user_info
-        
+
         dt2 = DateTime.utc_now()
         IO.inspect "** Get Cascade user claims: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
@@ -445,11 +445,11 @@ defmodule LiveShareCommunities.Authentication do
     dt1 = DateTime.utc_now()
     res = authenticated?(conn)
     dt2 = DateTime.utc_now()
-    
+
     IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :millisecond)}"
 
     case res do
-      {:ok, claims} ->
+      {:ok, _claims} ->
         set_user_claims(conn)
       {:error, reason} ->
         IO.inspect reason

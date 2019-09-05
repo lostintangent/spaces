@@ -2,6 +2,8 @@ defmodule LiveShareCommunities.CommunityStore do
   @top_communities_count 5
   @key_prefix "community"
 
+  @ls_service_uri "https://prod.liveshare.vsengsaas.visualstudio.com"
+
   def migrate_old_community_keys() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
@@ -18,16 +20,22 @@ defmodule LiveShareCommunities.CommunityStore do
   end
 
   def everything() do
-    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
-
-    Enum.map(keys, fn x ->
-      {:ok, value} = Redix.command(:redix, ["GET", x])
+    all_community_names()
+    |> Enum.map(fn x ->
+      {:ok, value} = Redix.command(:redix, ["GET", get_community_key(x)])
 
       %{
         "name" => x,
         "value" => Poison.decode!(value)
       }
     end)
+  end
+
+  defp all_community_names() do
+    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
+
+    keys
+    |> Enum.map(&remove_prefix(&1))
   end
 
   def total_everything do
@@ -133,21 +141,66 @@ defmodule LiveShareCommunities.CommunityStore do
 
   def top_communities() do
     # TODO: We can optimize this by sorting inside Redis, and not load all results
-    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
-
-    communities =
-      Enum.map(keys, fn x ->
-        %{
-          name: remove_prefix(x),
-          member_count: community(remove_prefix(x)) |> Map.get("members", []) |> length,
-          is_private: community(remove_prefix(x)) |> Map.get("isPrivate", false)
-        }
-      end)
-
-    communities
+    all_community_names()
+    |> Enum.map(fn x ->
+      %{
+        name: x,
+        member_count: community(x) |> Map.get("members", []) |> length,
+        is_private: community(x) |> Map.get("isPrivate", false)
+      }
+    end)
     |> Enum.filter(&(&1.member_count > 0 && &1.is_private === false))
     |> Enum.sort_by(& &1.member_count, &>=/2)
     |> Enum.take(@top_communities_count)
+  end
+
+  def cleanup_zombie_sessions(by_email) do
+    connected_sockets =
+      Registry.LiveShareCommunities
+      |> Registry.lookup(by_email)
+
+    if length(connected_sockets) == 0 do
+      sessions_by(by_email)
+      |> Enum.map(
+        &if session_inactive?(&1) do
+          remove_session(&1["community"], &1["id"])
+        end
+      )
+    end
+  end
+
+  defp session_inactive?(session) do
+    response = HTTPotion.get("#{@ls_service_uri}/api/v0.2/workspace/#{session["id"]}/owner/")
+
+    if HTTPotion.Response.success?(response) do
+      response.body
+      |> Poison.decode!()
+      |> Map.get("connected", true)
+      |> Kernel.not()
+    else
+      # Assuming 404 means session has been deleted
+      response.status_code == 404
+    end
+  end
+
+  def sessions_by(email) do
+    everything()
+    |> Enum.map(&Map.merge(&1, %{"value" => Map.get(&1["value"], "sessions", [])}))
+    |> Enum.map(fn x ->
+      Map.merge(
+        x,
+        %{
+          "value" =>
+            x["value"]
+            |> Enum.map(fn y ->
+              Map.merge(y, %{"community" => x["name"]})
+            end)
+        }
+      )
+    end)
+    |> Enum.map(fn x -> x["value"] end)
+    |> List.flatten()
+    |> Enum.filter(fn x -> x["host"] == email end)
   end
 
   def members_of(name) do

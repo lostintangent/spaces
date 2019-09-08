@@ -116,6 +116,19 @@ defmodule LiveShareCommunities.Authentication do
     end
   end
 
+
+  def is_non_anonymous_cascade_user?(arg) do
+    case arg do
+      {:ok, claims} ->
+        if claims.fields["anonymous"] == "" do
+          {:ok, claims}
+        else
+          {:error, "Anonymous Cascade user."}
+        end
+      {:error, reason}  -> {:error, reason}
+    end
+  end
+
   def valid_audience?(arg) do
     case arg do
       {:ok, claims} ->
@@ -235,6 +248,7 @@ defmodule LiveShareCommunities.Authentication do
               {:error, "Token is not valid"}
             else
               {:ok, claims}
+                |> is_non_anonymous_cascade_user?
                 |> valid_cascade_issuer?
                 |> valid_cascade_audience?
                 |> valid_cascade_expiration?
@@ -397,10 +411,12 @@ defmodule LiveShareCommunities.Authentication do
 
         payload = JOSE.JWT.peek_payload(token)
         id = payload.fields["userId"]
+        anonymous = payload.fields["anonymous"]
+
         result =
           {:ok, token, id}
             |> get_cascade_user_info
-
+        
         dt2 = DateTime.utc_now()
         IO.inspect "** Get Cascade user claims: #{DateTime.diff(dt2, dt1, :millisecond)}"
 

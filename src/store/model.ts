@@ -3,10 +3,10 @@ export interface IStore {
   isSignedIn: boolean;
   isMuted?: boolean;
   activeSession?: IActiveSession;
-  communities: ICommunity[];
+  spaces: ISpace[];
 }
 
-export interface ICommunity {
+export interface ISpace {
   isLoading?: boolean;
   isLeaving?: boolean;
   isExpanded?: boolean;
@@ -37,7 +37,7 @@ export enum Status {
 }
 
 export interface IActiveSession {
-  community: string;
+  space: string;
   session: ISession;
 }
 

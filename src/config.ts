@@ -5,14 +5,14 @@ const liveShareConfig = workspace.getConfiguration("liveshare");
 
 const EXTENSION_CONTRIBUTION_BEHAVIOR = "extensionContributionBehavior";
 const FEATURE_SET_SETTING = "featureSet";
-const MUTED_COMMUNITIES = "mutedCommunities";
+const MUTED_SPACES = "mutedSpaces";
 const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
 const INSIDERS = "insiders";
 const SERVICE_URI_SETTING = "serviceUri";
 
 export const config = {
   getConfig() {
-    return workspace.getConfiguration("liveshare.communities");
+    return workspace.getConfiguration("liveshare.spaces");
   },
 
   async ensureLiveShareInsiders() {
@@ -26,7 +26,7 @@ export const config = {
       );
 
       const response = await window.showInformationMessage(
-        "Live Share Communities installed! Reload Visual Studio Code to get started",
+        "Live Share Spaces installed! Reload Visual Studio Code to get started",
         "Reload"
       );
 
@@ -54,23 +54,17 @@ export const config = {
     return this.getConfig().get(SUGGESTED_CONTACTS_SETTING);
   },
 
-  get mutedCommunities() {
-    return this.getConfig().get<string[]>(MUTED_COMMUNITIES)!;
+  get mutedSpaces() {
+    return this.getConfig().get<string[]>(MUTED_SPACES)!;
   },
 
-  set mutedCommunities(value: string[]) {
-    this.getConfig().update(
-      MUTED_COMMUNITIES,
-      value,
-      ConfigurationTarget.Global
-    );
+  set mutedSpaces(value: string[]) {
+    this.getConfig().update(MUTED_SPACES, value, ConfigurationTarget.Global);
   },
 
   get serviceUri() {
     const value = this.getConfig().get<string>(SERVICE_URI_SETTING)!;
 
-    return (value === 'prod')
-      ? PROD_SERVICE_URL
-      : LOCAL_SERVICE_URL;
+    return value === "prod" ? PROD_SERVICE_URL : LOCAL_SERVICE_URL;
   }
 };

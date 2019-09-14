@@ -1,7 +1,7 @@
 import axios from "axios";
 import { auth } from "./auth/auth";
 import { config } from "./config";
-import { ICommunity } from "./store/model";
+import { ISpace } from "./store/model";
 
 const BASE_URL = `${config.serviceUri}/v0`;
 
@@ -46,18 +46,16 @@ const deleteAsync = async (route: string) => {
   });
 };
 
-export async function loadCommunities(
-  communities: string[]
-): Promise<ICommunity[]> {
-  const urlEncodedNames = communities.map(name => encodeURIComponent(name));
+export async function loadSpaces(spaces: string[]): Promise<ISpace[]> {
+  const urlEncodedNames = spaces.map(name => encodeURIComponent(name));
   const { data } = await getAsync(
     `${BASE_URL}/load?names=${urlEncodedNames.join(",")}`
   );
   return data;
 }
 
-export async function joinCommunity(
-  community: string,
+export async function joinSpace(
+  space: string,
   name: string,
   email: string,
   key?: string
@@ -65,7 +63,7 @@ export async function joinCommunity(
   try {
     const { data, status } = await postAsync(
       `${BASE_URL}/join`,
-      createCommunityRequestBody(community, name, email, key)
+      createSpaceRequestBody(space, name, email, key)
     );
 
     const { members, sessions } = data;
@@ -75,68 +73,62 @@ export async function joinCommunity(
   }
 }
 
-export async function leaveCommunity(
-  community: string,
-  name: string,
-  email: string
-) {
+export async function leaveSpace(space: string, name: string, email: string) {
   return await postAsync(
     `${BASE_URL}/leave`,
-    createCommunityRequestBody(community, name, email)
+    createSpaceRequestBody(space, name, email)
   );
 }
 
-function communityEndpoint(name: string, endpoint: string) {
-  return `${BASE_URL}/community/${encodeURIComponent(name)}/${endpoint}`;
+function spaceEndpoint(name: string, endpoint: string) {
+  return `${BASE_URL}/space/${encodeURIComponent(name)}/${endpoint}`;
 }
 
-export async function createSession(community: string, session: any) {
-  return await postAsync(communityEndpoint(community, "session"), session);
+export async function createSession(space: string, session: any) {
+  return await postAsync(spaceEndpoint(space, "session"), session);
 }
 
-export async function deleteSession(community: string, sessionId: string) {
-  return await deleteAsync(
-    communityEndpoint(community, `session/${sessionId}`)
-  );
+export async function deleteSession(space: string, sessionId: string) {
+  return await deleteAsync(spaceEndpoint(space, `session/${sessionId}`));
 }
 
-export async function getMessages(community: string) {
-  const { data } = await getAsync(communityEndpoint(community, "messages"));
+export async function getMessages(space: string) {
+  const { data } = await getAsync(spaceEndpoint(space, "messages"));
   return data;
 }
 
-export async function getTopCommunities() {
-  const { data } = await getAsync(`${BASE_URL}/top_communities`);
+export async function getTopSpaces() {
+  const { data } = await getAsync(`${BASE_URL}/top_spaces`);
   return data;
 }
 
-export async function clearMessages(community: string) {
-  return await deleteAsync(communityEndpoint(community, "messages"));
+export async function clearMessages(space: string) {
+  return await deleteAsync(spaceEndpoint(space, "messages"));
 }
 
-export async function sayThanks(community: string, from: string, to: string[]) {
-  return await postAsync(communityEndpoint(community, "thanks"), {
+export async function sayThanks(space: string, from: string, to: string[]) {
+  return await postAsync(spaceEndpoint(space, "thanks"), {
     from,
     to
   });
 }
 
-export async function makePrivate(community: string, key: string) {
-  return await postAsync(communityEndpoint(community, "private"), { key });
+export async function makePrivate(space: string, key: string) {
+  return await postAsync(spaceEndpoint(space, "private"), { key });
 }
 
-export async function makePublic(community: string) {
-  return await postAsync(communityEndpoint(community, "public"), {});
+export async function makePublic(space: string) {
+  return await postAsync(spaceEndpoint(space, "public"), {});
 }
 
-function createCommunityRequestBody(
-  communityName: string,
+function createSpaceRequestBody(
+  spaceName: string,
   memberName: string,
   memberEmail: string,
   key?: string
 ) {
   return {
-    name: communityName,
+    name: spaceName,
     member: {
       name: memberName,
       email: memberEmail

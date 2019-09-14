@@ -45,8 +45,8 @@ end
 # when running `mix distillery.release`, the first release in the file
 # will be used by default
 
-release :communities do
-  set(version: current_version(:communities))
+release :spaces do
+  set(version: current_version(:spaces))
 
   set(
     applications: [

@@ -14,36 +14,23 @@ import { config } from "../config";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   ACTION_CLEAR_ZOMBIE_SESSIONS,
-  ACTION_COMMUNITY_UPDATED,
   ACTION_CREATE_SESSION,
-  ACTION_JOIN_COMMUNITY,
-  ACTION_LEAVE_COMMUNITY,
-  ACTION_LOAD_COMMUNITIES,
-  ACTION_LOAD_COMMUNITIES_COMPLETED,
+  ACTION_JOIN_SPACE,
+  ACTION_LEAVE_SPACE,
+  ACTION_LOAD_SPACES,
+  ACTION_LOAD_SPACES_COMPLETED,
+  ACTION_SPACE_UPDATED,
   clearMessages,
   clearZombieSessions,
-  loadCommunities,
-  makeCommunityPrivate,
-  makeCommunityPublic,
-  muteAllCommunities,
-  muteCommunity,
-  unmuteAllCommunities,
-  unmuteCommunity,
+  loadSpaces,
+  makeSpacePrivate,
+  makeSpacePublic,
+  muteAllSpaces,
+  muteSpace,
+  unmuteAllSpaces,
+  unmuteSpace,
   userAuthenticationChanged
 } from "../store/actions";
-import {
-  clearMessagesSaga,
-  joinCommunitySaga,
-  leaveCommunity,
-  loadCommunitiesSaga,
-  makeCommunityPrivateSaga,
-  makeCommunityPublicSaga,
-  muteAllCommunitiesSaga,
-  muteCommunitySaga,
-  unmuteAllCommunitiesSaga,
-  unmuteCommunitySaga,
-  updateCommunitySaga
-} from "./communities";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
 import { extensionsSaga } from "./extensions";
 import {
@@ -51,6 +38,19 @@ import {
   createSession,
   endActiveSession
 } from "./sessions";
+import {
+  clearMessagesSaga,
+  joinSpaceSaga,
+  leaveSpace,
+  loadSpacesSaga,
+  makeSpacePrivateSaga,
+  makeSpacePublicSaga,
+  muteAllSpacesSaga,
+  muteSpaceSaga,
+  unmuteAllSpacesSaga,
+  unmuteSpaceSaga,
+  updateSpaceSaga
+} from "./spaces";
 
 function* workerSagas(
   storage: LocalStorage,
@@ -60,17 +60,11 @@ function* workerSagas(
 ) {
   yield all([
     takeEvery(
-      ACTION_JOIN_COMMUNITY,
-      joinCommunitySaga.bind(null, storage, vslsApi, chatApi)
+      ACTION_JOIN_SPACE,
+      joinSpaceSaga.bind(null, storage, vslsApi, chatApi)
     ),
-    takeEvery(
-      ACTION_LEAVE_COMMUNITY,
-      leaveCommunity.bind(null, storage, vslsApi)
-    ),
-    takeEvery(
-      ACTION_COMMUNITY_UPDATED,
-      updateCommunitySaga.bind(null, vslsApi)
-    ),
+    takeEvery(ACTION_LEAVE_SPACE, leaveSpace.bind(null, storage, vslsApi)),
+    takeEvery(ACTION_SPACE_UPDATED, updateSpaceSaga.bind(null, vslsApi)),
     takeEvery(clearMessages, clearMessagesSaga.bind(null, chatApi)),
 
     takeEvery(
@@ -83,18 +77,18 @@ function* workerSagas(
       cleanZombieSession.bind(null, storage)
     ),
 
-    takeEvery(muteCommunity, muteCommunitySaga),
-    takeEvery(unmuteCommunity, unmuteCommunitySaga),
+    takeEvery(muteSpace, muteSpaceSaga),
+    takeEvery(unmuteSpace, unmuteSpaceSaga),
 
-    takeEvery(muteAllCommunities, muteAllCommunitiesSaga),
-    takeEvery(unmuteAllCommunities, unmuteAllCommunitiesSaga),
+    takeEvery(muteAllSpaces, muteAllSpacesSaga),
+    takeEvery(unmuteAllSpaces, unmuteAllSpacesSaga),
 
-    takeEvery(makeCommunityPrivate, makeCommunityPrivateSaga),
-    takeEvery(makeCommunityPublic, makeCommunityPublicSaga),
+    takeEvery(makeSpacePrivate, makeSpacePrivateSaga),
+    takeEvery(makeSpacePublic, makeSpacePublicSaga),
 
     takeLatest(
-      ACTION_LOAD_COMMUNITIES,
-      loadCommunitiesSaga.bind(null, storage, vslsApi, chatApi)
+      ACTION_LOAD_SPACES,
+      loadSpacesSaga.bind(null, storage, vslsApi, chatApi)
     ),
     takeLatest(REBUILD_CONTACTS_ACTIONS, rebuildContacts.bind(null, vslsApi))
   ]);
@@ -122,15 +116,15 @@ export function* rootSaga(
         sessionStateChannel
       );
 
-      if (config.mutedCommunities.includes("*")) {
-        yield put(muteAllCommunities());
+      if (config.mutedSpaces.includes("*")) {
+        yield put(muteAllSpaces());
       }
 
-      yield put(<any>loadCommunities());
+      yield put(<any>loadSpaces());
 
       yield put(<any>clearZombieSessions());
 
-      yield take(ACTION_LOAD_COMMUNITIES_COMPLETED);
+      yield take(ACTION_LOAD_SPACES_COMPLETED);
 
       extensionsTask = yield fork(extensionsSaga);
     } else {

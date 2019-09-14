@@ -1,4 +1,4 @@
-defmodule LiveShareCommunities.Authentication do
+defmodule LiveShareSpaces.Authentication do
   import Plug.Conn
   use Memoize
 
@@ -10,11 +10,10 @@ defmodule LiveShareCommunities.Authentication do
 
   @ls_service_uri "https://prod.liveshare.vsengsaas.visualstudio.com"
 
-
   def init(opts), do: opts
 
   def save_keys(url, fileName) do
-    response = HTTPotion.get url
+    response = HTTPotion.get(url)
     File.write!(Path.absname(fileName), response.body)
   end
 
@@ -36,17 +35,18 @@ defmodule LiveShareCommunities.Authentication do
         keys = jsonBody["keys"]
 
         dt2 = DateTime.utc_now()
-        IO.inspect "** Get AAD public key: #{DateTime.diff(dt2, dt1, :millisecond)}"
+        IO.inspect("** Get AAD public key: #{DateTime.diff(dt2, dt1, :millisecond)}")
 
         {:ok, kid, token, keys}
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
   defmemo find_cascade_public_key(arg) do
     case arg do
       {:ok, token} ->
-
         dt1 = DateTime.utc_now()
 
         if !File.exists?(@cascade_keys_file) do
@@ -59,19 +59,22 @@ defmodule LiveShareCommunities.Authentication do
         _keys = jsonBody["keys"]
 
         dt2 = DateTime.utc_now()
-        IO.inspect "** Get Cascade public key: #{DateTime.diff(dt2, dt1, :millisecond)}"
+        IO.inspect("** Get Cascade public key: #{DateTime.diff(dt2, dt1, :millisecond)}")
 
         {:ok, certKey, token}
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
   def find_aad_public_key_in_keys(arg) do
     case arg do
       {:ok, kid, token, keys} ->
-        certItem = Enum.find(keys, fn key ->
-          key["kid"] == kid
-        end)
+        certItem =
+          Enum.find(keys, fn key ->
+            key["kid"] == kid
+          end)
 
         if certItem == nil do
           {:error, "Cannot find appropriate public key."}
@@ -86,21 +89,26 @@ defmodule LiveShareCommunities.Authentication do
     case arg do
       {:ok, kid, token} ->
         {:ok, kid, token}
-          |> get_aad_keys
-          |> find_aad_public_key_in_keys
-      {:error, reason} -> {:error, reason}
+        |> get_aad_keys
+        |> find_aad_public_key_in_keys
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
   def valid_issuer?(arg) do
     case arg do
       {:ok, claims} ->
-        if claims.fields["iss"] == "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
+        if claims.fields["iss"] ==
+             "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
           {:ok, claims}
         else
           {:error, "Invalid AAD issuer."}
         end
-      {:error, reason}  -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -112,10 +120,11 @@ defmodule LiveShareCommunities.Authentication do
         else
           {:error, "Invalid Cascade issuer."}
         end
-      {:error, reason}  -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
-
 
   def is_non_anonymous_cascade_user?(arg) do
     case arg do
@@ -125,7 +134,9 @@ defmodule LiveShareCommunities.Authentication do
         else
           {:error, "Anonymous Cascade user."}
         end
-      {:error, reason}  -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -137,7 +148,9 @@ defmodule LiveShareCommunities.Authentication do
         else
           {:error, "Invalid AAD audience."}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -149,7 +162,9 @@ defmodule LiveShareCommunities.Authentication do
         else
           {:error, "Invalid Cascade audience."}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -157,20 +172,24 @@ defmodule LiveShareCommunities.Authentication do
     case arg do
       {:ok, claims} ->
         exp = claims.fields["exp"]
-        expDate = case DateTime.from_unix(exp) do
-          {:ok, date} ->
-            date
-          {:error, reason} ->
-            raise reason
-        end
 
+        expDate =
+          case DateTime.from_unix(exp) do
+            {:ok, date} ->
+              date
 
-        if DateTime.diff(expDate, DateTime.utc_now) <= 0 do
+            {:error, reason} ->
+              raise reason
+          end
+
+        if DateTime.diff(expDate, DateTime.utc_now()) <= 0 do
           {:error, "AAD token is expired."}
         else
           {:ok, claims}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -185,7 +204,9 @@ defmodule LiveShareCommunities.Authentication do
         else
           {:ok, claims}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -200,7 +221,9 @@ defmodule LiveShareCommunities.Authentication do
           _e in ArgumentError ->
             {:error, "Failed to parse kid."}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -208,6 +231,7 @@ defmodule LiveShareCommunities.Authentication do
     case arg do
       {:ok, certKey, token} ->
         cert = "-----BEGIN CERTIFICATE-----\n#{certKey}\n-----END CERTIFICATE-----"
+
         try do
           jwk = JOSE.JWK.from_pem(cert)
           {:ok, jwk, token}
@@ -215,7 +239,9 @@ defmodule LiveShareCommunities.Authentication do
           _e in ArgumentError ->
             {:error, "Failed to create cert."}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -228,14 +254,17 @@ defmodule LiveShareCommunities.Authentication do
               {:error, "Token is not valid"}
             else
               {:ok, claims}
-                |> valid_issuer?
-                |> valid_audience?
-                |> valid_expiration?
+              |> valid_issuer?
+              |> valid_audience?
+              |> valid_expiration?
             end
+
           {:error, error} ->
             {:error, error}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -248,31 +277,34 @@ defmodule LiveShareCommunities.Authentication do
               {:error, "Token is not valid"}
             else
               {:ok, claims}
-                |> is_non_anonymous_cascade_user?
-                |> valid_cascade_issuer?
-                |> valid_cascade_audience?
-                |> valid_cascade_expiration?
+              |> is_non_anonymous_cascade_user?
+              |> valid_cascade_issuer?
+              |> valid_cascade_audience?
+              |> valid_cascade_expiration?
             end
+
           {:error, error} ->
             {:error, error}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
   def is_valid_aad_token?(arg) do
     arg
-      |> get_aad_kid
-      |> find_aad_public_key
-      |> create_cert
-      |> verify_token
+    |> get_aad_kid
+    |> find_aad_public_key
+    |> create_cert
+    |> verify_token
   end
 
   def is_valid_cascade_token?(arg) do
     arg
-      |> find_cascade_public_key
-      |> create_cert
-      |> verify_cascade_token
+    |> find_cascade_public_key
+    |> create_cert
+    |> verify_cascade_token
   end
 
   def is_auth_header_present?(arg) do
@@ -280,6 +312,7 @@ defmodule LiveShareCommunities.Authentication do
       {:ok, conn} ->
         auth_header_list = conn |> get_req_header("authorization")
         len = auth_header_list |> length
+
         if len < 1 do
           {:error, "No authorization header set."}
         else
@@ -288,13 +321,16 @@ defmodule LiveShareCommunities.Authentication do
 
           _type = Enum.at(values, 0)
           token = Enum.at(values, 1)
+
           if token == nil do
             {:error, "No authorization token found."}
           else
             {:ok, token}
           end
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -308,9 +344,13 @@ defmodule LiveShareCommunities.Authentication do
             else
               {:ok, token} |> is_valid_aad_token?
             end
-          {:error, reason} -> {:error, reason}
+
+          {:error, reason} ->
+            {:error, reason}
         end
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -318,26 +358,31 @@ defmodule LiveShareCommunities.Authentication do
     case arg do
       {:ok, conn} ->
         {:ok, conn}
-          |> is_auth_header_present?
-      {:error, reason} -> {:error, reason}
+        |> is_auth_header_present?
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
   def authenticated?(conn) do
     {:ok, conn}
-      |> get_token
-      |> is_valid_token?
+    |> get_token
+    |> is_valid_token?
   end
 
   def set_user_claims(conn) do
-    result = {:ok, conn}
+    result =
+      {:ok, conn}
       |> get_token
       |> get_user_claims
 
     case result do
       {:ok, claims} ->
-        Map.merge(conn, %{ auth_context: claims })
-      {:error, reason} -> {:error, reason}
+        Map.merge(conn, %{auth_context: claims})
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -345,11 +390,12 @@ defmodule LiveShareCommunities.Authentication do
     try do
       payload = JOSE.JWT.peek_payload(token)
       iss = payload.fields["iss"]
-      is_cascade = (iss == "https://insiders.liveshare.vsengsaas.visualstudio.com/")
+      is_cascade = iss == "https://insiders.liveshare.vsengsaas.visualstudio.com/"
       {:ok, is_cascade}
     rescue
       _e in Poison.ParseError ->
         {:error, "Failed to parse payload."}
+
       _e in ArgumentError ->
         {:error, "Failed to parse payload."}
     end
@@ -361,26 +407,34 @@ defmodule LiveShareCommunities.Authentication do
         case is_cascade_token?(token) do
           {:ok, true} ->
             {:ok, token} |> get_cascade_claims
+
           {:ok, false} ->
             {:ok, token} |> get_aad_claims
-          {:error, reason} -> {:error, reason}
+
+          {:error, reason} ->
+            {:error, reason}
         end
 
-      {:error, reason} -> {:error, reason}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
   def get_cascade_user_info_live_share(arg) do
     case arg do
       {:ok, token, id} ->
-        response = HTTPotion.get "#{@ls_service_uri}/api/v0.2/profile", [headers: ["Authorization": "Bearer #{token}"]]
+        response =
+          HTTPotion.get("#{@ls_service_uri}/api/v0.2/profile",
+            headers: [Authorization: "Bearer #{token}"]
+          )
+
         if response.status_code != 200 do
           {:error, "Could not get LS profile for email."}
         else
           response = Poison.decode!(response.body)
           name = response["name"]
           email = response["userName"]
-          LiveShareCommunities.ProfileStore.create_profile(id, name, email)
+          LiveShareSpaces.ProfileStore.create_profile(id, name, email)
           claims = create_user_payload(id, name, email, "cascade")
           {:ok, claims}
         end
@@ -390,7 +444,7 @@ defmodule LiveShareCommunities.Authentication do
   def get_cascade_user_info(arg) do
     case arg do
       {:ok, token, id} ->
-        profile = LiveShareCommunities.ProfileStore.get_profile(id)
+        profile = LiveShareSpaces.ProfileStore.get_profile(id)
 
         if profile != nil do
           name = profile["name"]
@@ -400,8 +454,10 @@ defmodule LiveShareCommunities.Authentication do
         else
           {:ok, token, id} |> get_cascade_user_info_live_share
         end
-      {:error, reason} -> {:error, reason}
-      end
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   def get_cascade_claims(arg) do
@@ -415,14 +471,15 @@ defmodule LiveShareCommunities.Authentication do
 
         result =
           {:ok, token, id}
-            |> get_cascade_user_info
-        
+          |> get_cascade_user_info
+
         dt2 = DateTime.utc_now()
-        IO.inspect "** Get Cascade user claims: #{DateTime.diff(dt2, dt1, :millisecond)}"
+        IO.inspect("** Get Cascade user claims: #{DateTime.diff(dt2, dt1, :millisecond)}")
 
         result
 
-      {:error, reason} -> {:error, reason}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -450,10 +507,12 @@ defmodule LiveShareCommunities.Authentication do
         claims = create_user_payload(id, name, email, "aad")
 
         dt2 = DateTime.utc_now()
-        IO.inspect "** Get AAD user claims: #{DateTime.diff(dt2, dt1, :millisecond)}"
+        IO.inspect("** Get AAD user claims: #{DateTime.diff(dt2, dt1, :millisecond)}")
 
         {:ok, claims}
-      {:error, reason} -> {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -462,16 +521,18 @@ defmodule LiveShareCommunities.Authentication do
     res = authenticated?(conn)
     dt2 = DateTime.utc_now()
 
-    IO.inspect "** Auth total time: #{DateTime.diff(dt2, dt1, :millisecond)}"
+    IO.inspect("** Auth total time: #{DateTime.diff(dt2, dt1, :millisecond)}")
 
     case res do
       {:ok, _claims} ->
         set_user_claims(conn)
+
       {:error, reason} ->
-        IO.inspect reason
+        IO.inspect(reason)
+
         conn
-          |> send_resp(401, "")
-          |> halt
+        |> send_resp(401, "")
+        |> halt
     end
   end
 
@@ -481,13 +542,13 @@ defmodule LiveShareCommunities.Authentication do
 
     # set the `auth_context` to `nil` initially,
     # update to real one if user is authenticated
-    conn = Map.merge(conn, %{ auth_context: nil })
+    conn = Map.merge(conn, %{auth_context: nil})
 
     if prefix == nil or !Enum.member?(authed_routes, prefix) do
       conn
     else
       conn
-       |> authenticateRoute
+      |> authenticateRoute
     end
   end
 end

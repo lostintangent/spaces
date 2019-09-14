@@ -1,10 +1,10 @@
 import * as R from "ramda";
 import { LiveShare } from "vsls";
 import { LIVE_SHARE_SESSION_URL } from "./constants";
-import { ICommunity, IMember, SessionType, Status } from "./store/model";
+import { IMember, ISpace, SessionType, Status } from "./store/model";
 
 const sortedMembers = R.pipe(
-  R.chain<ICommunity, IMember>(R.prop("members")),
+  R.chain<ISpace, IMember>(R.prop("members")),
   R.sortBy(R.prop("email"))
 );
 

@@ -1,13 +1,33 @@
 import * as R from "ramda";
 import * as redux from "redux";
-import { Disposable, Event, EventEmitter, ProviderResult, TreeDataProvider, TreeItem, window } from "vscode";
+import {
+  Disposable,
+  Event,
+  EventEmitter,
+  ProviderResult,
+  TreeDataProvider,
+  TreeItem,
+  window
+} from "vscode";
 import { LiveShare } from "vsls";
-import { communityNodeExpanded } from "../store/actions";
+import { spaceNodeExpanded } from "../store/actions";
 import { IStore } from "../store/model";
-import { CommunityBroadcastsNode, CommunityCodeReviewsNode, CommunityHelpRequestsNode, CommunityMembersNode, CommunityNode, CreateSessionNode, LoadingNode, MemberNode, NoCommunitiesNode, SessionNode, SignInNode, TreeNode } from "./nodes";
+import {
+  CreateSessionNode,
+  LoadingNode,
+  MemberNode,
+  NoSpacesNode,
+  SessionNode,
+  SignInNode,
+  SpaceBroadcastsNode,
+  SpaceCodeReviewsNode,
+  SpaceHelpRequestsNode,
+  SpaceMembersNode,
+  SpaceNode,
+  TreeNode
+} from "./nodes";
 
-class CommunitiesTreeProvider
-  implements TreeDataProvider<TreeNode>, Disposable {
+class SpacesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
   private _disposables: Disposable[] = [];
 
   private _onDidChangeTreeData = new EventEmitter<TreeNode>();
@@ -34,38 +54,33 @@ class CommunitiesTreeProvider
         return [new SignInNode()];
       } else if (state.isLoading) {
         return [new LoadingNode()];
-      } else if (state.communities.length === 0) {
-        return [new NoCommunitiesNode()];
+      } else if (state.spaces.length === 0) {
+        return [new NoSpacesNode()];
       } else {
-        return state.communities.map(
-          community => new CommunityNode(community, this.api, this.extensionPath)
+        return state.spaces.map(
+          space => new SpaceNode(space, this.api, this.extensionPath)
         );
       }
     } else {
-      if (element instanceof CommunityNode) {
+      if (element instanceof SpaceNode) {
         return [
-          new CommunityMembersNode(element.community, this.extensionPath),
-          new CommunityHelpRequestsNode(element.community, this.extensionPath),
-          new CommunityBroadcastsNode(element.community, this.extensionPath),
-          new CommunityCodeReviewsNode(element.community, this.extensionPath)
+          new SpaceMembersNode(element.space, this.extensionPath),
+          new SpaceHelpRequestsNode(element.space, this.extensionPath),
+          new SpaceBroadcastsNode(element.space, this.extensionPath),
+          new SpaceCodeReviewsNode(element.space, this.extensionPath)
         ];
-      } else if (element instanceof CommunityMembersNode) {
-        return element.community.members.map(
+      } else if (element instanceof SpaceMembersNode) {
+        return element.space.members.map(
           member =>
-            new MemberNode(
-              member,
-              element.community,
-              this.api,
-              this.extensionPath
-            )
+            new MemberNode(member, element.space, this.api, this.extensionPath)
         );
-      } else if (element instanceof CommunityHelpRequestsNode) {
-        if (element.community.helpRequests.length > 0) {
-          return element.community.helpRequests.map(
+      } else if (element instanceof SpaceHelpRequestsNode) {
+        if (element.space.helpRequests.length > 0) {
+          return element.space.helpRequests.map(
             request =>
               new SessionNode(
                 request,
-                element.community,
+                element.space,
                 this.extensionPath,
                 this.api
               )
@@ -75,17 +90,17 @@ class CommunitiesTreeProvider
             new CreateSessionNode(
               "Create help request...",
               "liveshare.createHelpRequest",
-              element.community
+              element.space
             )
           ];
         }
-      } else if (element instanceof CommunityBroadcastsNode) {
-        if (element.community.broadcasts.length > 0) {
-          return element.community.broadcasts.map(
+      } else if (element instanceof SpaceBroadcastsNode) {
+        if (element.space.broadcasts.length > 0) {
+          return element.space.broadcasts.map(
             request =>
               new SessionNode(
                 request,
-                element.community,
+                element.space,
                 this.extensionPath,
                 this.api
               )
@@ -95,17 +110,17 @@ class CommunitiesTreeProvider
             new CreateSessionNode(
               "Start broadcast...",
               "liveshare.startBroadcast",
-              element.community
+              element.space
             )
           ];
         }
-      } else if (element instanceof CommunityCodeReviewsNode) {
-        if (element.community.codeReviews.length > 0) {
-          return element.community.codeReviews.map(
+      } else if (element instanceof SpaceCodeReviewsNode) {
+        if (element.space.codeReviews.length > 0) {
+          return element.space.codeReviews.map(
             request =>
               new SessionNode(
                 request,
-                element.community,
+                element.space,
                 this.extensionPath,
                 this.api
               )
@@ -115,7 +130,7 @@ class CommunitiesTreeProvider
             new CreateSessionNode(
               "Create code review request...",
               "liveshare.createCodeReview",
-              element.community
+              element.space
             )
           ];
         }
@@ -133,22 +148,18 @@ export function registerTreeProvider(
   store: redux.Store,
   extensionPath: string
 ) {
-  const treeDataProvider = new CommunitiesTreeProvider(
-    store,
-    extensionPath,
-    api
-  );
+  const treeDataProvider = new SpacesTreeProvider(store, extensionPath, api);
 
-  const treeView = window.createTreeView("liveshare.communities", {
+  const treeView = window.createTreeView("liveshare.spaces", {
     showCollapseAll: true,
     treeDataProvider
   });
 
   treeView.onDidExpandElement(e => {
-    if (e.element instanceof CommunityMembersNode) {
-      store.dispatch(communityNodeExpanded(e.element.community, "members"));
-    } else if (e.element instanceof CommunityHelpRequestsNode) {
-      store.dispatch(communityNodeExpanded(e.element.community, "help"));
+    if (e.element instanceof SpaceMembersNode) {
+      store.dispatch(spaceNodeExpanded(e.element.space, "members"));
+    } else if (e.element instanceof SpaceHelpRequestsNode) {
+      store.dispatch(spaceNodeExpanded(e.element.space, "help"));
     }
   });
 }

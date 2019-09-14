@@ -4,4 +4,4 @@
 redis-server --daemonize yes --appendonly yes --appendfilename "redis.aof" --dir /home
 
 # Start Elixir service
-_build/prod/rel/communities/bin/communities foreground
+_build/prod/rel/spaces/bin/spaces foreground

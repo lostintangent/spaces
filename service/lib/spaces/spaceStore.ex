@@ -1,28 +1,28 @@
-defmodule LiveShareCommunities.CommunityStore do
-  @top_communities_count 5
-  @key_prefix "community"
+defmodule LiveShareSpaces.SpaceStore do
+  @top_spaces_count 5
+  @key_prefix "space"
 
   @ls_service_uri "https://prod.liveshare.vsengsaas.visualstudio.com"
 
-  def migrate_old_community_keys() do
+  def migrate_old_space_keys() do
     {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
 
     Enum.each(keys, fn key ->
-      # old keys do not have the `prefix:` pattern and contain only `communities`
+      # old keys do not have the `prefix:` pattern and contain only `spaces`
       is_new_key = key =~ ":"
 
       if !is_new_key do
         {:ok, value} = Redix.command(:redix, ["GET", key])
         {:ok, _} = Redix.command(:redix, ["DEL", key])
-        {:ok, _} = Redix.command(:redix, ["SET", get_community_key(key), value])
+        {:ok, _} = Redix.command(:redix, ["SET", get_space_key(key), value])
       end
     end)
   end
 
   def everything() do
-    all_community_names()
+    all_space_names()
     |> Enum.map(fn x ->
-      {:ok, value} = Redix.command(:redix, ["GET", get_community_key(x)])
+      {:ok, value} = Redix.command(:redix, ["GET", get_space_key(x)])
 
       %{
         "name" => x,
@@ -31,8 +31,8 @@ defmodule LiveShareCommunities.CommunityStore do
     end)
   end
 
-  defp all_community_names() do
-    {:ok, keys} = Redix.command(:redix, ["KEYS", get_community_key("*")])
+  defp all_space_names() do
+    {:ok, keys} = Redix.command(:redix, ["KEYS", get_space_key("*")])
 
     keys
     |> Enum.map(&remove_prefix(&1))
@@ -52,46 +52,46 @@ defmodule LiveShareCommunities.CommunityStore do
   end
 
   defp update(name, fun) do
-    community_key = get_community_key(name)
-    {:ok, value} = Redix.command(:redix, ["GET", community_key])
+    space_key = get_space_key(name)
+    {:ok, value} = Redix.command(:redix, ["GET", space_key])
 
-    community =
+    space =
       if value do
         Poison.decode!(value)
       else
         %{}
       end
 
-    updated_community = fun.(community)
-    {:ok, _} = Redix.command(:redix, ["SET", community_key, Poison.encode!(updated_community)])
+    updated_space = fun.(space)
+    {:ok, _} = Redix.command(:redix, ["SET", space_key, Poison.encode!(updated_space)])
     inform_subscribers(name)
   end
 
-  defp inform_subscribers(community_name) do
-    members_of(community_name)
+  defp inform_subscribers(space_name) do
+    members_of(space_name)
     |> Enum.map(&Map.get(&1, "email"))
     |> Enum.map(fn x ->
-      Registry.LiveShareCommunities
+      Registry.LiveShareSpaces
       |> Registry.dispatch(x, fn entries ->
         for {pid, _} <- entries do
-          # Send the community with its updated members/sessions to the subscriber
-          Process.send(pid, Poison.encode!(community(community_name)), [])
+          # Send the space with its updated members/sessions to the subscriber
+          Process.send(pid, Poison.encode!(space(space_name)), [])
         end
       end)
     end)
   end
 
-  def community(name) do
-    {:ok, value} = Redix.command(:redix, ["GET", get_community_key(name)])
+  def space(name) do
+    {:ok, value} = Redix.command(:redix, ["GET", get_space_key(name)])
 
-    community =
+    space =
       if value do
         Poison.decode!(value)
       else
         %{}
       end
 
-    community
+    space
     |> Map.update("name", name, & &1)
     |> Map.update("members", [], & &1)
     |> Map.update("sessions", [], & &1)
@@ -100,16 +100,16 @@ defmodule LiveShareCommunities.CommunityStore do
     |> update_with_thanks_count()
   end
 
-  def update_with_titles(community) do
+  def update_with_titles(space) do
     first =
-      community
+      space
       |> Map.get("members")
       |> Enum.map(&Map.get(&1, "joined_at", now()))
       |> Enum.concat([now()])
       |> Enum.min()
 
     with_titles =
-      community
+      space
       |> Map.get("members")
       |> Enum.map(
         &if Map.get(&1, "joined_at") == first do
@@ -119,14 +119,14 @@ defmodule LiveShareCommunities.CommunityStore do
         end
       )
 
-    Map.merge(community, %{"members" => with_titles})
+    Map.merge(space, %{"members" => with_titles})
   end
 
-  def update_with_thanks_count(community) do
-    thanks = community |> Map.get("thanks", [])
+  def update_with_thanks_count(space) do
+    thanks = space |> Map.get("thanks", [])
 
     with_count =
-      community
+      space
       |> Map.get("members")
       |> Enum.map(
         &Map.merge(&1, %{
@@ -134,36 +134,36 @@ defmodule LiveShareCommunities.CommunityStore do
         })
       )
 
-    community
+    space
     |> Map.merge(%{"members" => with_count})
     |> Map.delete("thanks")
   end
 
-  def top_communities() do
+  def top_spaces() do
     # TODO: We can optimize this by sorting inside Redis, and not load all results
-    all_community_names()
+    all_space_names()
     |> Enum.map(fn x ->
       %{
         name: x,
-        member_count: community(x) |> Map.get("members", []) |> length,
-        is_private: community(x) |> Map.get("isPrivate", false)
+        member_count: space(x) |> Map.get("members", []) |> length,
+        is_private: space(x) |> Map.get("isPrivate", false)
       }
     end)
     |> Enum.filter(&(&1.member_count > 0 && &1.is_private === false))
     |> Enum.sort_by(& &1.member_count, &>=/2)
-    |> Enum.take(@top_communities_count)
+    |> Enum.take(@top_spaces_count)
   end
 
   def cleanup_zombie_sessions(by_email) do
     connected_sockets =
-      Registry.LiveShareCommunities
+      Registry.LiveShareSpaces
       |> Registry.lookup(by_email)
 
     if length(connected_sockets) == 0 do
       sessions_by(by_email)
       |> Enum.map(
         &if session_inactive?(&1) do
-          remove_session(&1["community"], &1["id"])
+          remove_session(&1["space"], &1["id"])
         end
       )
     end
@@ -193,7 +193,7 @@ defmodule LiveShareCommunities.CommunityStore do
           "value" =>
             x["value"]
             |> Enum.map(fn y ->
-              Map.merge(y, %{"community" => x["name"]})
+              Map.merge(y, %{"space" => x["name"]})
             end)
         }
       )
@@ -204,12 +204,12 @@ defmodule LiveShareCommunities.CommunityStore do
   end
 
   def members_of(name) do
-    community(name)
+    space(name)
     |> Map.get("members", [])
   end
 
   def sessions_of(name) do
-    community(name)
+    space(name)
     |> Map.get("sessions", [])
   end
 
@@ -219,12 +219,12 @@ defmodule LiveShareCommunities.CommunityStore do
   end
 
   def messages_of(name) do
-    community(name)
+    space(name)
     |> Map.get("messages", [])
   end
 
-  defp add_member_helper(community, member) do
-    existing_members = community |> Map.get("members", [])
+  defp add_member_helper(space, member) do
+    existing_members = space |> Map.get("members", [])
 
     has_member =
       existing_members
@@ -238,7 +238,7 @@ defmodule LiveShareCommunities.CommunityStore do
         existing_members
       end
 
-    Map.merge(community, %{"members" => members})
+    Map.merge(space, %{"members" => members})
   end
 
   def add_member(name, member) do
@@ -251,53 +251,53 @@ defmodule LiveShareCommunities.CommunityStore do
     )
   end
 
-  defp remove_member_helper(community, member) do
+  defp remove_member_helper(space, member) do
     members =
-      Map.get(community, "members", [])
+      Map.get(space, "members", [])
       |> Enum.filter(fn x -> x["email"] != member["email"] end)
 
-    Map.merge(community, %{"members" => members})
+    Map.merge(space, %{"members" => members})
   end
 
   def remove_member(name, member) do
     update(name, &remove_member_helper(&1, member))
   end
 
-  defp add_session_helper(community, session) do
+  defp add_session_helper(space, session) do
     sessions =
-      community
+      space
       |> Map.get("sessions", [])
       |> Enum.concat([session])
 
-    Map.merge(community, %{"sessions" => sessions})
+    Map.merge(space, %{"sessions" => sessions})
   end
 
   def add_session(name, session) do
     update(name, &add_session_helper(&1, session))
   end
 
-  defp remove_session_helper(community, session_id) do
+  defp remove_session_helper(space, session_id) do
     sessions =
-      Map.get(community, "sessions", [])
+      Map.get(space, "sessions", [])
       |> Enum.filter(fn x -> x["id"] != session_id end)
 
-    Map.merge(community, %{"sessions" => sessions})
+    Map.merge(space, %{"sessions" => sessions})
   end
 
   def remove_session(name, session_id) do
     update(name, &remove_session_helper(&1, session_id))
   end
 
-  defp add_message_helper(community, message) do
+  defp add_message_helper(space, message) do
     messages =
-      Map.get(community, "messages", [])
+      Map.get(space, "messages", [])
       |> Enum.concat([message])
       |> Enum.sort_by(&Map.get(&1, "timestamp"))
       |> Enum.reverse()
-      # Only save 50 messages for a community
+      # Only save 50 messages for a space
       |> Enum.take(50)
 
-    Map.merge(community, %{"messages" => messages})
+    Map.merge(space, %{"messages" => messages})
   end
 
   def add_message(name, message, member_email) do
@@ -323,12 +323,12 @@ defmodule LiveShareCommunities.CommunityStore do
     update(name, fn x -> Map.merge(x, %{"messages" => []}) end)
   end
 
-  defp say_thanks_helper(community, values) do
+  defp say_thanks_helper(space, values) do
     thanks =
-      Map.get(community, "thanks", [])
+      Map.get(space, "thanks", [])
       |> Enum.concat(values)
 
-    Map.merge(community, %{"thanks" => thanks})
+    Map.merge(space, %{"thanks" => thanks})
   end
 
   def say_thanks(name, from, to) do
@@ -359,7 +359,7 @@ defmodule LiveShareCommunities.CommunityStore do
     DateTime.utc_now() |> DateTime.to_iso8601()
   end
 
-  defp get_community_key(name) do
+  defp get_space_key(name) do
     "#{@key_prefix}:#{name}"
   end
 

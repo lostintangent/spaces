@@ -8,14 +8,14 @@ import ws from "./ws";
 export class ChatApi {
   messageCallback: any;
   infoMessageCallback: any;
-  communityCallback: any;
+  spaceCallback: any;
   clearMessagesCallback: any;
 
   constructor(private vslsApi: vsls.LiveShare, private store: redux.Store) {}
 
-  getCommunities(): string[] {
+  getSpaces(): string[] {
     const state: IStore = this.store.getState();
-    return state.communities.map(c => c.name);
+    return state.spaces.map(c => c.name);
   }
 
   getUserInfo() {
@@ -32,18 +32,18 @@ export class ChatApi {
   getUsers() {
     const state: IStore = this.store.getState();
     let allMembers: IMember[] = [];
-    state.communities.forEach(c => {
+    state.spaces.forEach(c => {
       allMembers = [...allMembers, ...c.members];
     });
     return allMembers;
   }
 
-  async getChannelHistory(communityName: string) {
-    return await api.getMessages(communityName);
+  async getChannelHistory(spaceName: string) {
+    return await api.getMessages(spaceName);
   }
 
-  sendMessage(communityName: string, content: string) {
-    ws.sendMessage(communityName, content);
+  sendMessage(spaceName: string, content: string) {
+    ws.sendMessage(spaceName, content);
   }
 
   setMessageCallback(callback: any) {
@@ -58,8 +58,8 @@ export class ChatApi {
     this.clearMessagesCallback = callback;
   }
 
-  setCommunityCallback(callback: any) {
-    this.communityCallback = callback;
+  setSpaceCallback(callback: any) {
+    this.spaceCallback = callback;
   }
 
   onMessageReceived(name: string, messages: any) {
@@ -68,25 +68,25 @@ export class ChatApi {
     }
   }
 
-  onInfoMessage(communityName: string, messageText: string, userEmail: string) {
+  onInfoMessage(spaceName: string, messageText: string, userEmail: string) {
     if (this.infoMessageCallback) {
       this.infoMessageCallback({
-        name: communityName,
+        name: spaceName,
         text: messageText,
         user: userEmail
       });
     }
   }
 
-  onCommunityJoined(name: string) {
-    if (this.communityCallback) {
-      this.communityCallback(name);
+  onSpaceJoined(name: string) {
+    if (this.spaceCallback) {
+      this.spaceCallback(name);
     }
   }
 
-  onMessagesCleared(communityName: string) {
+  onMessagesCleared(spaceName: string) {
     if (this.clearMessagesCallback) {
-      this.clearMessagesCallback(communityName);
+      this.clearMessagesCallback(spaceName);
     }
   }
 }

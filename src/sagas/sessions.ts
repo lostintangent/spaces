@@ -9,7 +9,7 @@ import { getCurrentSessionUrl } from "../utils";
 export function* createSession(
   storage: LocalStorage,
   vslsApi: LiveShare,
-  { description, sessionType, community, access }: any
+  { description, sessionType, space, access }: any
 ) {
   let sessionUrl: string;
 
@@ -29,9 +29,9 @@ export function* createSession(
     url: sessionUrl.toString()
   };
 
-  yield put(sessionCreated({ community, session }));
-  storage.saveActiveSession(sessionId, community);
-  yield call(api.createSession, community, session);
+  yield put(sessionCreated({ space: space, session }));
+  storage.saveActiveSession(sessionId, space);
+  yield call(api.createSession, space, session);
 }
 
 export function* endActiveSession(storage: LocalStorage) {
@@ -40,7 +40,7 @@ export function* endActiveSession(storage: LocalStorage) {
   if (activeSession) {
     yield call(
       api.deleteSession,
-      activeSession.community,
+      activeSession.space,
       activeSession.session.id
     );
 

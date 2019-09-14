@@ -1,30 +1,30 @@
 import { Memento } from "vscode";
 
-const COMMUNITIES_STORAGE_KEY = "liveshare.communities";
+const SPACES_STORAGE_KEY = "liveshare.spaces";
 const SESSION_STORAGE_KEY = "liveshare.session";
 
 export class LocalStorage {
-  constructor(private storage: Memento) { }
+  constructor(private storage: Memento) {}
 
-  public getCommunities() {
-    return this.storage.get<string[]>(COMMUNITIES_STORAGE_KEY, []);
+  public getSpaces() {
+    return this.storage.get<string[]>(SPACES_STORAGE_KEY, []);
   }
 
-  public joinCommunity(name: string) {
-    const communities = this.getCommunities();
-    communities.push(name);
-    this.saveCommunities(communities);
+  public joinSpace(name: string) {
+    const spaces = this.getSpaces();
+    spaces.push(name);
+    this.saveSpaces(spaces);
   }
 
-  public leaveCommunity(name: string) {
-    const communities = this.getCommunities();
-    this.saveCommunities(communities.filter(c => c !== name));
+  public leaveSpace(name: string) {
+    const spaces = this.getSpaces();
+    this.saveSpaces(spaces.filter(c => c !== name));
   }
 
-  public saveActiveSession(sessionId: string, communityName: string) {
+  public saveActiveSession(sessionId: string, spaceName: string) {
     this.storage.update(SESSION_STORAGE_KEY, {
       id: sessionId,
-      name: communityName
+      name: spaceName
     });
   }
 
@@ -36,7 +36,7 @@ export class LocalStorage {
     return this.storage.get(SESSION_STORAGE_KEY);
   }
 
-  private saveCommunities(communities: string[]) {
-    this.storage.update(COMMUNITIES_STORAGE_KEY, communities);
+  private saveSpaces(spaces: string[]) {
+    this.storage.update(SPACES_STORAGE_KEY, spaces);
   }
 }

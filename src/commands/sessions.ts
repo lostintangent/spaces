@@ -4,12 +4,12 @@ import { Access } from "vsls";
 import { ISessionStateChannel } from "../channels/sessionState";
 import { EXTENSION_NAME } from "../constants";
 import { createSession } from "../store/actions";
-import { ICommunity, IStore, SessionType } from "../store/model";
+import { ISpace, IStore, SessionType } from "../store/model";
 import {
-  CommunityBroadcastsNode,
-  CommunityCodeReviewsNode,
-  CommunityHelpRequestsNode,
-  SessionNode
+  SessionNode,
+  SpaceBroadcastsNode,
+  SpaceCodeReviewsNode,
+  SpaceHelpRequestsNode
 } from "../tree/nodes";
 
 export function registerSessionCommands(
@@ -18,57 +18,55 @@ export function registerSessionCommands(
 ) {
   async function createSessionCommand(
     type: SessionType,
-    node?: { community: ICommunity } | ICommunity,
+    node?: { space: ISpace } | ISpace,
     access: Access = Access.ReadOnly
   ) {
-    let community;
+    let space;
     if (node) {
       // @ts-ignore
-      community = node.community ? node.community.name : node.name;
+      space = node.space ? node.space.name : node.name;
     } else {
-      const { communities } = <IStore>store.getState();
-      community = await window.showQuickPick(
-        communities.map(n => n.name, {
-          placeHolder: "Select the community to make this request within"
+      const { spaces } = <IStore>store.getState();
+      space = await window.showQuickPick(
+        spaces.map(n => n.name, {
+          placeHolder: "Select the space to make this request within"
         })
       );
     }
 
-    if (community) {
+    if (space) {
       const description = await window.showInputBox({
         placeHolder: "Enter a description"
       });
       if (description) {
-        store.dispatch(<any>(
-          createSession(community, type, description, access)
-        ));
+        store.dispatch(<any>createSession(space, type, description, access));
       }
     }
   }
 
   commands.registerCommand(
     `${EXTENSION_NAME}.createHelpRequest`,
-    async (node?: CommunityHelpRequestsNode | ICommunity) => {
+    async (node?: SpaceHelpRequestsNode | ISpace) => {
       createSessionCommand(SessionType.HelpRequest, node);
     }
   );
 
   commands.registerCommand(
     `${EXTENSION_NAME}.startBroadcast`,
-    async (node?: CommunityBroadcastsNode | ICommunity) => {
+    async (node?: SpaceBroadcastsNode | ISpace) => {
       createSessionCommand(SessionType.Broadcast, node);
     }
   );
 
   commands.registerCommand(
     `${EXTENSION_NAME}.createCodeReview`,
-    async (node?: CommunityCodeReviewsNode | ICommunity) => {
+    async (node?: SpaceCodeReviewsNode | ISpace) => {
       createSessionCommand(SessionType.CodeReview, node);
     }
   );
 
   commands.registerCommand(
-    `${EXTENSION_NAME}.joinCommunitySession`,
+    `${EXTENSION_NAME}.joinSpaceSession`,
     async (node: SessionNode) => {
       return commands.executeCommand("liveshare.join", {
         link: node.session.url

@@ -39,8 +39,8 @@ export class WebsocketClient {
     });
   }
 
-  sendMessage(communityName: string, content: string) {
-    const message = { type: "message", content, name: communityName };
+  sendMessage(spaceName: string, content: string) {
+    const message = { type: "message", content, name: spaceName };
 
     if (this.ws) {
       this.ws.send(JSON.stringify(message));

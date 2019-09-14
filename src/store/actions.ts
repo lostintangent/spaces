@@ -1,53 +1,59 @@
 import { createAction } from "redux-starter-kit";
 import { Access } from "vsls";
-import { IActiveSession, ICommunity, IMember, IMemberStatus, ISession, SessionType } from "./model";
+import {
+  IActiveSession,
+  IMember,
+  IMemberStatus,
+  ISession,
+  ISpace,
+  SessionType
+} from "./model";
 
-export const ACTION_JOIN_COMMUNITY = "JOIN_COMMUNITY";
-export const ACTION_JOIN_COMMUNITY_COMPLETED = "JOIN_COMMUNITY_COMPLETED";
-export const ACTION_LEAVE_COMMUNITY = "LEAVE_COMMUNITY";
-export const ACTION_LEAVE_COMMUNITY_COMPLETED = "LEAVE_COMMUNITY_COMPLETED";
-export const ACTION_LOAD_COMMUNITIES = "LOAD_COMMUNITIES";
-export const ACTION_LOAD_COMMUNITIES_COMPLETED = "LOAD_COMMUNITIES_COMPLETED";
+export const ACTION_JOIN_SPACE = "JOIN_SPACE";
+export const ACTION_JOIN_SPACE_COMPLETED = "JOIN_SPACE_COMPLETED";
+export const ACTION_LEAVE_SPACE = "LEAVE_SPACE";
+export const ACTION_LEAVE_SPACE_COMPLETED = "LEAVE_SPACE_COMPLETED";
+export const ACTION_LOAD_SPACES = "LOAD_SPACES";
+export const ACTION_LOAD_SPACES_COMPLETED = "LOAD_SPACES_COMPLETED";
 export const ACTION_STATUSES_UPDATED = "STATUSES_UPDATED";
 export const ACTION_CREATE_SESSION = "CREATE_SESSION";
 export const ACTION_SESSION_CREATED = "SESSION_CREATED";
 export const ACTION_ACTIVE_SESSION_ENDED = "ACTIVE_SESSION_ENDED";
 export const ACTION_CLEAR_ZOMBIE_SESSIONS = "CLEAR_ZOMBIE_SESSIONS";
-export const ACTION_COMMUNITY_NODE_EXPANDED = "COMMUNITY_NODE_EXPANDED";
+export const ACTION_SPACE_NODE_EXPANDED = "SPACE_NODE_EXPANDED";
 export const ACTION_USER_AUTHENTICATION_CHANGED = "USER_AUTHENTICATION_CHANGED";
-export const ACTION_COMMUNITY_UPDATED = "COMMUNITY_UPDATED";
+export const ACTION_SPACE_UPDATED = "SPACE_UPDATED";
 
 function action(type: string, payload = {}) {
   return { type, ...payload };
 }
 
-export const loadCommunities = () => action(ACTION_LOAD_COMMUNITIES);
+export const loadSpaces = () => action(ACTION_LOAD_SPACES);
 
-export const loadCommunitiesCompleted = (communities: ICommunity[]) =>
-  action(ACTION_LOAD_COMMUNITIES_COMPLETED, { communities });
+export const loadSpacesCompleted = (spaces: ISpace[]) =>
+  action(ACTION_LOAD_SPACES_COMPLETED, { spaces });
 
-export const joinCommunity = (name: string, key?: string) =>
-  action(ACTION_JOIN_COMMUNITY, { name: name.toLowerCase(), key });
+export const joinSpace = (name: string, key?: string) =>
+  action(ACTION_JOIN_SPACE, { name: name.toLowerCase(), key });
 
-export const joinCommunityCompleted = (
+export const joinSpaceCompleted = (
   name: string,
   members: any,
   sessions: any,
   isMuted: boolean
-) =>
-  action(ACTION_JOIN_COMMUNITY_COMPLETED, { name, members, sessions, isMuted });
+) => action(ACTION_JOIN_SPACE_COMPLETED, { name, members, sessions, isMuted });
 
-export const leaveCommunity = (name: string) =>
-  action(ACTION_LEAVE_COMMUNITY, { name });
+export const leaveSpace = (name: string) =>
+  action(ACTION_LEAVE_SPACE, { name });
 
-export const leaveCommunityCompleted = (name: string) =>
-  action(ACTION_LEAVE_COMMUNITY_COMPLETED, { name });
+export const leaveSpaceCompleted = (name: string) =>
+  action(ACTION_LEAVE_SPACE_COMPLETED, { name });
 
 export const statusesUpdated = (statuses: IMemberStatus[]) =>
   action(ACTION_STATUSES_UPDATED, { statuses });
 
 export const createSession = (
-  community: string,
+  space: string,
   type: SessionType,
   description: string,
   access: Access
@@ -55,7 +61,7 @@ export const createSession = (
   action(ACTION_CREATE_SESSION, {
     description,
     sessionType: type,
-    community,
+    space,
     access
   });
 
@@ -66,32 +72,30 @@ export const activeSessionEnded = () => action(ACTION_ACTIVE_SESSION_ENDED);
 
 export const clearZombieSessions = () => action(ACTION_CLEAR_ZOMBIE_SESSIONS);
 
-export const communityNodeExpanded = (
-  community: ICommunity,
-  nodeType: string
-) => action(ACTION_COMMUNITY_NODE_EXPANDED, { community, nodeType });
+export const spaceNodeExpanded = (space: ISpace, nodeType: string) =>
+  action(ACTION_SPACE_NODE_EXPANDED, { space, nodeType });
 
 export const userAuthenticationChanged = (isSignedIn: boolean) =>
   action(ACTION_USER_AUTHENTICATION_CHANGED, { isSignedIn });
 
-export const updateCommunity = (
+export const updateSpace = (
   name: string,
   members: IMember[],
   sessions: ISession[]
-) => action(ACTION_COMMUNITY_UPDATED, { name, members, sessions });
+) => action(ACTION_SPACE_UPDATED, { name, members, sessions });
 
 export const clearMessages = createAction<string>("messages/clear");
 
-export const muteCommunity = createAction<string>("community/mute");
+export const muteSpace = createAction<string>("space/mute");
 
-export const unmuteCommunity = createAction<string>("community/unmute");
+export const unmuteSpace = createAction<string>("space/unmute");
 
-export const muteAllCommunities = createAction("community/muteAll");
+export const muteAllSpaces = createAction("space/muteAll");
 
-export const unmuteAllCommunities = createAction("community/unmuteAll");
+export const unmuteAllSpaces = createAction("space/unmuteAll");
 
-export const makeCommunityPrivate = createAction("community/makePrivate");
+export const makeSpacePrivate = createAction("space/makePrivate");
 
-export const makeCommunityPublic = createAction("community/makePublic");
+export const makeSpacePublic = createAction("space/makePublic");
 
-export const joinCommunityFailed = createAction<string>("community/joinFailed");
+export const joinSpaceFailed = createAction<string>("space/joinFailed");

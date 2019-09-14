@@ -1,5 +1,5 @@
-defmodule LiveShareCommunities do
-  @moduledoc "The main OTP application for LiveShareCommunities"
+defmodule LiveShareSpaces do
+  @moduledoc "The main OTP application for LiveShareSpaces"
 
   use Application
 
@@ -9,21 +9,18 @@ defmodule LiveShareCommunities do
     children = [
       Plug.Cowboy.child_spec(
         scheme: :http,
-        plug: LiveShareCommunities.HTTP,
+        plug: LiveShareSpaces.HTTP,
         options: [dispatch: dispatch()]
       ),
       Registry.child_spec(
         keys: :duplicate,
-        name: Registry.LiveShareCommunities
+        name: Registry.LiveShareSpaces
       ),
       {Redix, name: :redix}
     ]
 
     opts = [strategy: :one_for_one, name: HexVersion.Supervisor]
     result = Supervisor.start_link(children, opts)
-
-    # temporary call to migrate the old community keys
-    LiveShareCommunities.CommunityStore.migrate_old_community_keys()
 
     result
   end
@@ -32,8 +29,8 @@ defmodule LiveShareCommunities do
     [
       {:_,
        [
-         {"/ws", LiveShareCommunities.Websocket, []},
-         {:_, Plug.Cowboy.Handler, {LiveShareCommunities.HTTP, []}}
+         {"/ws", LiveShareSpaces.Websocket, []},
+         {:_, Plug.Cowboy.Handler, {LiveShareSpaces.HTTP, []}}
        ]}
     ]
   end

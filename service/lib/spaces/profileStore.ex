@@ -1,4 +1,4 @@
-defmodule LiveShareCommunities.ProfileStore do
+defmodule LiveShareSpaces.ProfileStore do
   @key_prefix "profile"
 
   def everything() do
@@ -21,10 +21,12 @@ defmodule LiveShareCommunities.ProfileStore do
     {:ok, value} = Redix.command(:redix, ["GET", get_profile_key(id)])
 
     dt2 = DateTime.utc_now()
+
     if value do
       Poison.decode!(value)
     end
-    IO.inspect "** Profile lookup time: #{DateTime.diff(dt2, dt1, :millisecond)}"
+
+    IO.inspect("** Profile lookup time: #{DateTime.diff(dt2, dt1, :millisecond)}")
 
     if value do
       Poison.decode!(value)
@@ -32,14 +34,13 @@ defmodule LiveShareCommunities.ProfileStore do
       nil
     end
   end
-  
+
   def create_profile(id, name, email) do
-    profile = %{ id: id, name: name, email: email }
+    profile = %{id: id, name: name, email: email}
     {:ok, _} = Redix.command(:redix, ["SET", get_profile_key(id), Poison.encode!(profile)])
   end
 
   defp get_profile_key(id) do
     "#{@key_prefix}:#{id}"
   end
-
 end

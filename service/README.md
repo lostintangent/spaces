@@ -1,4 +1,4 @@
-# Live Share Communities
+# Live Share Spaces
 
 This hosts the code for the service, written in Elixir.
 

@@ -1,7 +1,13 @@
 import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState } from "vscode";
 import { LiveShare } from "vsls";
-import { ICommunity, IMember, ISession, MemberTitles, Status } from "../store/model";
+import {
+  IMember,
+  ISession,
+  ISpace,
+  MemberTitles,
+  Status
+} from "../store/model";
 
 export abstract class TreeNode extends TreeItem {
   constructor(
@@ -23,31 +29,29 @@ export class SignInNode extends TreeNode {
   }
 }
 
-export class NoCommunitiesNode extends TreeNode {
+export class NoSpacesNode extends TreeNode {
   constructor() {
-    super("Join a community...");
+    super("Join a space...");
 
     this.command = {
-      command: "liveshare.joinCommunity",
-      title: "Join Community"
+      command: "liveshare.joinSpace",
+      title: "Join Space"
     };
   }
 }
 
-export class CommunityNode extends TreeNode {
+export class SpaceNode extends TreeNode {
   name: string;
 
-  constructor(public community: ICommunity, vslsApi: LiveShare, extensionPath: string) {
+  constructor(public space: ISpace, vslsApi: LiveShare, extensionPath: string) {
     super(
-      `${community.name} (${community.members.length})`,
+      `${space.name} (${space.members.length})`,
       TreeItemCollapsibleState.Expanded
     );
 
-    this.name = community.name;
+    this.name = space.name;
 
-    const founder = community.members.find(
-      m => m.title === MemberTitles.Founder
-    );
+    const founder = space.members.find(m => m.title === MemberTitles.Founder);
     let isFounder = false;
 
     if (founder && founder.email === vslsApi.session.user!.emailAddress!) {
@@ -55,12 +59,12 @@ export class CommunityNode extends TreeNode {
     }
 
     if (isFounder) {
-      this.contextValue = "community.founder";
+      this.contextValue = "space.founder";
     } else {
-      this.contextValue = "community";
+      this.contextValue = "space";
     }
 
-    if (community.isPrivate) {
+    if (space.isPrivate) {
       this.iconPath = {
         dark: path.join(extensionPath, `images/dark/lock.svg`),
         light: path.join(extensionPath, `images/light/lock.svg`)
@@ -69,17 +73,17 @@ export class CommunityNode extends TreeNode {
       this.contextValue += ".private";
     }
 
-    if (community.isMuted) {
+    if (space.isMuted) {
       this.contextValue += ".muted";
     }
   }
 }
 
-export class CommunityMembersNode extends TreeNode {
-  constructor(public community: ICommunity, extensionPath: string) {
+export class SpaceMembersNode extends TreeNode {
+  constructor(public space: ISpace, extensionPath: string) {
     super(
-      `Members (${community.members.length})`,
-      community.isExpanded
+      `Members (${space.members.length})`,
+      space.isExpanded
         ? TreeItemCollapsibleState.Expanded
         : TreeItemCollapsibleState.Collapsed
     );
@@ -91,11 +95,11 @@ export class CommunityMembersNode extends TreeNode {
   }
 }
 
-export class CommunityHelpRequestsNode extends TreeNode {
-  constructor(public community: ICommunity, extensionPath: string) {
+export class SpaceHelpRequestsNode extends TreeNode {
+  constructor(public space: ISpace, extensionPath: string) {
     super(
-      `Help Requests (${community.helpRequests.length})`,
-      community.isHelpRequestsExpanded
+      `Help Requests (${space.helpRequests.length})`,
+      space.isHelpRequestsExpanded
         ? TreeItemCollapsibleState.Expanded
         : TreeItemCollapsibleState.Collapsed
     );
@@ -109,10 +113,10 @@ export class CommunityHelpRequestsNode extends TreeNode {
   }
 }
 
-export class CommunityCodeReviewsNode extends TreeNode {
-  constructor(public community: ICommunity, extensionPath: string) {
+export class SpaceCodeReviewsNode extends TreeNode {
+  constructor(public space: ISpace, extensionPath: string) {
     super(
-      `Code Reviews (${community.codeReviews.length})`,
+      `Code Reviews (${space.codeReviews.length})`,
       TreeItemCollapsibleState.Collapsed
     );
 
@@ -125,10 +129,10 @@ export class CommunityCodeReviewsNode extends TreeNode {
   }
 }
 
-export class CommunityBroadcastsNode extends TreeNode {
-  constructor(public community: ICommunity, extensionPath: string) {
+export class SpaceBroadcastsNode extends TreeNode {
+  constructor(public space: ISpace, extensionPath: string) {
     super(
-      `Broadcasts (${community.broadcasts.length})`,
+      `Broadcasts (${space.broadcasts.length})`,
       TreeItemCollapsibleState.Collapsed
     );
 
@@ -142,13 +146,13 @@ export class CommunityBroadcastsNode extends TreeNode {
 }
 
 export class CreateSessionNode extends TreeNode {
-  constructor(label: string, command: string, community: ICommunity) {
+  constructor(label: string, command: string, space: ISpace) {
     super(label);
 
     this.command = {
       command,
       title: label,
-      arguments: [community]
+      arguments: [space]
     };
   }
 }
@@ -157,11 +161,11 @@ function statusToIconPath(status: Status, extensionPath: string) {
   return path.join(extensionPath, `images/${status.toString()}.svg`);
 }
 
-function displayName(api: LiveShare, email: string, community: ICommunity) {
+function displayName(api: LiveShare, email: string, space: ISpace) {
   if (email === api.session!.user!.emailAddress) {
     return `${api.session.user!.displayName} (You)`;
   } else {
-    const member = community.members.find(m => m.email === email);
+    const member = space.members.find(m => m.email === email);
     return member!.name;
   }
 }
@@ -171,7 +175,7 @@ export class MemberNode extends TreeNode {
 
   constructor(
     public member: IMember,
-    public community: ICommunity,
+    public space: ISpace,
     public api: LiveShare,
     private extensionPath: string
   ) {
@@ -211,15 +215,13 @@ export class MemberNode extends TreeNode {
 export class SessionNode extends TreeNode {
   constructor(
     public session: ISession,
-    public community: ICommunity,
+    public space: ISpace,
     private extensionPath: string,
     api: LiveShare
   ) {
-    super(
-      `${displayName(api, session.host, community)} - ${session.description}`
-    );
+    super(`${displayName(api, session.host, space)} - ${session.description}`);
 
-    const host = community.members.find(m => m.email === session.host);
+    const host = space.members.find(m => m.email === session.host);
     this.iconPath = statusToIconPath(
       host!.status || Status.offline,
       this.extensionPath
@@ -235,6 +237,6 @@ export class SessionNode extends TreeNode {
 
 export class LoadingNode extends TreeNode {
   constructor() {
-    super("Loading communities...");
+    super("Loading spaces...");
   }
 }

@@ -2,29 +2,29 @@ import * as R from "ramda";
 import * as redux from "redux";
 import {
   ACTION_ACTIVE_SESSION_ENDED,
-  ACTION_COMMUNITY_NODE_EXPANDED,
-  ACTION_JOIN_COMMUNITY,
-  ACTION_JOIN_COMMUNITY_COMPLETED,
-  ACTION_LEAVE_COMMUNITY,
-  ACTION_LEAVE_COMMUNITY_COMPLETED,
-  ACTION_LOAD_COMMUNITIES,
-  ACTION_LOAD_COMMUNITIES_COMPLETED,
+  ACTION_JOIN_SPACE,
+  ACTION_JOIN_SPACE_COMPLETED,
+  ACTION_LEAVE_SPACE,
+  ACTION_LEAVE_SPACE_COMPLETED,
+  ACTION_LOAD_SPACES,
+  ACTION_LOAD_SPACES_COMPLETED,
   ACTION_SESSION_CREATED,
+  ACTION_SPACE_NODE_EXPANDED,
   ACTION_STATUSES_UPDATED,
   ACTION_USER_AUTHENTICATION_CHANGED,
-  joinCommunityFailed,
-  makeCommunityPrivate,
-  makeCommunityPublic,
-  muteAllCommunities,
-  muteCommunity,
-  unmuteAllCommunities,
-  unmuteCommunity
+  joinSpaceFailed,
+  makeSpacePrivate,
+  makeSpacePublic,
+  muteAllSpaces,
+  muteSpace,
+  unmuteAllSpaces,
+  unmuteSpace
 } from "./actions";
 import {
-  ICommunity,
   IMember,
   IMemberStatus,
   ISession,
+  ISpace,
   IStore,
   SessionType,
   Status
@@ -33,7 +33,7 @@ import {
 const initialState: IStore = {
   isLoading: true,
   isSignedIn: false,
-  communities: []
+  spaces: []
 };
 
 const sorted = R.sortBy(R.prop("name"));
@@ -45,11 +45,11 @@ export const reducer: redux.Reducer = (
   action
 ) => {
   switch (action.type) {
-    case ACTION_JOIN_COMMUNITY:
+    case ACTION_JOIN_SPACE:
       return {
         ...state,
-        communities: sorted([
-          ...state.communities,
+        spaces: sorted([
+          ...state.spaces,
           {
             name: action.name,
             members: [],
@@ -66,13 +66,13 @@ export const reducer: redux.Reducer = (
         ])
       };
 
-    case ACTION_JOIN_COMMUNITY_COMPLETED:
+    case ACTION_JOIN_SPACE_COMPLETED:
       return {
         ...state,
-        communities: state.communities.map(community => {
-          if (community.name === action.name) {
+        spaces: state.spaces.map(space => {
+          if (space.name === action.name) {
             return {
-              ...community,
+              ...space,
               isLoading: false,
               isMuted: action.isMuted,
               members: sorted(action.members.map(setDefaultStatus)),
@@ -87,50 +87,46 @@ export const reducer: redux.Reducer = (
               )
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
 
-    case joinCommunityFailed.toString():
+    case joinSpaceFailed.toString():
       return {
         ...state,
-        communities: state.communities.filter(
-          community => community.name !== action.payload
-        )
+        spaces: state.spaces.filter(space => space.name !== action.payload)
       };
 
-    case ACTION_LEAVE_COMMUNITY:
+    case ACTION_LEAVE_SPACE:
       return {
         ...state,
-        communities: state.communities.filter(community => {
-          if (community.name === action.name) {
+        spaces: state.spaces.filter(space => {
+          if (space.name === action.name) {
             return {
-              ...community,
+              ...space,
               isLeaving: true
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
 
-    case ACTION_LEAVE_COMMUNITY_COMPLETED:
+    case ACTION_LEAVE_SPACE_COMPLETED:
       return {
         ...state,
-        communities: state.communities.filter(
-          community => community.name !== action.name
-        )
+        spaces: state.spaces.filter(space => space.name !== action.name)
       };
 
-    case ACTION_LOAD_COMMUNITIES:
+    case ACTION_LOAD_SPACES:
       return {
         ...state,
         isLoading: true,
-        communities: []
+        spaces: []
       };
 
-    case ACTION_LOAD_COMMUNITIES_COMPLETED:
+    case ACTION_LOAD_SPACES_COMPLETED:
       // memberSorter sorts members and adds the default status value
       const memberSorter = (c: any) => ({
         ...c,
@@ -148,16 +144,16 @@ export const reducer: redux.Reducer = (
       return {
         ...state,
         isLoading: false,
-        communities: R.map(memberSorter, sorted(action.communities))
+        spaces: R.map(memberSorter, sorted(action.spaces))
       };
 
     case ACTION_STATUSES_UPDATED:
       return {
         ...state,
-        communities: R.map(
-          (community: ICommunity) => ({
-            ...community,
-            members: community.members.map(m => {
+        space: R.map(
+          (space: ISpace) => ({
+            ...space,
+            members: space.members.map(m => {
               const memberStatus = action.statuses.find(
                 ({ email }: IMemberStatus) => email === m.email
               );
@@ -167,7 +163,7 @@ export const reducer: redux.Reducer = (
               };
             })
           }),
-          state.communities
+          state.spaces
         )
       };
 
@@ -183,18 +179,18 @@ export const reducer: redux.Reducer = (
       return {
         ...state,
         activeSession: action.activeSession,
-        communities: state.communities.map(community => {
-          if (community.name === action.activeSession.community) {
+        spaces: state.spaces.map(space => {
+          if (space.name === action.activeSession.space) {
             return {
-              ...community,
+              ...space,
               [sessionType]: [
                 // @ts-ignore
-                ...community[sessionType],
+                ...space[sessionType],
                 action.activeSession.session
               ]
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
@@ -212,36 +208,36 @@ export const reducer: redux.Reducer = (
       return {
         ...state,
         activeSession: null,
-        communities: state.communities.map(community => {
-          if (community.name === activeSession.community) {
+        spaces: state.spaces.map(space => {
+          if (space.name === activeSession.space) {
             return {
-              ...community,
+              ...space,
               // @ts-ignore
-              [sessionType]: community[sessionType].filter(
+              [sessionType]: space[sessionType].filter(
                 (s: ISession) => s.id !== activeSession.session.id
               )
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
     }
 
-    case ACTION_COMMUNITY_NODE_EXPANDED:
+    case ACTION_SPACE_NODE_EXPANDED:
       const property =
         action.nodeType === "members" ? "isExpanded" : "isHelpRequestsExpanded";
 
       return {
         ...state,
-        communities: state.communities.map(community => {
-          if (community.name === action.community.name) {
+        spaces: state.spaces.map(space => {
+          if (space.name === action.space.name) {
             return {
-              ...community,
+              ...space,
               [property]: true
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
@@ -252,88 +248,88 @@ export const reducer: redux.Reducer = (
         isSignedIn: action.isSignedIn
       };
 
-    case muteCommunity.toString():
+    case muteSpace.toString():
       return {
         ...state,
-        communities: state.communities.map(community => {
-          if (community.name === action.payload) {
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload) {
             return {
-              ...community,
+              ...space,
               isMuted: true
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
 
-    case unmuteCommunity.toString():
+    case unmuteSpace.toString():
       return {
         ...state,
-        communities: state.communities.map(community => {
-          if (community.name === action.payload) {
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload) {
             return {
-              ...community,
+              ...space,
               isMuted: false
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
 
-    case muteAllCommunities.toString():
+    case muteAllSpaces.toString():
       return {
         ...state,
         isMuted: true,
-        communities: state.communities.map(community => {
+        spaces: state.spaces.map(space => {
           return {
-            ...community,
+            ...space,
             isMuted: true
           };
         })
       };
 
-    case unmuteAllCommunities.toString():
+    case unmuteAllSpaces.toString():
       return {
         ...state,
         isMuted: false,
-        communities: state.communities.map(community => {
+        spaces: state.spaces.map(space => {
           return {
-            ...community,
+            ...space,
             isMuted: false
           };
         })
       };
 
-    case makeCommunityPrivate.toString():
+    case makeSpacePrivate.toString():
       return {
         ...state,
-        communities: state.communities.map(community => {
-          if (community.name === action.payload.community) {
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload.space) {
             return {
-              ...community,
+              ...space,
               isPrivate: true,
               key: action.payload.key
             };
           } else {
-            return community;
+            return space;
           }
         })
       };
 
-    case makeCommunityPublic.toString():
+    case makeSpacePublic.toString():
       return {
         ...state,
-        communities: state.communities.map(community => {
-          if (community.name === action.payload) {
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload) {
             return {
-              ...community,
+              ...space,
               isPrivate: false,
               key: null
             };
           } else {
-            return community;
+            return space;
           }
         })
       };

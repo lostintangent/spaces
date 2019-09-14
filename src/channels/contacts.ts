@@ -5,12 +5,12 @@ import { toStatus } from "../utils";
 export function createContactChannel(contacts: ContactsCollection) {
   return eventChannel((emit: Function) => {
     Object.entries(contacts.contacts).forEach(([_, contact]) => {
-      contact.onDidChange(() =>
+      contact.onDidChange(() => {
         emit({
           email: contact.email,
           status: toStatus(contact.status!)
-        })
-      );
+        });
+      });
     });
 
     return () => {

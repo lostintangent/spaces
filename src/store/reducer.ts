@@ -150,7 +150,7 @@ export const reducer: redux.Reducer = (
     case ACTION_STATUSES_UPDATED:
       return {
         ...state,
-        space: R.map(
+        spaces: R.map(
           (space: ISpace) => ({
             ...space,
             members: space.members.map(m => {

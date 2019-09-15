@@ -19,6 +19,7 @@ export interface ISpace {
   codeReviews: ISession[];
   broadcasts: ISession[];
   key: string;
+  readme?: string;
 }
 
 export interface IMember {

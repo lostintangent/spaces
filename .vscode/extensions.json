@@ -2,7 +2,6 @@
   "recommendations": [
     "EditorConfig.EditorConfig",
     "esbenp.prettier-vscode",
-    "jakebecker.elixir-ls",
-    "sbrink.elm"
+    "jakebecker.elixir-ls"
   ]
 }

@@ -220,3 +220,7 @@ export function* makeSpacePrivateSaga({ payload }: any) {
 export function* makeSpacePublicSaga({ payload }: any) {
   yield call(api.makePublic, payload);
 }
+
+export function* updateReadmeSaga({ payload }: any) {
+  yield call(api.updateReadme, payload.space, payload.readme);
+}

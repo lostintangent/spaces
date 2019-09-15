@@ -219,6 +219,12 @@ defmodule LiveShareSpaces.HTTP do
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 
+  post "/v0/space/:name/readme" do
+    name = URI.decode(name)
+    LiveShareSpaces.SpaceStore.update_readme(name, conn.body_params["readme"])
+    send_resp(conn, :ok, Poison.encode!(%{}))
+  end
+
   match _ do
     send_resp(conn, :not_found, "404!")
   end

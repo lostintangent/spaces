@@ -121,6 +121,10 @@ export async function makePublic(space: string) {
   return await postAsync(spaceEndpoint(space, "public"), {});
 }
 
+export async function updateReadme(space: string, readme: string) {
+  return await postAsync(spaceEndpoint(space, "readme"), { readme });
+}
+
 function createSpaceRequestBody(
   spaceName: string,
   memberName: string,

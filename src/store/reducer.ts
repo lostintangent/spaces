@@ -18,7 +18,8 @@ import {
   muteAllSpaces,
   muteSpace,
   unmuteAllSpaces,
-  unmuteSpace
+  unmuteSpace,
+  updateReadme
 } from "./actions";
 import {
   IMember,
@@ -327,6 +328,21 @@ export const reducer: redux.Reducer = (
               ...space,
               isPrivate: false,
               key: null
+            };
+          } else {
+            return space;
+          }
+        })
+      };
+
+    case updateReadme.toString():
+      return {
+        ...state,
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload.space) {
+            return {
+              ...space,
+              readme: action.payload.readme
             };
           } else {
             return space;

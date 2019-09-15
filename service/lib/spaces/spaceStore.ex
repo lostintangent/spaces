@@ -355,6 +355,13 @@ defmodule LiveShareSpaces.SpaceStore do
     )
   end
 
+  def update_readme(name, readme) do
+    update(
+      name,
+      &Map.merge(&1, %{"readme" => readme})
+    )
+  end
+
   defp now() do
     DateTime.utc_now() |> DateTime.to_iso8601()
   end

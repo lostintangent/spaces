@@ -164,6 +164,20 @@
         "command": "liveshare.makeSpacePublic",
         "category": "Live Share Spaces",
         "title": "Make Public"
+      },
+      {
+        "command": "liveshare.editReadme",
+        "category": "Live Share Spaces",
+        "title": "Edit Readme"
+      },
+      {
+        "command": "liveshare.openReadme",
+        "category": "Live Share Spaces",
+        "title": "Open Readme",
+        "icon": {
+          "dark": "images/dark/readme.svg",
+          "light": "images/light/readme.svg"
+        }
       }
     ],
     "views": {
@@ -212,6 +226,16 @@
     "menus": {
       "view/item/context": [
         {
+          "command": "liveshare.openReadme",
+          "when": "view == liveshare.spaces && viewItem =~ /^space/",
+          "group": "base@1"
+        },
+        {
+          "command": "liveshare.openReadme",
+          "when": "view == liveshare.spaces && viewItem =~ /^space/",
+          "group": "inline@1"
+        },
+        {
           "command": "liveshare.leaveSpace",
           "when": "view == liveshare.spaces && viewItem =~ /^space/",
           "group": "base@4"
@@ -227,14 +251,19 @@
           "group": "founder@1"
         },
         {
+          "command": "liveshare.editReadme",
+          "when": "view == liveshare.spaces && viewItem =~ /^space.founder/",
+          "group": "founder@2"
+        },
+        {
           "command": "liveshare.makeSpacePrivate",
           "when": "view == liveshare.spaces && viewItem =~ /^space.founder(\\.muted)?$/",
-          "group": "founder@2"
+          "group": "founder@3"
         },
         {
           "command": "liveshare.makeSpacePublic",
           "when": "view == liveshare.spaces && viewItem =~ /^space.founder.private/",
-          "group": "founder@2"
+          "group": "founder@3"
         },
         {
           "command": "liveshare.inviteMemberByEmail",
@@ -307,7 +336,7 @@
         {
           "command": "liveshare.muteSpace",
           "when": "view == liveshare.spaces && viewItem =~ /^space(.founder)?(.private)?$/",
-          "group": "inline"
+          "group": "inline@2"
         },
         {
           "command": "liveshare.unmuteSpace",
@@ -317,7 +346,7 @@
         {
           "command": "liveshare.unmuteSpace",
           "when": "view == liveshare.spaces && viewItem =~ /^space.*muted$/",
-          "group": "inline"
+          "group": "inline@2"
         }
       ],
       "view/title": [

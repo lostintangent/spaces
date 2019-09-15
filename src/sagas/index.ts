@@ -29,6 +29,7 @@ import {
   muteSpace,
   unmuteAllSpaces,
   unmuteSpace,
+  updateReadme,
   userAuthenticationChanged
 } from "../store/actions";
 import { rebuildContacts, REBUILD_CONTACTS_ACTIONS } from "./contacts";
@@ -49,6 +50,7 @@ import {
   muteSpaceSaga,
   unmuteAllSpacesSaga,
   unmuteSpaceSaga,
+  updateReadmeSaga,
   updateSpaceSaga
 } from "./spaces";
 
@@ -85,6 +87,7 @@ function* workerSagas(
 
     takeEvery(makeSpacePrivate, makeSpacePrivateSaga),
     takeEvery(makeSpacePublic, makeSpacePublicSaga),
+    takeEvery(updateReadme, updateReadmeSaga),
 
     takeLatest(
       ACTION_LOAD_SPACES,

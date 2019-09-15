@@ -4,11 +4,15 @@ import createSagaMiddleware from "redux-saga";
 import { ExtensionContext } from "vscode";
 import { getApi as getVslsApi } from "vsls";
 import { auth } from "./auth/auth";
-import { createSessionStateChannel, ISessionStateChannel } from "./channels/sessionState";
+import {
+  createSessionStateChannel,
+  ISessionStateChannel
+} from "./channels/sessionState";
 import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
+import { registerFileSystemProvider } from "./readmeFileSystemProvider";
 import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
 import { reducer } from "./store/reducer";
@@ -32,13 +36,15 @@ export async function activate(context: ExtensionContext) {
   const lsAuthStrategies = (api as any).authStrategies || [];
   const authStrategies = lsAuthStrategies.filter((strategy: IAuthStrategy) => {
     const strategyName = strategy.name.toLowerCase();
-    return (strategyName.indexOf('anonymous') === -1);
+    return strategyName.indexOf("anonymous") === -1;
   });
   await auth.init(context, authStrategies);
 
   sessionStateChannel = createSessionStateChannel(api);
 
   registerTreeProvider(api, store, context.extensionPath);
+  registerFileSystemProvider(store);
+
   registerCommands(
     api,
     store,

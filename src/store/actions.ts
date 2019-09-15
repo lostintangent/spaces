@@ -99,3 +99,5 @@ export const makeSpacePrivate = createAction("space/makePrivate");
 export const makeSpacePublic = createAction("space/makePublic");
 
 export const joinSpaceFailed = createAction<string>("space/joinFailed");
+
+export const updateReadme = createAction("space/updateReadme");

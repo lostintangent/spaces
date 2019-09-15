@@ -5,6 +5,10 @@ import { LiveShare } from "vsls";
 import { getTopSpaces } from "../api";
 import { config } from "../config";
 import { EXTENSION_NAME, JOIN_URL_PATTERN } from "../constants";
+import {
+  openSpaceReadme,
+  previewSpaceReadme
+} from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   clearMessages,
@@ -191,6 +195,20 @@ export function registerSpaceCommands(
       if (response === "Copy again") {
         env.clipboard.writeText(url);
       }
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.editReadme`,
+    (node?: SpaceNode) => {
+      openSpaceReadme(node!.name);
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.openReadme`,
+    (node?: SpaceNode) => {
+      previewSpaceReadme(node!.name);
     }
   );
 }

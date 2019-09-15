@@ -405,7 +405,7 @@
   },
   "scripts": {
     "vscode:prepublish": "rm -rf out && webpack --mode production",
-    "compile": "webpack --mode development",
+    "compile": "webpack --mode none",
     "watch": "webpack --mode none --watch",
     "pretest": "tsc -p ./",
     "test": "node ./out/test/runTest.js"

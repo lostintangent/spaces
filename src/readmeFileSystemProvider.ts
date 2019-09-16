@@ -20,7 +20,7 @@ import { ISpace } from "./store/model";
 
 const SPACE_SCHEME = "space";
 const README_EXTENSION = "md";
-const PATH_PATTERN = /\/(?<space>\w+)\.md/;
+const PATH_PATTERN = /\/(?<space>[\w-\\\/]+)\.md/;
 
 function getSpaceFromUri(uri: Uri) {
   const match = PATH_PATTERN.exec(uri.path);

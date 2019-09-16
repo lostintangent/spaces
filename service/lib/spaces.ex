@@ -22,6 +22,9 @@ defmodule LiveShareSpaces do
     opts = [strategy: :one_for_one, name: HexVersion.Supervisor]
     result = Supervisor.start_link(children, opts)
 
+    # Temporary migration for empty private communities that are unusable
+    LiveShareSpaces.SpaceStore.migrate_empty_private_spaces()
+
     result
   end
 

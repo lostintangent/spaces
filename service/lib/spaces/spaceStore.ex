@@ -19,6 +19,14 @@ defmodule LiveShareSpaces.SpaceStore do
     end)
   end
 
+  def migrate_empty_private_spaces() do
+    all_space_names()
+    |> Enum.map(&space(&1))
+    |> Enum.filter(&(Map.get(&1, "members") |> length() |> (fn x -> x == 0 end).()))
+    |> Enum.filter(&Map.get(&1, "isPrivate", false))
+    |> Enum.map(&make_public(Map.get(&1, "name")))
+  end
+
   def everything() do
     all_space_names()
     |> Enum.map(fn x ->
@@ -100,19 +108,22 @@ defmodule LiveShareSpaces.SpaceStore do
     |> update_with_thanks_count()
   end
 
+  defp earliest_joined_at(space) do
+    space
+    |> Map.get("members")
+    |> Enum.map(&Map.get(&1, "joined_at", now()))
+    |> Enum.concat([now()])
+    |> Enum.min()
+  end
+
   def update_with_titles(space) do
-    first =
-      space
-      |> Map.get("members")
-      |> Enum.map(&Map.get(&1, "joined_at", now()))
-      |> Enum.concat([now()])
-      |> Enum.min()
+    founder_joined_at = earliest_joined_at(space)
 
     with_titles =
       space
       |> Map.get("members")
       |> Enum.map(
-        &if Map.get(&1, "joined_at") == first do
+        &if Map.get(&1, "joined_at") == founder_joined_at do
           Map.merge(&1, %{"title" => "Founder"})
         else
           &1
@@ -137,6 +148,22 @@ defmodule LiveShareSpaces.SpaceStore do
     space
     |> Map.merge(%{"members" => with_count})
     |> Map.delete("thanks")
+  end
+
+  defp founder?(name, member) do
+    space = space(name)
+    founder_joined_at = earliest_joined_at(space)
+
+    space
+    |> Map.get("members")
+    |> Enum.filter(&(Map.get(&1, "email") == member["email"]))
+    |> Enum.filter(&(Map.get(&1, "joined_at") == founder_joined_at))
+    |> length
+    |> (&(&1 > 0)).()
+  end
+
+  defp private?(name) do
+    Map.get(space(name), "isPrivate", false)
   end
 
   def top_spaces() do
@@ -260,6 +287,11 @@ defmodule LiveShareSpaces.SpaceStore do
   end
 
   def remove_member(name, member) do
+    if founder?(name, member) && private?(name) do
+      # If the leaving member was a founder, make the space public
+      make_public(name)
+    end
+
     update(name, &remove_member_helper(&1, member))
   end
 

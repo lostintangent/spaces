@@ -1,4 +1,4 @@
-// import { IAuthStrategy } from "@vs/vscode-account";
+import { IAuthStrategy } from "@vs/vscode-account";
 import { applyMiddleware, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { ExtensionContext } from "vscode";
@@ -34,12 +34,10 @@ export async function activate(context: ExtensionContext) {
 
   // need to cast `api` to `any` until new `vsls` npm package is published
   const lsAuthStrategies = (api as any).authStrategies || [];
-
-  const authStrategies = lsAuthStrategies.filter((strategy: any) => {
+  const authStrategies = lsAuthStrategies.filter((strategy: IAuthStrategy) => {
     const strategyName = strategy.name.toLowerCase();
     return strategyName.indexOf("anonymous") === -1;
   });
-
   await auth.init(context, authStrategies);
 
   sessionStateChannel = createSessionStateChannel(api);

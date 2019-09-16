@@ -40,8 +40,16 @@ export const joinSpaceCompleted = (
   name: string,
   members: any,
   sessions: any,
-  isMuted: boolean
-) => action(ACTION_JOIN_SPACE_COMPLETED, { name, members, sessions, isMuted });
+  isMuted: boolean,
+  readme: string
+) =>
+  action(ACTION_JOIN_SPACE_COMPLETED, {
+    name,
+    members,
+    sessions,
+    isMuted,
+    readme
+  });
 
 export const leaveSpace = (name: string) =>
   action(ACTION_LEAVE_SPACE, { name });

@@ -64,7 +64,7 @@ export function* joinSpaceSaga(
   const userInfo = vslsApi.session.user!;
 
   try {
-    const { members, sessions } = yield call(
+    const { members, sessions, readme } = yield call(
       api.joinSpace,
       name,
       userInfo.displayName,
@@ -75,7 +75,7 @@ export function* joinSpaceSaga(
     storage.joinSpace(name);
 
     const isMuted = isSpaceMuted(name);
-    yield put(joinSpaceCompleted(name, members, sessions, isMuted));
+    yield put(joinSpaceCompleted(name, members, sessions, isMuted, readme));
 
     chatApi.onSpaceJoined(name);
   } catch {
@@ -133,10 +133,11 @@ export function* updateSpaceSaga(
     broadcasts,
     codeReviews,
     isMuted,
-    isLoading
+    isLoading,
+    readme
   }: ISpace = spaces.find((c: any) => c.name === name);
 
-  yield put(joinSpaceCompleted(name, members, newSessions, isMuted!));
+  yield put(joinSpaceCompleted(name, members, newSessions, isMuted!, readme!));
 
   if (isLoading || isSpaceMuted(name)) {
     return;

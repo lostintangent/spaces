@@ -43,7 +43,7 @@ export async function activate(context: ExtensionContext) {
   sessionStateChannel = createSessionStateChannel(api);
 
   registerTreeProvider(api, store, context.extensionPath);
-  registerFileSystemProvider(store);
+  registerFileSystemProvider(store, api);
 
   registerCommands(
     api,

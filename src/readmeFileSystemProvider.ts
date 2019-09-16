@@ -7,12 +7,14 @@ import {
   EventEmitter,
   FileChangeEvent,
   FileStat,
+  FileSystemError,
   FileSystemProvider,
   FileType,
   Uri,
   window,
   workspace
 } from "vscode";
+import { LiveShare } from "vsls";
 import { updateReadme } from "./store/actions";
 import { ISpace } from "./store/model";
 
@@ -40,7 +42,7 @@ export function previewSpaceReadme(space: string) {
 }
 
 class ReadmeFileSystemProvider implements FileSystemProvider {
-  constructor(private store: redux.Store) {}
+  constructor(private store: redux.Store, private api: LiveShare) {}
 
   stat(uri: Uri): FileStat {
     return {
@@ -51,15 +53,19 @@ class ReadmeFileSystemProvider implements FileSystemProvider {
     };
   }
 
+  private getSpace(name: string): ISpace {
+    const { spaces } = this.store.getState();
+    return spaces.find((space: ISpace) => space.name === name);
+  }
+
   readFile(uri: Uri): Uint8Array {
     const spaceName = getSpaceFromUri(uri);
 
     if (!spaceName) {
-      throw new Error("File not found");
+      throw FileSystemError.FileNotFound(uri);
     }
 
-    const { spaces } = this.store.getState();
-    const space = spaces.find((space: ISpace) => space.name === spaceName);
+    const space = this.getSpace(spaceName);
     const readme = space.readme || "";
     return new TextEncoder().encode(readme);
   }
@@ -69,7 +75,17 @@ class ReadmeFileSystemProvider implements FileSystemProvider {
     content: Uint8Array,
     options: { create: boolean; overwrite: boolean }
   ): void {
-    const space = getSpaceFromUri(uri);
+    const spaceName = getSpaceFromUri(uri);
+
+    const space = this.getSpace(spaceName!);
+    const currentMember = space.members.find(
+      m => m.email === this.api.session.user!.emailAddress
+    );
+
+    if (currentMember!.title !== "Founder") {
+      throw FileSystemError.NoPermissions(uri);
+    }
+
     const readme = new TextDecoder().decode(content);
     this.store.dispatch(updateReadme({ space, readme }));
   }
@@ -108,7 +124,7 @@ class ReadmeFileSystemProvider implements FileSystemProvider {
   }
 }
 
-export function registerFileSystemProvider(store: redux.Store) {
-  const provider = new ReadmeFileSystemProvider(store);
+export function registerFileSystemProvider(store: redux.Store, api: LiveShare) {
+  const provider = new ReadmeFileSystemProvider(store, api);
   workspace.registerFileSystemProvider(SPACE_SCHEME, provider);
 }

@@ -76,6 +76,7 @@ export const reducer: redux.Reducer = (
               ...space,
               isLoading: false,
               isMuted: action.isMuted,
+              readme: action.readme,
               members: sorted(action.members.map(setDefaultStatus)),
               helpRequests: action.sessions.filter(
                 (s: any) => s.type === SessionType.HelpRequest

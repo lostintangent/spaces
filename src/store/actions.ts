@@ -89,8 +89,9 @@ export const userAuthenticationChanged = (isSignedIn: boolean) =>
 export const updateSpace = (
   name: string,
   members: IMember[],
-  sessions: ISession[]
-) => action(ACTION_SPACE_UPDATED, { name, members, sessions });
+  sessions: ISession[],
+  readme: string
+) => action(ACTION_SPACE_UPDATED, { name, members, sessions, readme });
 
 export const clearMessages = createAction<string>("messages/clear");
 

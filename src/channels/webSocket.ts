@@ -6,10 +6,10 @@ import ws from "../ws";
 export function createWebSocketChannel(api: LiveShare, chatApi: ChatApi) {
   return eventChannel((emit: Function) => {
     ws.init(api.session.user!.emailAddress!, (data: any) => {
-      const { name, members, sessions, messages } = data;
+      const { name, members, sessions, messages, readme } = data;
       chatApi.onMessageReceived(name, messages);
 
-      emit({ name, members, sessions });
+      emit({ name, members, sessions, readme });
     });
 
     return () => {

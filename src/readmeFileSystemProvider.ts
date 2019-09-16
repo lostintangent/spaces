@@ -83,7 +83,9 @@ class ReadmeFileSystemProvider implements FileSystemProvider {
     );
 
     if (currentMember!.title !== "Founder") {
-      throw FileSystemError.NoPermissions(uri);
+      throw FileSystemError.NoPermissions(
+        "Only the founder of a space can update the readme."
+      );
     }
 
     const readme = new TextDecoder().decode(content);

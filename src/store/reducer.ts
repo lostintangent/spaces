@@ -12,11 +12,14 @@ import {
   ACTION_SPACE_NODE_EXPANDED,
   ACTION_STATUSES_UPDATED,
   ACTION_USER_AUTHENTICATION_CHANGED,
+  blockMember,
+  demoteToMember,
   joinSpaceFailed,
   makeSpacePrivate,
   makeSpacePublic,
   muteAllSpaces,
   muteSpace,
+  promoteToFounder,
   unmuteAllSpaces,
   unmuteSpace,
   updateReadme
@@ -60,6 +63,8 @@ export const reducer: redux.Reducer = (
             isLoading: true,
             isLeaving: false,
             isExpanded: false,
+            founders: [],
+            blockedMembers: [],
             isPrivate: !!action.key,
             key: action.key,
             isMuted: true
@@ -77,6 +82,8 @@ export const reducer: redux.Reducer = (
               isLoading: false,
               isMuted: action.isMuted,
               readme: action.readme,
+              founders: action.founders,
+              blockedMembers: action.blockedMembers,
               members: sorted(action.members.map(setDefaultStatus)),
               helpRequests: action.sessions.filter(
                 (s: any) => s.type === SessionType.HelpRequest
@@ -344,6 +351,54 @@ export const reducer: redux.Reducer = (
             return {
               ...space,
               readme: action.payload.readme
+            };
+          } else {
+            return space;
+          }
+        })
+      };
+
+    case promoteToFounder.toString():
+      return {
+        ...state,
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload.space) {
+            return {
+              ...space,
+              founders: [...space.founders, action.payload.member]
+            };
+          } else {
+            return space;
+          }
+        })
+      };
+
+    case demoteToMember.toString():
+      return {
+        ...state,
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload.space) {
+            return {
+              ...space,
+              founders: space.founders.filter(
+                founder => founder !== action.payload.member
+              )
+            };
+          } else {
+            return space;
+          }
+        })
+      };
+
+    case blockMember.toString():
+      return {
+        ...state,
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload.space) {
+            return {
+              ...space,
+              founders: space.founders.filter(f => f !== action.payload.member),
+              removedMembers: [...space.blockedMembers, action.payload.member]
             };
           } else {
             return space;

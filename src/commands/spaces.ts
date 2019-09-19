@@ -11,7 +11,9 @@ import {
 } from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
+  blockMember,
   clearMessages,
+  demoteToMember,
   joinSpace,
   leaveSpace,
   loadSpaces,
@@ -19,11 +21,13 @@ import {
   makeSpacePublic,
   muteAllSpaces,
   muteSpace,
+  promoteToFounder,
+  unblockMember,
   unmuteAllSpaces,
   unmuteSpace
 } from "../store/actions";
 import { IStore } from "../store/model";
-import { SpaceNode } from "../tree/nodes";
+import { MemberNode, SpaceNode } from "../tree/nodes";
 
 export function registerSpaceCommands(
   api: LiveShare,
@@ -209,6 +213,34 @@ export function registerSpaceCommands(
     `${EXTENSION_NAME}.openReadme`,
     (node?: SpaceNode) => {
       previewSpaceReadme(node!.name);
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.promoteToFounder`,
+    (node?: MemberNode) => {
+      promoteToFounder({ space: node!.space.name, member: node!.member.email });
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.demoteToMember`,
+    (node?: MemberNode) => {
+      demoteToMember({ space: node!.space.name, member: node!.member.email });
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.blockMember`,
+    (node?: MemberNode) => {
+      blockMember({ space: node!.space.name, member: node!.member.email });
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.unblockMember`,
+    (node?: MemberNode) => {
+      unblockMember({ space: node!.space.name, member: node!.member.email });
     }
   );
 }

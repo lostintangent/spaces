@@ -1,13 +1,7 @@
 import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState } from "vscode";
 import { LiveShare } from "vsls";
-import {
-  IMember,
-  ISession,
-  ISpace,
-  MemberTitles,
-  Status
-} from "../store/model";
+import { IMember, ISession, ISpace, Status } from "../store/model";
 
 export abstract class TreeNode extends TreeItem {
   constructor(
@@ -51,12 +45,9 @@ export class SpaceNode extends TreeNode {
 
     this.name = space.name;
 
-    const founder = space.members.find(m => m.title === MemberTitles.Founder);
-    let isFounder = false;
-
-    if (founder && founder.email === vslsApi.session.user!.emailAddress!) {
-      isFounder = true;
-    }
+    const isFounder = space.founders.includes(
+      vslsApi.session.user!.emailAddress!
+    );
 
     if (isFounder) {
       this.contextValue = "space.founder";
@@ -186,9 +177,17 @@ export class MemberNode extends TreeNode {
       this.member.status || Status.offline,
       this.extensionPath
     );
-    const isCurrentUser = member.email === api.session.user!.emailAddress;
+
+    const currentUser = api.session.user!.emailAddress;
+    const isCurrentUser = member.email === currentUser;
+    const isFounder = space.founders.includes(currentUser!);
+    const userIsFounder = space.founders.includes(member.email);
     let titles: string[] = member.title ? [member.title] : [];
     let thanks: string = member.thanks > 0 ? `(${member.thanks})` : ``;
+
+    if (userIsFounder) {
+      titles.push("Founder");
+    }
 
     if (isCurrentUser) {
       titles.push("You");
@@ -207,6 +206,14 @@ export class MemberNode extends TreeNode {
         this.contextValue = "member";
       } else {
         this.contextValue = "member.online";
+      }
+
+      if (userIsFounder) {
+        this.contextValue += ".founder";
+      }
+
+      if (isFounder) {
+        this.contextValue += ".spaceFounder";
       }
     }
   }

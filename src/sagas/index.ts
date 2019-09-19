@@ -20,13 +20,17 @@ import {
   ACTION_LOAD_SPACES,
   ACTION_LOAD_SPACES_COMPLETED,
   ACTION_SPACE_UPDATED,
+  blockMember,
   clearMessages,
   clearZombieSessions,
+  demoteToMember,
   loadSpaces,
   makeSpacePrivate,
   makeSpacePublic,
   muteAllSpaces,
   muteSpace,
+  promoteToFounder,
+  unblockMember,
   unmuteAllSpaces,
   unmuteSpace,
   updateReadme,
@@ -40,7 +44,9 @@ import {
   endActiveSession
 } from "./sessions";
 import {
+  blockMemberSaga,
   clearMessagesSaga,
+  demoteToMemberSaga,
   joinSpaceSaga,
   leaveSpace,
   loadSpacesSaga,
@@ -48,6 +54,8 @@ import {
   makeSpacePublicSaga,
   muteAllSpacesSaga,
   muteSpaceSaga,
+  promoteToFounderSaga,
+  unblockMemberSaga,
   unmuteAllSpacesSaga,
   unmuteSpaceSaga,
   updateReadmeSaga,
@@ -88,6 +96,11 @@ function* workerSagas(
     takeEvery(makeSpacePrivate, makeSpacePrivateSaga),
     takeEvery(makeSpacePublic, makeSpacePublicSaga),
     takeEvery(updateReadme, updateReadmeSaga),
+
+    takeEvery(promoteToFounder, promoteToFounderSaga),
+    takeEvery(demoteToMember, demoteToMemberSaga),
+    takeEvery(blockMember, blockMemberSaga),
+    takeEvery(unblockMember, unblockMemberSaga),
 
     takeLatest(
       ACTION_LOAD_SPACES,

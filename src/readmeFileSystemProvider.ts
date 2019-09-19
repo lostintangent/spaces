@@ -1,3 +1,4 @@
+import * as path from "path";
 import * as redux from "redux";
 import { TextDecoder, TextEncoder } from "util";
 import {
@@ -17,18 +18,17 @@ import {
 import { LiveShare } from "vsls";
 import { updateReadme } from "./store/actions";
 import { ISpace } from "./store/model";
-
 const SPACE_SCHEME = "space";
-const README_EXTENSION = "md";
-const PATH_PATTERN = /\/(?<space>[\w-\\\/]+)\.md/;
+const README_EXTENSION = ".md";
 
 function getSpaceFromUri(uri: Uri) {
-  const match = PATH_PATTERN.exec(uri.path);
-  return match && match.groups!.space;
+  if (path.extname(uri.path) != README_EXTENSION) return;
+
+  return path.basename(uri.path, README_EXTENSION);
 }
 
 function getUriForSpace(space: string) {
-  return Uri.parse(`${SPACE_SCHEME}:/${space}.${README_EXTENSION}`);
+  return Uri.parse(`${SPACE_SCHEME}:/${space}${README_EXTENSION}`);
 }
 
 export function openSpaceReadme(space: string) {
@@ -82,14 +82,14 @@ class ReadmeFileSystemProvider implements FileSystemProvider {
       m => m.email === this.api.session.user!.emailAddress
     );
 
-    if (currentMember!.title !== "Founder") {
+    if (!space.founders.includes(currentMember!.email)) {
       throw FileSystemError.NoPermissions(
         "Only the founder of a space can update the readme."
       );
     }
 
     const readme = new TextDecoder().decode(content);
-    this.store.dispatch(updateReadme({ space, readme }));
+    this.store.dispatch(updateReadme({ space: space.name, readme }));
   }
 
   /* Unimplimented methods */

@@ -178,6 +178,16 @@
           "dark": "images/dark/readme.svg",
           "light": "images/light/readme.svg"
         }
+      },
+      {
+        "command": "liveshare.promoteToFounder",
+        "category": "Live Share Spaces",
+        "title": "Promote to Founder"
+      },
+      {
+        "command": "liveshare.demoteToMember",
+        "category": "Live Share Spaces",
+        "title": "Demote to Member"
       }
     ],
     "views": {
@@ -273,6 +283,16 @@
           "command": "liveshare.inviteMember",
           "when": "view == liveshare.spaces && viewItem == member.online"
         },
+        {
+          "command": "liveshare.promoteToFounder",
+          "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?.spaceFounder$/",
+          "group": "founder@1"
+        },
+        {
+          "command": "liveshare.demoteToMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?.founder.spaceFounder$/",
+          "group": "founder@1"
+        }
         {
           "command": "liveshare.inviteMemberByEmail",
           "when": "view == liveshare.spaces && viewItem =~ /^member/",

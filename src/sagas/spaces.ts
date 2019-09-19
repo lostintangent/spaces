@@ -49,12 +49,37 @@ export function* loadSpacesSaga(
   const channel = createWebSocketChannel(vslsApi, chatApi);
 
   while (true) {
-    const { name, members, sessions, readme } = yield take(channel);
-    yield put(<any>updateSpace(name, members, sessions, readme));
+    const { name, members, sessions, readme, founders } = yield take(channel);
+    yield put(<any>updateSpace(name, members, sessions, readme, founders));
   }
 }
 
 const PRIVATE_SPACE_RESPONSE = "Redeem invitation URL";
+function* promptUserForInvitationUrl(name: string, key: string) {
+  let response = yield call(
+    // @ts-ignore
+    window.showErrorMessage,
+    "This space is private and requires an invitation URL in order to join.",
+    PRIVATE_SPACE_RESPONSE
+  );
+  if (response === PRIVATE_SPACE_RESPONSE) {
+    const clipboardContents = yield call(
+      env.clipboard.readText.bind(env.clipboard)
+    );
+    response = yield call(window.showInputBox, {
+      placeHolder:
+        "Specify the invitation URL or key in order to join this space.",
+      value: clipboardContents
+    });
+    if (response) {
+      key = JOIN_URL_PATTERN.test(response)
+        ? (<any>JOIN_URL_PATTERN.exec(response)).groups.key
+        : response;
+      yield put(joinSpace(name, key));
+    }
+  }
+}
+
 export function* joinSpaceSaga(
   storage: LocalStorage,
   vslsApi: LiveShare,
@@ -63,48 +88,34 @@ export function* joinSpaceSaga(
 ): any {
   const userInfo = vslsApi.session.user!;
 
-  try {
-    const { members, sessions, readme } = yield call(
-      api.joinSpace,
-      name,
-      userInfo.displayName,
-      userInfo.emailAddress!,
-      key
-    );
+  const { space, error } = yield call(
+    api.joinSpace,
+    name,
+    userInfo.displayName,
+    userInfo.emailAddress!,
+    key
+  );
 
-    storage.joinSpace(name);
-
-    const isMuted = isSpaceMuted(name);
-    yield put(joinSpaceCompleted(name, members, sessions, isMuted, readme));
-
-    chatApi.onSpaceJoined(name);
-  } catch {
+  if (error) {
     yield put(joinSpaceFailed(name));
 
-    let response = yield call(
-      // @ts-ignore
-      window.showErrorMessage,
-      "This space is private and requires an invitation URL in order to join.",
-      PRIVATE_SPACE_RESPONSE
-    );
-    if (response === PRIVATE_SPACE_RESPONSE) {
-      const clipboardContents = yield call(
-        env.clipboard.readText.bind(env.clipboard)
-      );
-      response = yield call(window.showInputBox, {
-        placeHolder:
-          "Specify the invitation URL or key in order to join this space.",
-        value: clipboardContents
-      });
-
-      if (response) {
-        key = JOIN_URL_PATTERN.test(response)
-          ? (<any>JOIN_URL_PATTERN.exec(response)).groups.key
-          : response;
-        yield put(joinSpace(name, key));
-      }
+    switch (error) {
+      case api.JoinRequestError.MemberBlocked:
+        return window.showErrorMessage("You've been blocked from this space.");
+      case api.JoinRequestError.SpacePrivate:
+        return yield call(promptUserForInvitationUrl, name, key);
     }
   }
+
+  storage.joinSpace(name);
+
+  const { members, sessions, readme, founders } = space;
+  const isMuted = isSpaceMuted(name);
+  yield put(
+    joinSpaceCompleted(name, members, sessions, isMuted, readme, founders)
+  );
+
+  chatApi.onSpaceJoined(name);
 }
 
 export function* leaveSpace(
@@ -125,7 +136,7 @@ export function* leaveSpace(
 
 export function* updateSpaceSaga(
   vslsApi: LiveShare,
-  { name, members, sessions: newSessions, readme }: any
+  { name, members, sessions: newSessions, readme, founders }: any
 ) {
   const spaces = yield select(s => s.spaces);
   const {
@@ -136,7 +147,9 @@ export function* updateSpaceSaga(
     isLoading
   }: ISpace = spaces.find((c: any) => c.name === name);
 
-  yield put(joinSpaceCompleted(name, members, newSessions, isMuted!, readme));
+  yield put(
+    joinSpaceCompleted(name, members, newSessions, isMuted!, readme, founders)
+  );
 
   if (isLoading || isSpaceMuted(name)) {
     return;
@@ -223,4 +236,20 @@ export function* makeSpacePublicSaga({ payload }: any) {
 
 export function* updateReadmeSaga({ payload }: any) {
   yield call(api.updateReadme, payload.space, payload.readme);
+}
+
+export function* promoteToFounderSaga({ payload }: any) {
+  yield call(api.promoteMember, payload.space, payload.member);
+}
+
+export function* demoteToMemberSaga({ payload }: any) {
+  yield call(api.demoteMember, payload.space, payload.member);
+}
+
+export function* blockMemberSaga({ payload }: any) {
+  yield call(api.blockMember, payload.space, payload.member);
+}
+
+export function* unblockMemberSaga({ payload }: any) {
+  yield call(api.unblockMember, payload.space, payload.member);
 }

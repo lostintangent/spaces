@@ -51,20 +51,25 @@ defmodule LiveShareSpaces.SpaceStore do
     end)
   end
 
-  defp update(name, fun) do
+  defp update(name, fun) when is_binary(name) do
     space_key = get_space_key(name)
     {:ok, value} = Redix.command(:redix, ["GET", space_key])
 
-    space =
-      if value do
-        Poison.decode!(value)
-      else
-        %{}
-      end
-
+    space = Poison.decode!(value)
     updated_space = fun.(space)
+
     {:ok, _} = Redix.command(:redix, ["SET", space_key, Poison.encode!(updated_space)])
     inform_subscribers(name)
+    updated_space
+  end
+
+  defp update(space, fun) when is_map(space) do
+    updated_space = fun.(space)
+
+    space_key = get_space_key(space["name"])
+    {:ok, _} = Redix.command(:redix, ["SET", space_key, Poison.encode!(updated_space)])
+    inform_subscribers(space["name"])
+    updated_space
   end
 
   defp inform_subscribers(space_name) do
@@ -88,38 +93,21 @@ defmodule LiveShareSpaces.SpaceStore do
       if value do
         Poison.decode!(value)
       else
-        %{}
+        %{
+          "name" => name,
+          "founders" => [],
+          "blocked_members" => [],
+          "members" => [],
+          "sessions" => [],
+          "messages" => [],
+          "readme" => "",
+          "isPrivate" => false,
+          "key" => ""
+        }
       end
 
     space
-    |> Map.update("name", name, & &1)
-    |> Map.update("members", [], & &1)
-    |> Map.update("sessions", [], & &1)
-    |> Map.update("messages", [], & &1)
-    |> update_with_titles()
     |> update_with_thanks_count()
-  end
-
-  def update_with_titles(space) do
-    first =
-      space
-      |> Map.get("members")
-      |> Enum.map(&Map.get(&1, "joined_at", now()))
-      |> Enum.concat([now()])
-      |> Enum.min()
-
-    with_titles =
-      space
-      |> Map.get("members")
-      |> Enum.map(
-        &if Map.get(&1, "joined_at") == first do
-          Map.merge(&1, %{"title" => "Founder"})
-        else
-          &1
-        end
-      )
-
-    Map.merge(space, %{"members" => with_titles})
   end
 
   def update_with_thanks_count(space) do
@@ -142,11 +130,13 @@ defmodule LiveShareSpaces.SpaceStore do
   def top_spaces() do
     # TODO: We can optimize this by sorting inside Redis, and not load all results
     all_space_names()
-    |> Enum.map(fn x ->
+    |> Enum.map(fn space_name ->
+      space = space(space_name)
+
       %{
-        name: x,
-        member_count: space(x) |> Map.get("members", []) |> length,
-        is_private: space(x) |> Map.get("isPrivate", false)
+        name: space["name"],
+        member_count: length(space["members"]),
+        is_private: space["isPrivate"]
       }
     end)
     |> Enum.filter(&(&1.member_count > 0 && &1.is_private === false))
@@ -224,39 +214,41 @@ defmodule LiveShareSpaces.SpaceStore do
   end
 
   defp add_member_helper(space, member) do
-    existing_members = space |> Map.get("members", [])
+    current_members = space |> Map.get("members", [])
+    member_email = member["email"]
+    existing_member = Enum.member?(current_members, member_email)
 
-    has_member =
-      existing_members
-      |> Enum.filter(fn x -> x["email"] == member["email"] end)
-      |> length
+    if existing_member do
+      space
+    else
+      updated_members = Enum.concat(current_members, [Map.put(member, "joined_at", now())])
 
-    members =
-      if has_member == 0 do
-        existing_members |> Enum.concat([member])
-      else
-        existing_members
-      end
+      current_founders = space |> Map.get("founders", [])
 
-    Map.merge(space, %{"members" => members})
+      founders =
+        if length(current_founders) > 0 do
+          current_founders
+        else
+          Enum.concat(current_founders, [member_email])
+        end
+
+      %{space | "members" => updated_members, "founders" => founders}
+    end
   end
 
-  def add_member(name, member) do
+  def add_member(space, member) do
     update(
-      name,
-      &add_member_helper(
-        &1,
-        member |> Map.merge(%{"joined_at" => now()})
-      )
+      space,
+      &add_member_helper(&1, member)
     )
   end
 
   defp remove_member_helper(space, member) do
     members =
-      Map.get(space, "members", [])
+      space["members"]
       |> Enum.filter(fn x -> x["email"] != member["email"] end)
 
-    Map.merge(space, %{"members" => members})
+    %{space | "members" => members}
   end
 
   def remove_member(name, member) do
@@ -328,7 +320,7 @@ defmodule LiveShareSpaces.SpaceStore do
       Map.get(space, "thanks", [])
       |> Enum.concat(values)
 
-    Map.merge(space, %{"thanks" => thanks})
+    %{space | "thanks" => thanks}
   end
 
   def say_thanks(name, from, to) do
@@ -344,21 +336,52 @@ defmodule LiveShareSpaces.SpaceStore do
   def make_private(name, key) do
     update(
       name,
-      &Map.merge(&1, %{"isPrivate" => true, "key" => key})
+      &%{&1 | "isPrivate" => true, "key" => key}
     )
   end
 
   def make_public(name) do
     update(
       name,
-      &Map.merge(&1, %{"isPrivate" => false, "key" => ""})
+      &%{&1 | "isPrivate" => false, "key" => ""}
+    )
+  end
+
+  def promote_member(name, member) do
+    update(
+      name,
+      &%{&1 | "founders" => Enum.concat(&1["founders"], [member])}
+    )
+  end
+
+  def demote_member(name, member) do
+    update(
+      name,
+      &%{&1 | "founders" => Enum.filter(&1["founders"], fn founder -> founder !== member end)}
+    )
+  end
+
+  def block_member(name, member) do
+    update(
+      name,
+      &%{&1 | "blocked_members" => Enum.concat(&1["blocked_members"], [member])}
+    )
+  end
+
+  def unblock_member(name, member) do
+    update(
+      name,
+      &%{
+        &1
+        | "blocked_members" => Enum.filter(&1["blocked_members"], fn m -> m !== member end)
+      }
     )
   end
 
   def update_readme(name, readme) do
     update(
       name,
-      &Map.merge(&1, %{"readme" => readme})
+      &%{&1 | "readme" => readme}
     )
   end
 

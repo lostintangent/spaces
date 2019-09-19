@@ -292,7 +292,7 @@
           "command": "liveshare.demoteToMember",
           "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?.founder.spaceFounder$/",
           "group": "founder@1"
-        }
+        },
         {
           "command": "liveshare.inviteMemberByEmail",
           "when": "view == liveshare.spaces && viewItem =~ /^member/",

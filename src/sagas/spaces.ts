@@ -12,6 +12,7 @@ import {
   joinSpace,
   joinSpaceCompleted,
   joinSpaceFailed,
+  leaveSpace,
   leaveSpaceCompleted,
   loadSpacesCompleted,
   muteAllSpaces,
@@ -132,27 +133,44 @@ export function* joinSpaceSaga(
   chatApi.onSpaceJoined(name);
 }
 
-export function* leaveSpace(
+export function* leaveSpaceSaga(
   storage: LocalStorage,
   vslsApi: LiveShare,
-  { name }: any
+  { name, syncWithServer }: any
 ) {
   storage.leaveSpace(name);
 
-  yield call(
-    api.leaveSpace,
-    name,
-    vslsApi.session.user!.displayName,
-    vslsApi.session.user!.emailAddress!
-  );
+  if (syncWithServer) {
+    yield call(
+      api.leaveSpace,
+      name,
+      vslsApi.session.user!.displayName,
+      vslsApi.session.user!.emailAddress!
+    );
+  }
+
   yield put(leaveSpaceCompleted(name));
 }
 
 export function* updateSpaceSaga(
   vslsApi: LiveShare,
   fileSystemProvider: ReadmeFileSystemProvider,
-  { name, members, sessions: newSessions, readme, founders, isPrivate }: any
+  {
+    name,
+    members,
+    sessions: newSessions,
+    readme,
+    founders,
+    isPrivate,
+    blocked_members
+  }: any
 ) {
+  if (blocked_members.includes(vslsApi.session.user!.emailAddress!)) {
+    window.showErrorMessage(`You've been blocked from the "${name}" space.`);
+    yield put(leaveSpace(name, false));
+    return;
+  }
+
   const spaces = yield select(s => s.spaces);
   const {
     helpRequests,

@@ -365,6 +365,8 @@ defmodule LiveShareSpaces.SpaceStore do
       name,
       &%{&1 | "blocked_members" => [member | &1["blocked_members"]]}
     )
+
+    remove_member(name, member)
   end
 
   def unblock_member(name, member) do

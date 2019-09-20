@@ -188,6 +188,16 @@
         "command": "liveshare.demoteToMember",
         "category": "Live Share Spaces",
         "title": "Demote to Member"
+      },
+      {
+        "command": "liveshare.blockMember",
+        "category": "Live Share Spaces",
+        "title": "Block Member"
+      },
+      {
+        "command": "liveshare.unblockMember",
+        "category": "Live Share Spaces",
+        "title": "Unblock Member"
       }
     ],
     "views": {
@@ -276,6 +286,11 @@
           "group": "founder@3"
         },
         {
+          "command": "liveshare.unblockMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^space.founder/",
+          "group": "founder@4"
+        },
+        {
           "command": "liveshare.inviteMember",
           "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
           "group": "base@1"
@@ -294,6 +309,11 @@
           "command": "liveshare.demoteToMember",
           "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?.founder.spaceFounder$/",
           "group": "founder@1"
+        },
+        {
+          "command": "liveshare.blockMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?(\\.founder)?.spaceFounder$/",
+          "group": "founder@2"
         },
         {
           "command": "liveshare.inviteMemberByEmail",
@@ -429,13 +449,21 @@
         {
           "command": "liveshare.demoteToMember",
           "when": "false"
+        },
+        {
+          "command": "liveshare.blockMember",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.unblockMember",
+          "when": "false"
         }
       ]
     }
   },
   "scripts": {
     "vscode:prepublish": "rm -rf out && webpack --mode production",
-    "compile": "webpack --mode development",
+    "compile": "webpack --mode none",
     "watch": "webpack --mode none --watch",
     "pretest": "tsc -p ./",
     "test": "node ./out/test/runTest.js"

@@ -239,19 +239,38 @@ export function registerSpaceCommands(
 
   commands.registerCommand(
     `${EXTENSION_NAME}.blockMember`,
-    (node?: MemberNode) => {
-      store.dispatch(
-        blockMember({ space: node!.space.name, member: node!.member.email })
+    async (node?: MemberNode) => {
+      const response = await window.showErrorMessage(
+        `Are you sure you want to block ${node!.member.name} from the "${
+          node!.space.name
+        }" space?`,
+        "Yes"
       );
+      if (response === "Yes") {
+        store.dispatch(
+          blockMember({ space: node!.space.name, member: node!.member.email })
+        );
+      }
     }
   );
 
   commands.registerCommand(
     `${EXTENSION_NAME}.unblockMember`,
-    (node?: MemberNode) => {
-      store.dispatch(
-        unblockMember({ space: node!.space.name, member: node!.member.email })
+    async (node?: SpaceNode) => {
+      if (node!.space.blocked_members.length === 0) {
+        window.showInformationMessage(
+          "There aren't any blocked members in this space."
+        );
+        return;
+      }
+
+      const member = await window.showQuickPick(
+        node!.space.blocked_members.sort(),
+        { placeHolder: "Select the member to unblock..." }
       );
+      if (member) {
+        store.dispatch(unblockMember({ space: node!.space.name, member }));
+      }
     }
   );
 }

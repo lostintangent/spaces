@@ -49,7 +49,7 @@ import {
   clearMessagesSaga,
   demoteToMemberSaga,
   joinSpaceSaga,
-  leaveSpace,
+  leaveSpaceSaga,
   loadSpacesSaga,
   makeSpacePrivateSaga,
   makeSpacePublicSaga,
@@ -75,7 +75,7 @@ function* workerSagas(
       ACTION_JOIN_SPACE,
       joinSpaceSaga.bind(null, storage, vslsApi, chatApi)
     ),
-    takeEvery(ACTION_LEAVE_SPACE, leaveSpace.bind(null, storage, vslsApi)),
+    takeEvery(ACTION_LEAVE_SPACE, leaveSpaceSaga.bind(null, storage, vslsApi)),
     takeEvery(
       ACTION_SPACE_UPDATED,
       updateSpaceSaga.bind(null, vslsApi, fileSystemProvider)

@@ -20,6 +20,7 @@ import {
   muteAllSpaces,
   muteSpace,
   promoteToFounder,
+  unblockMember,
   unmuteAllSpaces,
   unmuteSpace,
   updateReadme
@@ -64,7 +65,7 @@ export const reducer: redux.Reducer = (
             isLeaving: false,
             isExpanded: false,
             founders: [],
-            blockedMembers: [],
+            blocked_members: [],
             isPrivate: !!action.key,
             key: action.key,
             isMuted: true
@@ -83,7 +84,7 @@ export const reducer: redux.Reducer = (
               isMuted: action.isMuted,
               readme: action.readme,
               founders: action.founders,
-              blockedMembers: action.blockedMembers,
+              blocked_members: action.blocked_members,
               isPrivate: action.isPrivate,
               members: sorted(action.members.map(setDefaultStatus)),
               helpRequests: action.sessions.filter(
@@ -399,7 +400,24 @@ export const reducer: redux.Reducer = (
             return {
               ...space,
               founders: space.founders.filter(f => f !== action.payload.member),
-              removedMembers: [...space.blockedMembers, action.payload.member]
+              blocked_members: [...space.blocked_members, action.payload.member]
+            };
+          } else {
+            return space;
+          }
+        })
+      };
+
+    case unblockMember.toString():
+      return {
+        ...state,
+        spaces: state.spaces.map(space => {
+          if (space.name === action.payload.space) {
+            return {
+              ...space,
+              blocked_members: space.blocked_members.filter(
+                f => f !== action.payload.member
+              )
             };
           } else {
             return space;

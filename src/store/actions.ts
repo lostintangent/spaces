@@ -55,8 +55,8 @@ export const joinSpaceCompleted = (
     isPrivate
   });
 
-export const leaveSpace = (name: string) =>
-  action(ACTION_LEAVE_SPACE, { name });
+export const leaveSpace = (name: string, syncWithServer = true) =>
+  action(ACTION_LEAVE_SPACE, { name, syncWithServer });
 
 export const leaveSpaceCompleted = (name: string) =>
   action(ACTION_LEAVE_SPACE_COMPLETED, { name });

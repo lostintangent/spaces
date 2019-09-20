@@ -19,7 +19,7 @@ export interface ISpace {
   helpRequests: ISession[];
   codeReviews: ISession[];
   broadcasts: ISession[];
-  blockedMembers: string[];
+  blocked_members: string[];
   key: string;
   readme?: string;
 }

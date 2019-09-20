@@ -34,7 +34,7 @@ export function registerInvitationCommands(api: LiveShare) {
   async function inviteMembers(emails: string[], useEmail: boolean = false) {
     const { contacts } = await api.getContacts(emails);
     for (let email in contacts) {
-      contacts[email].invite({ useEmail });
+      await contacts[email].invite({ useEmail });
     }
   }
 }

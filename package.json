@@ -198,6 +198,11 @@
         "command": "liveshare.unblockMember",
         "category": "Live Share Spaces",
         "title": "Unblock Member"
+      },
+      {
+        "command": "liveshare.inviteAllMembers",
+        "category": "Live Share Spaces",
+        "title": "Invite All Members"
       }
     ],
     "views": {
@@ -284,11 +289,6 @@
           "command": "liveshare.makeSpacePublic",
           "when": "view == liveshare.spaces && viewItem =~ /^space.founder.private/",
           "group": "founder@3"
-        },
-        {
-          "command": "liveshare.unblockMember",
-          "when": "view == liveshare.spaces && viewItem =~ /^space.founder/",
-          "group": "founder@4"
         },
         {
           "command": "liveshare.inviteMember",
@@ -389,6 +389,16 @@
           "command": "liveshare.unmuteSpace",
           "when": "view == liveshare.spaces && viewItem =~ /^space.*muted$/",
           "group": "inline@2"
+        },
+        {
+          "command": "liveshare.inviteAllMembers",
+          "when": "view == liveshare.spaces && viewItem =~ /^group.members.founder$/",
+          "group": "founder@1"
+        },
+        {
+          "command": "liveshare.unblockMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^group.members.founder$/",
+          "group": "founder@2"
         }
       ],
       "view/title": [
@@ -456,6 +466,10 @@
         },
         {
           "command": "liveshare.unblockMember",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.inviteAllMembers",
           "when": "false"
         }
       ]

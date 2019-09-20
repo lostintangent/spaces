@@ -1,29 +1,40 @@
 import { commands } from "vscode";
 import { LiveShare } from "vsls";
 import { EXTENSION_NAME } from "../constants";
-import { MemberNode } from "../tree/nodes";
+import { Status } from "../store/model";
+import { MemberNode, SpaceMembersNode } from "../tree/nodes";
 
 export function registerInvitationCommands(api: LiveShare) {
   commands.registerCommand(
     `${EXTENSION_NAME}.inviteMember`,
-    async (node?: MemberNode) => {
-      if (node) {
-        inviteMember(node.email);
-      }
+    (node: MemberNode) => {
+      inviteMembers([node.email]);
     }
   );
 
   commands.registerCommand(
     `${EXTENSION_NAME}.inviteMemberByEmail`,
-    async (node?: MemberNode) => {
-      if (node) {
-        inviteMember(node.email, true);
-      }
+    (node: MemberNode) => {
+      inviteMembers([node.email], true);
     }
   );
 
-  async function inviteMember(email: string, useEmail: boolean = false) {
-    const { contacts } = await api.getContacts([email]);
-    contacts[email].invite({ useEmail });
+  commands.registerCommand(
+    `${EXTENSION_NAME}.inviteAllMembers`,
+    async (node: SpaceMembersNode) => {
+      const members = node.space.members
+        .filter(member => member.status !== Status.offline)
+        .filter(member => member.email !== api.session.user!.emailAddress)
+        .map(member => member.email);
+
+      inviteMembers(members);
+    }
+  );
+
+  async function inviteMembers(emails: string[], useEmail: boolean = false) {
+    const { contacts } = await api.getContacts(emails);
+    for (const email in contacts) {
+      contacts[email].invite();
+    }
   }
 }

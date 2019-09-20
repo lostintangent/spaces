@@ -3,6 +3,10 @@ import { TreeItem, TreeItemCollapsibleState } from "vscode";
 import { LiveShare } from "vsls";
 import { IMember, ISession, ISpace, Status } from "../store/model";
 
+function isFounder(space: ISpace, vslsApi: LiveShare) {
+  return space.founders.includes(vslsApi.session.user!.emailAddress!);
+}
+
 export abstract class TreeNode extends TreeItem {
   constructor(
     label: string,
@@ -45,11 +49,9 @@ export class SpaceNode extends TreeNode {
 
     this.name = space.name;
 
-    const isFounder = space.founders.includes(
-      vslsApi.session.user!.emailAddress!
-    );
+    const founder = isFounder(space, vslsApi);
 
-    if (isFounder) {
+    if (founder) {
       this.contextValue = "space.founder";
     } else {
       this.contextValue = "space";
@@ -71,7 +73,7 @@ export class SpaceNode extends TreeNode {
 }
 
 export class SpaceMembersNode extends TreeNode {
-  constructor(public space: ISpace, extensionPath: string) {
+  constructor(public space: ISpace, vslsApi: LiveShare, extensionPath: string) {
     super(
       `Members (${space.members.length})`,
       space.isExpanded
@@ -83,6 +85,12 @@ export class SpaceMembersNode extends TreeNode {
       dark: path.join(extensionPath, `images/dark/member.svg`),
       light: path.join(extensionPath, `images/light/member.svg`)
     };
+
+    this.contextValue = "group.members";
+
+    if (isFounder(space, vslsApi)) {
+      this.contextValue += ".founder";
+    }
   }
 }
 

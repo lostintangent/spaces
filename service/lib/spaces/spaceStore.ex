@@ -261,7 +261,7 @@ defmodule LiveShareSpaces.SpaceStore do
       |> Map.get("sessions", [])
       |> Enum.concat([session])
 
-    Map.merge(space, %{"sessions" => sessions})
+    %{space | "sessions" => sessions}
   end
 
   def add_session(name, session) do
@@ -273,7 +273,7 @@ defmodule LiveShareSpaces.SpaceStore do
       Map.get(space, "sessions", [])
       |> Enum.filter(fn x -> x["id"] != session_id end)
 
-    Map.merge(space, %{"sessions" => sessions})
+    %{space | "sessions" => sessions}
   end
 
   def remove_session(name, session_id) do
@@ -286,10 +286,9 @@ defmodule LiveShareSpaces.SpaceStore do
       |> Enum.concat([message])
       |> Enum.sort_by(&Map.get(&1, "timestamp"))
       |> Enum.reverse()
-      # Only save 50 messages for a space
       |> Enum.take(50)
 
-    Map.merge(space, %{"messages" => messages})
+    %{space | "messages" => messages}
   end
 
   def add_message(name, message, member_email) do
@@ -312,7 +311,7 @@ defmodule LiveShareSpaces.SpaceStore do
   end
 
   def clear_messages(name) do
-    update(name, fn x -> Map.merge(x, %{"messages" => []}) end)
+    update(name, &%{&1 | "messages" => []})
   end
 
   defp say_thanks_helper(space, values) do
@@ -350,7 +349,7 @@ defmodule LiveShareSpaces.SpaceStore do
   def promote_member(name, member) do
     update(
       name,
-      &%{&1 | "founders" => Enum.concat(&1["founders"], [member])}
+      &%{&1 | "founders" => [member | &1["founders"]]}
     )
   end
 
@@ -364,7 +363,7 @@ defmodule LiveShareSpaces.SpaceStore do
   def block_member(name, member) do
     update(
       name,
-      &%{&1 | "blocked_members" => Enum.concat(&1["blocked_members"], [member])}
+      &%{&1 | "blocked_members" => [member | &1["blocked_members"]]}
     )
   end
 

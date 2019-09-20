@@ -55,8 +55,8 @@ export async function loadSpaces(spaces: string[]): Promise<ISpace[]> {
 }
 
 export enum JoinRequestError {
-  MemberBlocked = 401,
-  SpacePrivate = 403
+  MemberBlocked = 403,
+  SpacePrivate = 401
 }
 
 export async function joinSpace(
@@ -71,9 +71,9 @@ export async function joinSpace(
       createSpaceRequestBody(space, name, email, key)
     );
 
-    return { space: data };
-  } catch ({ response: status }) {
-    return { error: status };
+    return { space: data, error: null };
+  } catch ({ response: { status } }) {
+    return { space: null, error: status };
   }
 }
 

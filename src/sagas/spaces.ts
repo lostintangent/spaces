@@ -1,4 +1,4 @@
-import { call, put, select, take } from "redux-saga/effects";
+import { call, put, select, spawn, take } from "redux-saga/effects";
 import { commands, env, Uri, window } from "vscode";
 import { LiveShare } from "vsls";
 import * as api from "../api";
@@ -106,10 +106,11 @@ export function* joinSpaceSaga(
 
     switch (error) {
       case api.JoinRequestError.MemberBlocked:
-        return window.showErrorMessage("You've been blocked from this space.");
+        window.showErrorMessage("You've been blocked from this space.");
       case api.JoinRequestError.SpacePrivate:
-        return yield call(promptUserForInvitationUrl, name, key);
+        yield spawn(promptUserForInvitationUrl, name, key);
     }
+    return;
   }
 
   storage.joinSpace(name);

@@ -43,7 +43,8 @@ export const joinSpaceCompleted = (
   isMuted: boolean,
   readme: string,
   founders: any,
-  isPrivate: boolean
+  isPrivate: boolean,
+  blocked_members: string[]
 ) =>
   action(ACTION_JOIN_SPACE_COMPLETED, {
     name,
@@ -52,7 +53,8 @@ export const joinSpaceCompleted = (
     isMuted,
     readme,
     founders,
-    isPrivate
+    isPrivate,
+    blocked_members
   });
 
 export const leaveSpace = (name: string, syncWithServer = true) =>

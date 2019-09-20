@@ -202,7 +202,8 @@ export function* updateSpaceSaga(
       isMuted!,
       readme,
       founders,
-      isPrivate
+      isPrivate,
+      blocked_members
     )
   );
 

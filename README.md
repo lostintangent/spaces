@@ -103,3 +103,17 @@ To simplify the onboarding process for your space, you can provide a deep link t
    ```
 
    _Note: You can see an example of this in the [Live Share Counter](https://github.com/vsls-contrib/counter/blob/master/package.json#L46) sample_.
+
+## Founders
+
+The first person that joins a space becomes it's founder. A founder is simply a member of the space, who has the following set of special privledges:
+
+1. They can clear the history of the space's chat channel
+1. They can toggle the public/private status of the space
+1. They can edit the space's readme
+
+Since a space might have multiple people that need to administer it, a founder can give other members "founder" status, which automatically gives them the aforementioned privledges. To do this, you can simply right-click a member and select the `Promote to Founder` action.
+
+<img width="300px" src="https://user-images.githubusercontent.com/116461/65293220-547d4900-db0f-11e9-88ed-d1b14e4fd00c.png" />
+
+If at any time, you want to demote a member, you can simply right-click them and select the `Demote to Member` action.

@@ -84,6 +84,7 @@ export const reducer: redux.Reducer = (
               readme: action.readme,
               founders: action.founders,
               blockedMembers: action.blockedMembers,
+              isPrivate: action.isPrivate,
               members: sorted(action.members.map(setDefaultStatus)),
               helpRequests: action.sessions.filter(
                 (s: any) => s.type === SessionType.HelpRequest

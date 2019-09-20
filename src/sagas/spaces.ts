@@ -49,8 +49,12 @@ export function* loadSpacesSaga(
   const channel = createWebSocketChannel(vslsApi, chatApi);
 
   while (true) {
-    const { name, members, sessions, readme, founders } = yield take(channel);
-    yield put(<any>updateSpace(name, members, sessions, readme, founders));
+    const { name, members, sessions, readme, founders, isPrivate } = yield take(
+      channel
+    );
+    yield put(<any>(
+      updateSpace(name, members, sessions, readme, founders, isPrivate)
+    ));
   }
 }
 
@@ -109,10 +113,18 @@ export function* joinSpaceSaga(
 
   storage.joinSpace(name);
 
-  const { members, sessions, readme, founders } = space;
+  const { members, sessions, readme, founders, isPrivate } = space;
   const isMuted = isSpaceMuted(name);
   yield put(
-    joinSpaceCompleted(name, members, sessions, isMuted, readme, founders)
+    joinSpaceCompleted(
+      name,
+      members,
+      sessions,
+      isMuted,
+      readme,
+      founders,
+      isPrivate
+    )
   );
 
   chatApi.onSpaceJoined(name);
@@ -136,7 +148,7 @@ export function* leaveSpace(
 
 export function* updateSpaceSaga(
   vslsApi: LiveShare,
-  { name, members, sessions: newSessions, readme, founders }: any
+  { name, members, sessions: newSessions, readme, founders, isPrivate }: any
 ) {
   const spaces = yield select(s => s.spaces);
   const {
@@ -148,7 +160,15 @@ export function* updateSpaceSaga(
   }: ISpace = spaces.find((c: any) => c.name === name);
 
   yield put(
-    joinSpaceCompleted(name, members, newSessions, isMuted!, readme, founders)
+    joinSpaceCompleted(
+      name,
+      members,
+      newSessions,
+      isMuted!,
+      readme,
+      founders,
+      isPrivate
+    )
   );
 
   if (isLoading || isSpaceMuted(name)) {

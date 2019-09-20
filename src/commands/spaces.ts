@@ -219,28 +219,39 @@ export function registerSpaceCommands(
   commands.registerCommand(
     `${EXTENSION_NAME}.promoteToFounder`,
     (node?: MemberNode) => {
-      promoteToFounder({ space: node!.space.name, member: node!.member.email });
+      store.dispatch(
+        promoteToFounder({
+          space: node!.space.name,
+          member: node!.member.email
+        })
+      );
     }
   );
 
   commands.registerCommand(
     `${EXTENSION_NAME}.demoteToMember`,
     (node?: MemberNode) => {
-      demoteToMember({ space: node!.space.name, member: node!.member.email });
+      store.dispatch(
+        demoteToMember({ space: node!.space.name, member: node!.member.email })
+      );
     }
   );
 
   commands.registerCommand(
     `${EXTENSION_NAME}.blockMember`,
     (node?: MemberNode) => {
-      blockMember({ space: node!.space.name, member: node!.member.email });
+      store.dispatch(
+        blockMember({ space: node!.space.name, member: node!.member.email })
+      );
     }
   );
 
   commands.registerCommand(
     `${EXTENSION_NAME}.unblockMember`,
     (node?: MemberNode) => {
-      unblockMember({ space: node!.space.name, member: node!.member.email });
+      store.dispatch(
+        unblockMember({ space: node!.space.name, member: node!.member.email })
+      );
     }
   );
 }

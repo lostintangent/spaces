@@ -42,7 +42,8 @@ export const joinSpaceCompleted = (
   sessions: any,
   isMuted: boolean,
   readme: string,
-  founders: any
+  founders: any,
+  isPrivate: boolean
 ) =>
   action(ACTION_JOIN_SPACE_COMPLETED, {
     name,
@@ -50,7 +51,8 @@ export const joinSpaceCompleted = (
     sessions,
     isMuted,
     readme,
-    founders
+    founders,
+    isPrivate
   });
 
 export const leaveSpace = (name: string) =>
@@ -93,9 +95,17 @@ export const updateSpace = (
   members: IMember[],
   sessions: ISession[],
   readme: string,
-  founders: string[]
+  founders: string[],
+  isPrivate: boolean
 ) =>
-  action(ACTION_SPACE_UPDATED, { name, members, sessions, readme, founders });
+  action(ACTION_SPACE_UPDATED, {
+    name,
+    members,
+    sessions,
+    readme,
+    founders,
+    isPrivate
+  });
 
 export const clearMessages = createAction<string>("messages/clear");
 

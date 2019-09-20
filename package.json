@@ -4,7 +4,7 @@
   "publisher": "vsls-contrib",
   "description": "Discover, share, and connect with developers across your favorite teams, classrooms and communities.",
   "icon": "images/icon.png",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "engines": {
     "vscode": "^1.36.0"
   },
@@ -202,7 +202,11 @@
       {
         "command": "liveshare.inviteAllMembers",
         "category": "Live Share Spaces",
-        "title": "Invite All Members"
+        "title": "Invite All Members",
+        "icon": {
+          "dark": "images/dark/invite.svg",
+          "light": "images/light/invite.svg"
+        }
       }
     ],
     "views": {
@@ -399,6 +403,11 @@
           "command": "liveshare.unblockMember",
           "when": "view == liveshare.spaces && viewItem =~ /^group.members.founder$/",
           "group": "founder@2"
+        },
+        {
+          "command": "liveshare.inviteAllMembers",
+          "when": "view == liveshare.spaces && viewItem =~ /^group.members.founder/$",
+          "group": "inline@1"
         }
       ],
       "view/title": [

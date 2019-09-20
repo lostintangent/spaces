@@ -34,6 +34,8 @@ To begin joining spaces, simply perform the following steps:
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/64935463-3b6e5280-d806-11e9-890a-620aa1d73ea8.png" />
 
+   > Note: If you're the [founder](#founders) of the space, you can also invite the entire space into a Live Share session, but right-clicking the `Members` node and selecting `Invite All Members`.
+
 ## Seeking Assistance
 
 When you're ready to ask for assistance (e.g. figuring out a bug, reviewing some code), simply click the `+` button next to the `Help Requests` or `Code Reviews` node in the `Spaces` tree, and specify a description. This will notify th entire space about your request and allow others to jump in to help you.
@@ -106,12 +108,13 @@ To simplify the onboarding process for your space, you can provide a deep link t
 
 ## Founders
 
-The first person that joins a space becomes it's founder. A founder is simply a member of the space, who has the following set of special privledges:
+The first person that joins a space becomes it's founder. A founder is simply a member of the space, who can perform the following special capabilities:
 
-1. They can clear the history of the space's chat channel
-1. They can toggle the public/private status of the space
-1. They can edit the space's readme
-1. They can block other members from the space
+1. Clearing the history of the space's chat channel
+1. Toggling the public/private status of the space
+1. Editing the space's readme
+1. Blocking/unblocking other members from the space
+1. Inviting the entire space into a Live Share session (e.g. as opposed to individual members)
 
 Since a space might have multiple people that need to administer it, a founder can give other members "founder" status, which automatically gives them the aforementioned privledges. To do this, you can simply right-click a member and select the `Promote to Founder` action.
 
@@ -125,4 +128,4 @@ If someone is disrupting a space, or was unintentionally invited, a founder can 
 
 <img width="300px" src="https://user-images.githubusercontent.com/116461/65303404-d337ad80-db32-11e9-84a9-c8ae2ecd0c1c.png" />
 
-If you accidentally block someone, or you'd like to allow someone back into the space, a founder can right-click the space, and select `Unblock Member`.
+If you accidentally block someone, or you'd like to allow someone back into the space, a founder can right-click the `Members` node within a space, and select `Unblock Member`.

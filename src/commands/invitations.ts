@@ -33,8 +33,8 @@ export function registerInvitationCommands(api: LiveShare) {
 
   async function inviteMembers(emails: string[], useEmail: boolean = false) {
     const { contacts } = await api.getContacts(emails);
-    for (const email in contacts) {
-      contacts[email].invite();
+    for (let email in contacts) {
+      contacts[email].invite({ useEmail });
     }
   }
 }

@@ -248,6 +248,7 @@ defmodule LiveShareSpaces.HTTP do
     name = URI.decode(name)
     %{"member" => member} = conn.body_params
     LiveShareSpaces.SpaceStore.block_member(name, member)
+    LiveShareSpaces.Events.send(:member_left, name, %{email: member})
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 

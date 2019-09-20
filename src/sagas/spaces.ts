@@ -6,7 +6,10 @@ import { createWebSocketChannel } from "../channels/webSocket";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { JOIN_URL_PATTERN } from "../constants";
-import { ReadmeFileSystemProvider } from "../readmeFileSystemProvider";
+import {
+  previewSpaceReadme,
+  ReadmeFileSystemProvider
+} from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   joinSpace,
@@ -122,7 +125,7 @@ export function* joinSpaceSaga(
     switch (error) {
       case api.JoinRequestError.MemberBlocked:
         return window.showErrorMessage(
-          "You've been blocked from this space. Reach out to a found if you believe this was an error."
+          "You've been blocked from this space. Reach out to a founder if you believe this was an error."
         );
       case api.JoinRequestError.SpacePrivate:
         return yield spawn(promptUserForInvitationUrl, name, key);
@@ -152,6 +155,10 @@ export function* joinSpaceSaga(
       blocked_members
     )
   );
+
+  if (readme.trim() !== "") {
+    previewSpaceReadme(name);
+  }
 
   chatApi.onSpaceJoined(name);
 }

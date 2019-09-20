@@ -276,12 +276,14 @@
           "group": "founder@3"
         },
         {
-          "command": "liveshare.inviteMemberByEmail",
-          "when": "view == liveshare.spaces && viewItem =~ /^member/"
+          "command": "liveshare.inviteMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
+          "group": "base@1"
         },
         {
-          "command": "liveshare.inviteMember",
-          "when": "view == liveshare.spaces && viewItem =~ /^member.online/"
+          "command": "liveshare.inviteMemberByEmail",
+          "when": "view == liveshare.spaces && viewItem =~ /^member/",
+          "group": "base@2"
         },
         {
           "command": "liveshare.promoteToFounder",

@@ -7,6 +7,7 @@ import {
   Event,
   EventEmitter,
   FileChangeEvent,
+  FileChangeType,
   FileStat,
   FileSystemError,
   FileSystemProvider,
@@ -41,14 +42,27 @@ export function previewSpaceReadme(space: string) {
   commands.executeCommand("markdown.showPreview", readme);
 }
 
-class ReadmeFileSystemProvider implements FileSystemProvider {
+export class ReadmeFileSystemProvider implements FileSystemProvider {
+  private _onDidChangeFile = new EventEmitter<FileChangeEvent[]>();
+  public readonly onDidChangeFile: Event<FileChangeEvent[]> = this
+    ._onDidChangeFile.event;
+
   constructor(private store: redux.Store, private api: LiveShare) {}
+
+  updateSpaceReadme(space: string) {
+    this._onDidChangeFile.fire([
+      {
+        type: FileChangeType.Changed,
+        uri: getUriForSpace(space)
+      }
+    ]);
+  }
 
   stat(uri: Uri): FileStat {
     return {
-      ctime: 0,
-      mtime: 0,
-      size: 20,
+      ctime: Date.now(),
+      mtime: Date.now(),
+      size: 0,
       type: FileType.File
     };
   }
@@ -92,11 +106,14 @@ class ReadmeFileSystemProvider implements FileSystemProvider {
     this.store.dispatch(updateReadme({ space: space.name, readme }));
   }
 
-  /* Unimplimented methods */
+  watch(
+    uri: Uri,
+    options: { recursive: boolean; excludes: string[] }
+  ): Disposable {
+    return new Disposable(() => {});
+  }
 
-  private _onDidChangeFile = new EventEmitter<FileChangeEvent[]>();
-  public readonly onDidChangeFile: Event<FileChangeEvent[]> = this
-    ._onDidChangeFile.event;
+  /* Unimplimented methods */
 
   createDirectory(uri: Uri): void {
     throw new Error("Method not implemented.");
@@ -117,16 +134,10 @@ class ReadmeFileSystemProvider implements FileSystemProvider {
   copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void {
     throw new Error("Method not implemented.");
   }
-
-  watch(
-    uri: Uri,
-    options: { recursive: boolean; excludes: string[] }
-  ): Disposable {
-    throw new Error("Method not implemented.");
-  }
 }
 
 export function registerFileSystemProvider(store: redux.Store, api: LiveShare) {
   const provider = new ReadmeFileSystemProvider(store, api);
   workspace.registerFileSystemProvider(SPACE_SCHEME, provider);
+  return provider;
 }

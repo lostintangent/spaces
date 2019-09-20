@@ -6,6 +6,7 @@ import { createWebSocketChannel } from "../channels/webSocket";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { JOIN_URL_PATTERN } from "../constants";
+import { ReadmeFileSystemProvider } from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   joinSpace,
@@ -148,6 +149,7 @@ export function* leaveSpace(
 
 export function* updateSpaceSaga(
   vslsApi: LiveShare,
+  fileSystemProvider: ReadmeFileSystemProvider,
   { name, members, sessions: newSessions, readme, founders, isPrivate }: any
 ) {
   const spaces = yield select(s => s.spaces);
@@ -170,6 +172,8 @@ export function* updateSpaceSaga(
       isPrivate
     )
   );
+
+  fileSystemProvider.updateSpaceReadme(name);
 
   if (isLoading || isSpaceMuted(name)) {
     return;

@@ -43,7 +43,7 @@ export async function activate(context: ExtensionContext) {
   sessionStateChannel = createSessionStateChannel(api);
 
   registerTreeProvider(api, store, context.extensionPath);
-  registerFileSystemProvider(store, api);
+  const fileSystemProvider = registerFileSystemProvider(store, api);
 
   registerCommands(
     api,
@@ -58,7 +58,14 @@ export async function activate(context: ExtensionContext) {
     registerContactProvider(api, store);
   }
 
-  saga.run(rootSaga, storage, api, chatApi, sessionStateChannel);
+  saga.run(
+    rootSaga,
+    storage,
+    api,
+    chatApi,
+    sessionStateChannel,
+    fileSystemProvider
+  );
 
   return chatApi;
 }

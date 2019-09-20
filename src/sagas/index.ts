@@ -11,6 +11,7 @@ import { createAuthenticationChannel } from "../channels/authentication";
 import { ISessionStateChannel } from "../channels/sessionState";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
+import { ReadmeFileSystemProvider } from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   ACTION_CLEAR_ZOMBIE_SESSIONS,
@@ -66,7 +67,8 @@ function* workerSagas(
   storage: LocalStorage,
   vslsApi: vsls.LiveShare,
   chatApi: ChatApi,
-  sessionStateChannel: ISessionStateChannel
+  sessionStateChannel: ISessionStateChannel,
+  fileSystemProvider: ReadmeFileSystemProvider
 ) {
   yield all([
     takeEvery(
@@ -74,7 +76,10 @@ function* workerSagas(
       joinSpaceSaga.bind(null, storage, vslsApi, chatApi)
     ),
     takeEvery(ACTION_LEAVE_SPACE, leaveSpace.bind(null, storage, vslsApi)),
-    takeEvery(ACTION_SPACE_UPDATED, updateSpaceSaga.bind(null, vslsApi)),
+    takeEvery(
+      ACTION_SPACE_UPDATED,
+      updateSpaceSaga.bind(null, vslsApi, fileSystemProvider)
+    ),
     takeEvery(clearMessages, clearMessagesSaga.bind(null, chatApi)),
 
     takeEvery(
@@ -114,7 +119,8 @@ export function* rootSaga(
   storage: LocalStorage,
   vslsApi: vsls.LiveShare,
   chatApi: ChatApi,
-  sessionStateChannel: ISessionStateChannel
+  sessionStateChannel: ISessionStateChannel,
+  fileSystemProvider: ReadmeFileSystemProvider
 ) {
   const authChannel = createAuthenticationChannel(vslsApi);
   let workersTask, extensionsTask;
@@ -129,7 +135,8 @@ export function* rootSaga(
         storage,
         vslsApi,
         chatApi,
-        sessionStateChannel
+        sessionStateChannel,
+        fileSystemProvider
       );
 
       if (config.mutedSpaces.includes("*")) {

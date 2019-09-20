@@ -244,9 +244,9 @@ export function registerSpaceCommands(
         `Are you sure you want to block ${node!.member.name} from the "${
           node!.space.name
         }" space?`,
-        "Yes"
+        "Block"
       );
-      if (response === "Yes") {
+      if (response === "Block") {
         store.dispatch(
           blockMember({ space: node!.space.name, member: node!.member.email })
         );

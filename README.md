@@ -111,9 +111,18 @@ The first person that joins a space becomes it's founder. A founder is simply a 
 1. They can clear the history of the space's chat channel
 1. They can toggle the public/private status of the space
 1. They can edit the space's readme
+1. They can block other members from the space
 
 Since a space might have multiple people that need to administer it, a founder can give other members "founder" status, which automatically gives them the aforementioned privledges. To do this, you can simply right-click a member and select the `Promote to Founder` action.
 
 <img width="300px" src="https://user-images.githubusercontent.com/116461/65293220-547d4900-db0f-11e9-88ed-d1b14e4fd00c.png" />
 
 If at any time, you want to demote a member, you can simply right-click them and select the `Demote to Member` action.
+
+## Moderating Your Space
+
+If someone is disrupting a space, or was unintentionally invited, a founder can block them from the space by simply right-clicking their name in the `Spaces` tree and selecting `Block Member`. This will immediately remove the user from the space, and prevent them from being able to join again in the future.
+
+<img width="300px" src="https://user-images.githubusercontent.com/116461/65303404-d337ad80-db32-11e9-84a9-c8ae2ecd0c1c.png" />
+
+If you accidentally block someone, or you'd like to allow someone back into the space, a founder can right-click the space, and select `Unblock Member`.

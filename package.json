@@ -281,7 +281,7 @@
         },
         {
           "command": "liveshare.inviteMember",
-          "when": "view == liveshare.spaces && viewItem == member.online"
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/"
         },
         {
           "command": "liveshare.promoteToFounder",
@@ -300,7 +300,7 @@
         },
         {
           "command": "liveshare.inviteMember",
-          "when": "view == liveshare.spaces && viewItem == member.online",
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
           "group": "inline@2"
         },
         {

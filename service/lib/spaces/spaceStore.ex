@@ -244,9 +244,15 @@ defmodule LiveShareSpaces.SpaceStore do
   end
 
   defp remove_member_helper(space, member) do
+    email =
+      cond do
+        is_binary(member) -> member
+        is_map(member) -> member["email"]
+      end
+
     members =
       space["members"]
-      |> Enum.filter(fn x -> x["email"] != member["email"] end)
+      |> Enum.filter(fn x -> x["email"] !== email end)
 
     %{space | "members" => members}
   end

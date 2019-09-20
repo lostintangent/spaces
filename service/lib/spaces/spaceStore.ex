@@ -367,12 +367,16 @@ defmodule LiveShareSpaces.SpaceStore do
   end
 
   def block_member(name, member) do
-    remove_member(name, member)
-
     update(
       name,
-      &%{&1 | "blocked_members" => [member | &1["blocked_members"]]}
+      &%{
+        &1
+        | "blocked_members" => [member | &1["blocked_members"]],
+          "founders" => Enum.filter(&1["founders"], fn founder -> founder !== member end)
+      }
     )
+
+    remove_member(name, member)
   end
 
   def unblock_member(name, member) do

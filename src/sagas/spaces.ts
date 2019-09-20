@@ -8,7 +8,17 @@ import { config } from "../config";
 import { JOIN_URL_PATTERN } from "../constants";
 import { ReadmeFileSystemProvider } from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
-import { joinSpace, joinSpaceCompleted, joinSpaceFailed, leaveSpace, leaveSpaceCompleted, loadSpacesCompleted, muteAllSpaces, muteSpace, updateSpace } from "../store/actions";
+import {
+  joinSpace,
+  joinSpaceCompleted,
+  joinSpaceFailed,
+  leaveSpace,
+  leaveSpaceCompleted,
+  loadSpacesCompleted,
+  muteAllSpaces,
+  muteSpace,
+  updateSpace
+} from "../store/actions";
 import { IMember, ISession, ISpace } from "../store/model";
 import { sessionTypeDisplayName } from "../utils";
 
@@ -180,8 +190,7 @@ export function* updateSpaceSaga(
 ) {
   if (blocked_members.includes(vslsApi.session.user!.emailAddress!)) {
     window.showErrorMessage(`You've been blocked from the "${name}" space.`);
-    yield put(leaveSpace(name, false));
-    return;
+    return yield put(leaveSpace(name, false));
   }
 
   const spaces = yield select(s => s.spaces);

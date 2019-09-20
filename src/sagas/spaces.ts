@@ -130,7 +130,14 @@ export function* joinSpaceSaga(
 
   storage.joinSpace(name);
 
-  const { members, sessions, readme, founders, isPrivate } = space;
+  const {
+    members,
+    sessions,
+    readme,
+    founders,
+    isPrivate,
+    blocked_members
+  } = space;
   const isMuted = isSpaceMuted(name);
   yield put(
     joinSpaceCompleted(
@@ -140,7 +147,8 @@ export function* joinSpaceSaga(
       isMuted,
       readme,
       founders,
-      isPrivate
+      isPrivate,
+      blocked_members
     )
   );
 

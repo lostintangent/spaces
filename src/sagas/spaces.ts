@@ -51,11 +51,25 @@ export function* loadSpacesSaga(
   const channel = createWebSocketChannel(vslsApi, chatApi);
 
   while (true) {
-    const { name, members, sessions, readme, founders, isPrivate } = yield take(
-      channel
-    );
+    const {
+      name,
+      members,
+      sessions,
+      readme,
+      founders,
+      isPrivate,
+      blocked_members
+    } = yield take(channel);
     yield put(<any>(
-      updateSpace(name, members, sessions, readme, founders, isPrivate)
+      updateSpace(
+        name,
+        members,
+        sessions,
+        readme,
+        founders,
+        isPrivate,
+        blocked_members
+      )
     ));
   }
 }

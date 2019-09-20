@@ -96,7 +96,8 @@ export const updateSpace = (
   sessions: ISession[],
   readme: string,
   founders: string[],
-  isPrivate: boolean
+  isPrivate: boolean,
+  blocked_members: string[]
 ) =>
   action(ACTION_SPACE_UPDATED, {
     name,
@@ -104,7 +105,8 @@ export const updateSpace = (
     sessions,
     readme,
     founders,
-    isPrivate
+    isPrivate,
+    blocked_members
   });
 
 export const clearMessages = createAction<string>("messages/clear");

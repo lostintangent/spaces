@@ -2,7 +2,7 @@
 
 [![Join space](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls) [![Join space](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls?insiders)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls?insiders)
 
-Live Share Spaces enables you to join one or more "spaces", and begin discovering, communicating and collaborating with other developers in real-time. A "space" is nothing more than a name, that allows you to find other people that share common interests and/or context (almost like a Twitter hash tag). A space can represent a team, ad-hoc group (e.g. a hack-a-thon team, a classroom), a language/framework ecosystem (e.g. `elixir`, `redux`), an online forum (e.g. `dev.to/javascript`) and everything in-between. Since spaces can represent literally anything, they can be as broad or as focused as neccessary, as long as they help faciliate meaningful collaboration.
+Live Share Spaces enables you to join one or more "spaces", and begin discovering, communicating and collaborating with other developers in real-time. A "space" is nothing more than a name, that allows you to find other people that share common interests and/or context (almost like a Twitter hash tag). A space can represent a team, ad-hoc group (e.g. a hack-a-thon team, a classroom), a language/framework ecosystem (e.g. `elixir`, `redux`), an online forum (e.g. `dev.to/javascript`) and everything in-between. Since spaces can represent literally anything, they can be as broad or as focused as necessary, as long as they help facilitate meaningful collaboration.
 
 Once you join a space, you can chat with other members, invite them into collaboration sessions, ask for help and even live stream anything cool that you're working on. All of this is built-in top of [Live Share](https://aka.ms/vsls), which provides a full-fidelity developer collaboration platform (e.g. co-editing, debugging, localhost server, etc.).
 
@@ -14,7 +14,7 @@ To begin joining spaces, simply perform the following steps:
 
 1. Open the Live Share activity bar, and look for the `Spaces` tree view. Click the `Sign in with Live Share...` link and complete the sign in flow, using a GitHub or Microsoft Account.
 
-   > If you're already using Live Share then you won't need to sign in again. Signing in is required so that other space members can idenitify who you are.
+   > If you're already using Live Share then you won't need to sign in again. Signing in is required so that other space members can identify who you are.
 
 1. Click the `Join a space...` link and then type the space name you'd like to join (e.g. `redux`, `python`) or select a popular one from the list
 
@@ -30,7 +30,7 @@ To begin joining spaces, simply perform the following steps:
 
    <img width="600px" src="https://user-images.githubusercontent.com/116461/64935834-25619180-d808-11e9-9293-245fb248d0b5.png" />
 
-1. When you want to collaborate with someone, simply invite them into a Live Share session by clicking the `Invite` action next to their name in the `Members` list. This will start a read-only Live Share session and present an invtation toast in-tool to the other developer.
+1. When you want to collaborate with someone, simply invite them into a Live Share session by clicking the `Invite` action next to their name in the `Members` list. This will start a read-only Live Share session and present an invitation toast in-tool to the other developer.
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/64935463-3b6e5280-d806-11e9-890a-620aa1d73ea8.png" />
 
@@ -38,7 +38,7 @@ To begin joining spaces, simply perform the following steps:
 
 ## Seeking Assistance
 
-When you're ready to ask for assistance (e.g. figuring out a bug, reviewing some code), simply click the `+` button next to the `Help Requests` or `Code Reviews` node in the `Spaces` tree, and specify a description. This will notify th entire space about your request and allow others to jump in to help you.
+When you're ready to ask for assistance (e.g. figuring out a bug, reviewing some code), simply click the `+` button next to the `Help Requests` or `Code Reviews` node in the `Spaces` tree, and specify a description. This will notify the entire space about your request and allow others to jump in to help you.
 
    <img width="500px" src="https://user-images.githubusercontent.com/116461/64935502-88eabf80-d806-11e9-9bfa-247466ccbf8a.png">
 
@@ -62,7 +62,7 @@ If you'd like to start up an audio call, click the `Start audio call...` node in
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/62504105-eae9eb00-b7ab-11e9-92e8-9fc279b33dbf.png">
 
-Additionally, you can leave code annotations on anyb line of code, by simply hovering over the "comment bar" and adding your comment. These are syncronized with everyone in the session in real-time, and represent a great way to add focus to a discussion and/or leave todo commments for the host to address asyncronously.
+Additionally, you can leave code annotations on any line of code, by simply hovering over the "comment bar" and adding your comment. These are synchronized with everyone in the session in real-time, and represent a great way to add focus to a discussion and/or leave to-do comments for the host to address asynchronously.
 
    <img width="450px" src="https://user-images.githubusercontent.com/116461/62504298-ba568100-b7ac-11e9-9919-020c9e921331.png">
 
@@ -96,7 +96,7 @@ To simplify the onboarding process for your space, you can provide a deep link t
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/64935685-6907cb80-d807-11e9-9522-93f05c274c9d.png" />
 
-2) If you've built a VS Code extension (or extension pack), that represents your space (e.g. an opinionated set of extensions/tools for a classroom), then you can add an extension dependency to this extension (`vsls-contrib.spaces`), as well as a `liveshare.spaces` contribution point to your extenison's `package.json` file. When others install your extension, it will install Live Share + Spaces, and then automatically join them to the specified spaces.
+2) If you've built a VS Code extension (or extension pack), that represents your space (e.g. an opinionated set of extensions/tools for a classroom), then you can add an extension dependency to this extension (`vsls-contrib.spaces`), as well as a `liveshare.spaces` contribution point to your extension's `package.json` file. When others install your extension, it will install Live Share + Spaces, and then automatically join them to the specified spaces.
 
    ```json
    "contributes": {
@@ -108,7 +108,7 @@ To simplify the onboarding process for your space, you can provide a deep link t
 
 ## Founders
 
-The first person that joins a space becomes it's founder. A founder is simply a member of the space, who can perform the following special capabilities:
+The first person that joins a space becomes its founder. A founder is simply a member of the space, who can perform the following special capabilities:
 
 1. Clearing the history of the space's chat channel
 1. Toggling the public/private status of the space
@@ -116,7 +116,7 @@ The first person that joins a space becomes it's founder. A founder is simply a 
 1. Blocking/unblocking other members from the space
 1. Inviting the entire space into a Live Share session (e.g. as opposed to individual members)
 
-Since a space might have multiple people that need to administer it, a founder can give other members "founder" status, which automatically gives them the aforementioned privledges. To do this, you can simply right-click a member and select the `Promote to Founder` action.
+Since a space might have multiple people that need to administer it, a founder can give other members "founder" status, which automatically gives them the aforementioned privileges. To do this, you can simply right-click a member and select the `Promote to Founder` action.
 
 <img width="300px" src="https://user-images.githubusercontent.com/116461/65293220-547d4900-db0f-11e9-88ed-d1b14e4fd00c.png" />
 

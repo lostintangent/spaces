@@ -12,6 +12,7 @@ import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
+import { ContactMessageManager } from "./contacts/messaging/ContactMessageManager";
 import { registerFileSystemProvider } from "./readmeFileSystemProvider";
 import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
@@ -32,7 +33,6 @@ export async function activate(context: ExtensionContext) {
   const api = (await getVslsApi())!;
   const chatApi = new ChatApi(api, store);
 
-  // need to cast `api` to `any` until new `vsls` npm package is published
   const lsAuthStrategies = (api as any).authStrategies || [];
   const authStrategies = lsAuthStrategies.filter((strategy: IAuthStrategy) => {
     const strategyName = strategy.name.toLowerCase();
@@ -57,6 +57,8 @@ export async function activate(context: ExtensionContext) {
   if (config.showSuggestedContacts) {
     registerContactProvider(api, store);
   }
+
+  const messageManager = new ContactMessageManager(api);
 
   saga.run(
     rootSaga,

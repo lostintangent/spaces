@@ -30,16 +30,16 @@ export function registerJoinRequest(
 
   const joinRequest = messageManager.registerMessageHandler(
     JOIN_MESSAGE_TYPE,
-    async (sender: MessageSender, body: any) => {
-      const message = `${sender.displayName} asked to join a collaboration session with you.`;
+    async ({ displayName, emailAddress }: MessageSender, body: any) => {
+      const message = `${displayName} asked to join a collaboration session with you.`;
       const response = await window.showInformationMessage(message, "Share");
       if (response) {
-        acceptRequest(sender.emailAddress);
+        acceptRequest(emailAddress);
 
-        const { contacts } = await vslsApi.getContacts([sender.emailAddress]);
-        await contacts[sender.emailAddress].invite({ useEmail: false });
+        const { contacts } = await vslsApi.getContacts([emailAddress]);
+        await contacts[emailAddress].invite({ useEmail: false });
       } else {
-        rejectRequest(sender.emailAddress);
+        rejectRequest(emailAddress);
       }
     }
   );

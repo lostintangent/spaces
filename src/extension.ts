@@ -13,6 +13,7 @@ import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
 import { ContactMessageManager } from "./contacts/messaging/ContactMessageManager";
+import { registerJoinRequest } from "./contacts/messaging/joinRequest";
 import { registerFileSystemProvider } from "./readmeFileSystemProvider";
 import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
@@ -45,20 +46,22 @@ export async function activate(context: ExtensionContext) {
   registerTreeProvider(api, store, context.extensionPath);
   const fileSystemProvider = registerFileSystemProvider(store, api);
 
+  const messageManager = new ContactMessageManager(api);
+  const joinRequest = registerJoinRequest(api, messageManager);
+
   registerCommands(
     api,
     store,
     storage,
     context.extensionPath,
-    sessionStateChannel
+    sessionStateChannel,
+    joinRequest
   );
   registerUriHandler(api, store);
 
   if (config.showSuggestedContacts) {
     registerContactProvider(api, store);
   }
-
-  const messageManager = new ContactMessageManager(api);
 
   saga.run(
     rootSaga,

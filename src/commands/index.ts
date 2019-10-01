@@ -11,9 +11,10 @@ export function registerCommands(
   store: Store,
   storage: LocalStorage,
   extensionPath: string,
-  sessionStateChannel: ISessionStateChannel
+  sessionStateChannel: ISessionStateChannel,
+  joinRequest: Function
 ) {
   registerSpaceCommands(api, store, storage, extensionPath);
   registerSessionCommands(store, sessionStateChannel);
-  registerInvitationCommands(api);
+  registerInvitationCommands(api, joinRequest);
 }

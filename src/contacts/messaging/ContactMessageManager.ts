@@ -6,6 +6,11 @@ function isLiveshareProvider(provider: any) {
   return provider.serviceId === LIVESHARE_PRESENCE_PROVIDER_ID;
 }
 
+export interface MessageSender {
+  displayName: string;
+  emailAddress: string;
+}
+
 export class ContactMessageManager {
   private presenceProvider: any;
   private messageHandlers: Map<string, Function> = new Map();
@@ -35,7 +40,7 @@ export class ContactMessageManager {
       if (e.type === Methods.NotifyMessageReceivedName) {
         const message = e.body;
         if (this.messageHandlers.has(message.type)) {
-          this.messageHandlers.get(message.type)!(message.body);
+          this.messageHandlers.get(message.type)!(message.sender, message.body);
         }
       }
     });
@@ -43,13 +48,25 @@ export class ContactMessageManager {
 
   public registerMessageHandler(type: string, callback: Function) {
     this.messageHandlers.set(type, callback);
+
+    return (targetContactId: string, body: any = {}) => {
+      this.sendMessage(targetContactId, type, body);
+    };
   }
 
-  public async sendMessage(targetContactId: string, type: string, body: any) {
+  public async sendMessage(
+    targetContactId: string,
+    type: string,
+    body: any = {}
+  ) {
     const message = {
       type,
       body,
-      targetContactId
+      targetContactId,
+      sender: {
+        displayName: this.vsls.session.user!.displayName,
+        email: this.vsls.session.user!.emailAddress
+      }
     };
 
     await this.presenceProvider.requestAsync(

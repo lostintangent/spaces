@@ -4,7 +4,10 @@ import { EXTENSION_NAME } from "../constants";
 import { Status } from "../store/model";
 import { MemberNode, SpaceMembersNode } from "../tree/nodes";
 
-export function registerInvitationCommands(api: LiveShare) {
+export function registerInvitationCommands(
+  api: LiveShare,
+  joinRequest: Function
+) {
   commands.registerCommand(
     `${EXTENSION_NAME}.inviteMember`,
     (node: MemberNode) => {
@@ -37,4 +40,11 @@ export function registerInvitationCommands(api: LiveShare) {
       await contacts[email].invite({ useEmail });
     }
   }
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.joinRequest`,
+    (node: MemberNode) => {
+      joinRequest(node.email);
+    }
+  );
 }

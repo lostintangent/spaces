@@ -207,6 +207,11 @@
           "dark": "images/dark/invite.svg",
           "light": "images/light/invite.svg"
         }
+      },
+      {
+        "command": "liveshare.joinRequest",
+        "category": "Live Share Spaces",
+        "title": "Request to Join"
       }
     ],
     "views": {
@@ -330,6 +335,11 @@
           "group": "inline@2"
         },
         {
+          "command": "liveshare.joinRequest",
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
+          "group": "inline@3"
+        },
+        {
           "command": "liveshare.createHelpRequest",
           "when": "view == liveshare.spaces && viewItem == helpRequests && !liveshare:isCollaborating"
         },
@@ -439,6 +449,10 @@
         },
         {
           "command": "liveshare.inviteMemberByEmail",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.joinRequest",
           "when": "false"
         },
         {

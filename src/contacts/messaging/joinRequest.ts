@@ -2,9 +2,9 @@ import { ProgressLocation, window } from "vscode";
 import { LiveShare } from "vsls";
 import { ContactMessageManager, MessageSender } from "./ContactMessageManager";
 
-const JOIN_MESSAGE_TYPE = "liveshace.spaces.join";
-const JOIN_ACCEPTED_MESSAGE_TYPE = "liveshace.spaces.join.accepted";
-const JOIN_REJECTED_MESSAGE_TYPE = "liveshace.spaces.join.rejected";
+const JOIN_MESSAGE_TYPE = "spaces.join";
+const JOIN_ACCEPTED_MESSAGE_TYPE = "spaces.join.accepted";
+const JOIN_REJECTED_MESSAGE_TYPE = "spaces.join.rejected";
 
 export function registerJoinRequest(
   vslsApi: LiveShare,

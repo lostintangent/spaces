@@ -44,7 +44,7 @@ export function registerInvitationCommands(
   commands.registerCommand(
     `${EXTENSION_NAME}.joinRequest`,
     (node: MemberNode) => {
-      joinRequest(node.email);
+      joinRequest(node.label, node.email);
     }
   );
 }

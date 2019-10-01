@@ -4,7 +4,7 @@
   "publisher": "vsls-contrib",
   "description": "Discover, share, and connect with developers across your favorite teams, classrooms and communities.",
   "icon": "images/icon.png",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "engines": {
     "vscode": "^1.36.0"
   },
@@ -310,6 +310,11 @@
           "group": "base@2"
         },
         {
+          "command": "liveshare.joinRequest",
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
+          "group": "base@3"
+        },
+        {
           "command": "liveshare.promoteToFounder",
           "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?.spaceFounder$/",
           "group": "founder@1"
@@ -333,11 +338,6 @@
           "command": "liveshare.inviteMember",
           "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
           "group": "inline@2"
-        },
-        {
-          "command": "liveshare.joinRequest",
-          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
-          "group": "inline@3"
         },
         {
           "command": "liveshare.createHelpRequest",

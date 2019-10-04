@@ -10,5 +10,6 @@
     "out": true
   },
   "typescript.tsc.autoDetect": "off",
-  "elixirLS.projectDir": "service"
+  "elixirLS.projectDir": "service",
+  "liveshare.featureSet": "insiders"
 }

@@ -96,7 +96,7 @@ To simplify the onboarding process for your space, you can provide a deep link t
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/64935685-6907cb80-d807-11e9-9522-93f05c274c9d.png" />
 
-2) If you've built a VS Code extension (or extension pack), that represents your space (e.g. an opinionated set of extensions/tools for a classroom), then you can add an extension dependency to this extension (`vsls-contrib.spaces`), as well as a `liveshare.spaces` contribution point to your extension's `package.json` file. When others install your extension, it will install Live Share + Spaces, and then automatically join them to the specified spaces.
+1. If you've built a VS Code extension (or extension pack), that represents your space (e.g. an opinionated set of extensions/tools for a classroom), then you can add an extension dependency to this extension (`vsls-contrib.spaces`), as well as a `liveshare.spaces` contribution point to your extension's `package.json` file. When others install your extension, it will install Live Share + Spaces, and then automatically join them to the specified spaces.
 
    ```json
    "contributes": {
@@ -105,6 +105,8 @@ To simplify the onboarding process for your space, you can provide a deep link t
    ```
 
    _Note: You can see an example of this in the [Live Share Counter](https://github.com/vsls-contrib/counter/blob/master/package.json#L46) sample_.
+
+1. Adding a `.space` file to your project repo, which simply includes the name of the space you'd like anyone that opens it to join.
 
 ## Founders
 

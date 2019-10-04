@@ -3,12 +3,19 @@ import { LOCAL_SERVICE_URL, PROD_SERVICE_URL } from "./constants";
 
 const liveShareConfig = workspace.getConfiguration("liveshare");
 
-const EXTENSION_CONTRIBUTION_BEHAVIOR = "extensionContributionBehavior";
+const EXTENSION_SUGGESTION_BEHAVIOR = "extensionSuggestionBehavior";
+const WORKSPACE_SUGGESTION_BEHAVIOR = "workspaceSuggestionBehavior";
 const FEATURE_SET_SETTING = "featureSet";
 const MUTED_SPACES = "mutedSpaces";
 const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
 const INSIDERS = "insiders";
 const SERVICE_URI_SETTING = "serviceUri";
+
+export enum SuggestionBehavior {
+  ignore = "ignore",
+  join = "join",
+  prompt = "prompt"
+}
 
 export const config = {
   getConfig() {
@@ -38,16 +45,20 @@ export const config = {
     await commands.executeCommand("liveshare.enable.vscode-account.auth");
   },
 
-  get extensionContributionBehavior() {
-    return this.getConfig().get<string>(EXTENSION_CONTRIBUTION_BEHAVIOR)!;
+  get extensionSuggestionBehavior() {
+    return this.getConfig().get<string>(EXTENSION_SUGGESTION_BEHAVIOR)!;
   },
 
-  set extensionContributionBehavior(value: string) {
+  set extensionSuggestionBehavior(value: string) {
     this.getConfig().update(
-      EXTENSION_CONTRIBUTION_BEHAVIOR,
+      EXTENSION_SUGGESTION_BEHAVIOR,
       value,
       ConfigurationTarget.Global
     );
+  },
+
+  get workspaceSuggestionBehavior() {
+    return this.getConfig().get<string>(WORKSPACE_SUGGESTION_BEHAVIOR)!;
   },
 
   get showSuggestedContacts() {

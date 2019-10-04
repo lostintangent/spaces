@@ -19,7 +19,6 @@ import {
   ACTION_JOIN_SPACE,
   ACTION_LEAVE_SPACE,
   ACTION_LOAD_SPACES,
-  ACTION_LOAD_SPACES_COMPLETED,
   ACTION_SPACE_UPDATED,
   blockMember,
   clearMessages,
@@ -62,6 +61,7 @@ import {
   updateReadmeSaga,
   updateSpaceSaga
 } from "./spaces";
+import { workspaceSaga } from "./workspace";
 
 function* workerSagas(
   storage: LocalStorage,
@@ -123,20 +123,21 @@ export function* rootSaga(
   fileSystemProvider: ReadmeFileSystemProvider
 ) {
   const authChannel = createAuthenticationChannel(vslsApi);
-  let workersTask, extensionsTask;
-
+  let tasks = [];
   while (true) {
     const isSignedIn = yield take(authChannel);
     yield put(userAuthenticationChanged(isSignedIn));
 
     if (isSignedIn) {
-      workersTask = yield fork(
-        workerSagas,
-        storage,
-        vslsApi,
-        chatApi,
-        sessionStateChannel,
-        fileSystemProvider
+      tasks.push(
+        yield fork(
+          workerSagas,
+          storage,
+          vslsApi,
+          chatApi,
+          sessionStateChannel,
+          fileSystemProvider
+        )
       );
 
       if (config.mutedSpaces.includes("*")) {
@@ -147,12 +148,11 @@ export function* rootSaga(
 
       yield put(<any>clearZombieSessions());
 
-      yield take(ACTION_LOAD_SPACES_COMPLETED);
-
-      extensionsTask = yield fork(extensionsSaga);
+      tasks.push(yield fork(workspaceSaga, storage));
+      tasks.push(yield fork(extensionsSaga, storage));
     } else {
-      workersTask && workersTask.cancel();
-      extensionsTask && extensionsTask.cancel();
+      tasks.forEach(task => task.cancel());
+      tasks = [];
     }
   }
 }

@@ -48,7 +48,7 @@ export function registerJoinRequest(
     window.withProgress(
       {
         location: ProgressLocation.Notification,
-        title: `Waiting for ${name} to respond...`
+        title: `Request sent to ${name}. Waiting for a response...`
       },
       () => {
         return new Promise(async resolve => {

@@ -1,4 +1,4 @@
-import { commands, ConfigurationTarget, window, workspace } from "vscode";
+import { commands, ConfigurationTarget, workspace } from "vscode";
 import { LOCAL_SERVICE_URL, PROD_SERVICE_URL } from "./constants";
 
 const liveShareConfig = workspace.getConfiguration("liveshare");
@@ -23,25 +23,6 @@ export const config = {
   },
 
   async ensureLiveShareInsiders() {
-    const featureSet = liveShareConfig.get(FEATURE_SET_SETTING);
-
-    if (featureSet !== INSIDERS) {
-      liveShareConfig.update(
-        FEATURE_SET_SETTING,
-        INSIDERS,
-        ConfigurationTarget.Global
-      );
-
-      const response = await window.showInformationMessage(
-        "Live Share Spaces installed! Reload Visual Studio Code to get started",
-        "Reload"
-      );
-
-      if (response === "Reload") {
-        commands.executeCommand("workbench.action.reloadWindow");
-      }
-    }
-
     await commands.executeCommand("liveshare.enable.vscode-account.auth");
   },
 

@@ -1,3 +1,4 @@
 {
+  "name": "VSLS Spaces",
   "extensions": ["vsls-contrib.spaces"]
 }

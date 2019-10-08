@@ -4,7 +4,7 @@
   "publisher": "vsls-contrib",
   "description": "Discover, share, and connect with developers across your favorite teams, classrooms and communities.",
   "icon": "images/icon.png",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "engines": {
     "vscode": "^1.36.0"
   },

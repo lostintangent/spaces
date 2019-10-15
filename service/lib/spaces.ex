@@ -22,6 +22,9 @@ defmodule LiveShareSpaces do
     opts = [strategy: :one_for_one, name: HexVersion.Supervisor]
     result = Supervisor.start_link(children, opts)
 
+    # migrations
+    LiveShareSpaces.SpaceStore.migrate_duplicate_members()
+
     result
   end
 

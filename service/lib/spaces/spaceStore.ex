@@ -4,19 +4,21 @@ defmodule LiveShareSpaces.SpaceStore do
 
   @ls_service_uri "https://prod.liveshare.vsengsaas.visualstudio.com"
 
-  def migrate_old_space_keys() do
-    {:ok, keys} = Redix.command(:redix, ["KEYS", "*"])
+  def migrate_duplicate_members() do
+    all_space_names()
+    |> Enum.map(&migrate_duplicate_members_for(&1))
+  end
 
-    Enum.each(keys, fn key ->
-      # old keys do not have the `prefix:` pattern and contain only `spaces`
-      is_new_key = key =~ ":"
+  defp migrate_duplicate_members_for(name) do
+    space = space(name)
 
-      if !is_new_key do
-        {:ok, value} = Redix.command(:redix, ["GET", key])
-        {:ok, _} = Redix.command(:redix, ["DEL", key])
-        {:ok, _} = Redix.command(:redix, ["SET", get_space_key(key), value])
-      end
-    end)
+    updated_members =
+      space
+      |> Map.get("members", [])
+      |> Enum.sort_by(&Map.get(&1, "joined_at"))
+      |> Enum.uniq_by(&Map.get(&1, "email"))
+
+    update(space, &Map.merge(&1, %{"members" => updated_members}))
   end
 
   def everything() do
@@ -216,7 +218,12 @@ defmodule LiveShareSpaces.SpaceStore do
   defp add_member_helper(space, member) do
     current_members = space |> Map.get("members", [])
     member_email = member["email"]
-    existing_member = Enum.member?(current_members, member_email)
+
+    existing_member =
+      Enum.member?(
+        current_members |> Enum.map(&Map.get(&1, "email")),
+        member_email
+      )
 
     if existing_member do
       space

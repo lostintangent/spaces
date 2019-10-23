@@ -1,8 +1,10 @@
+import * as md5 from "md5";
 import { Store } from "redux";
 import { v4 } from "uuid";
-import { commands, env, QuickPickItem, window } from "vscode";
+import { commands, env, ProgressLocation, QuickPickItem, window } from "vscode";
 import { LiveShare } from "vsls";
 import { getTopSpaces } from "../api";
+import { ICallingService } from "../audio/ICallingService";
 import { config } from "../config";
 import { EXTENSION_NAME, JOIN_URL_PATTERN } from "../constants";
 import {
@@ -28,12 +30,12 @@ import {
 } from "../store/actions";
 import { IStore } from "../store/model";
 import { MemberNode, SpaceNode } from "../tree/nodes";
-
 export function registerSpaceCommands(
   api: LiveShare,
   store: Store,
   storage: LocalStorage,
-  extensionPath: string
+  extensionPath: string,
+  callingService: ICallingService
 ) {
   commands.registerCommand(`${EXTENSION_NAME}.joinSpace`, async () => {
     if (!api.session.user) {
@@ -271,6 +273,43 @@ export function registerSpaceCommands(
       if (member) {
         store.dispatch(unblockMember({ space: node!.space.name, member }));
       }
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.joinAudio`,
+    async (node?: SpaceNode) => {
+      window.withProgress(
+        {
+          location: ProgressLocation.Notification,
+          title: "Joining audio call..."
+        },
+        async () => {
+          await callingService.connectToCall(md5(node!.name), true);
+          commands.executeCommand("setContext", "spaces:audioCallActive", true);
+        }
+      );
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.leaveAudio`,
+    async (node?: SpaceNode) => {
+      window.withProgress(
+        {
+          location: ProgressLocation.Notification,
+          title: "Ending audio call..."
+        },
+        async () => {
+          await callingService.endAndCleanUpCurrentCall();
+
+          commands.executeCommand(
+            "setContext",
+            "spaces:audioCallActive",
+            false
+          );
+        }
+      );
     }
   );
 }

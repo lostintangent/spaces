@@ -1,5 +1,6 @@
 import { Store } from "redux";
 import { LiveShare } from "vsls";
+import { ICallingService } from "../audio/ICallingService";
 import { ISessionStateChannel } from "../channels/sessionState";
 import { LocalStorage } from "../storage/LocalStorage";
 import { registerInvitationCommands } from "./invitations";
@@ -12,9 +13,10 @@ export function registerCommands(
   storage: LocalStorage,
   extensionPath: string,
   sessionStateChannel: ISessionStateChannel,
-  joinRequest: Function
+  joinRequest: Function,
+  callingService: ICallingService
 ) {
-  registerSpaceCommands(api, store, storage, extensionPath);
+  registerSpaceCommands(api, store, storage, extensionPath, callingService);
   registerSessionCommands(store, sessionStateChannel);
   registerInvitationCommands(api, joinRequest);
 }

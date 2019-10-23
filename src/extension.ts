@@ -1,8 +1,9 @@
 import { IAuthStrategy } from "@vs/vscode-account";
 import { applyMiddleware, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, extensions } from "vscode";
 import { getApi as getVslsApi } from "vsls";
+import { ICallingService } from "./audio/ICallingService";
 import { auth } from "./auth/auth";
 import {
   createSessionStateChannel,
@@ -49,19 +50,26 @@ export async function activate(context: ExtensionContext) {
   const messageManager = new ContactMessageManager(api);
   const joinRequest = registerJoinRequest(api, messageManager);
 
+  const callingService = extensions.getExtension<ICallingService>(
+    "ms-vsliveshare.vsliveshare-audio"
+  )!.exports;
+
   registerCommands(
     api,
     store,
     storage,
     context.extensionPath,
     sessionStateChannel,
-    joinRequest
+    joinRequest,
+    callingService
   );
   registerUriHandler(api, store);
 
   if (config.showSuggestedContacts) {
     registerContactProvider(api, store);
   }
+
+  //registerCommentController(api);
 
   saga.run(
     rootSaga,

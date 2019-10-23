@@ -112,6 +112,20 @@ defmodule LiveShareSpaces.SpaceStore do
     |> update_with_thanks_count()
   end
 
+  def member_of_space?(member_email, space_name) do
+    members_of(space_name)
+    |> Enum.map(&Map.get(&1, "email"))
+    |> Enum.filter(&(&1 == member_email))
+    |> Enum.empty?()
+    |> Kernel.not()
+  end
+
+  def spaces_with_member(member_email) do
+    all_space_names()
+    |> Enum.filter(&member_of_space?(member_email, &1))
+    |> Enum.map(&space(&1))
+  end
+
   def update_with_thanks_count(space) do
     thanks = space |> Map.get("thanks", [])
 

@@ -80,20 +80,11 @@ defmodule LiveShareSpaces.HTTP do
   end
 
   get "/v0/load" do
-    result =
-      if Map.has_key?(conn.params, "names") do
-        conn.params
-        |> Map.get("names")
-        |> String.split(",")
-        |> Enum.filter(&(String.length(&1) > 0))
-        |> Enum.map(&URI.decode(&1))
-        |> Enum.map(&LiveShareSpaces.SpaceStore.space(&1))
-      else
-        []
-      end
-
     conn
-    |> send_resp(:ok, Poison.encode!(result))
+    |> send_resp(
+      :ok,
+      Poison.encode!(LiveShareSpaces.SpaceStore.spaces_with_member(conn.auth_context.email))
+    )
   end
 
   get "/v0/top_spaces" do

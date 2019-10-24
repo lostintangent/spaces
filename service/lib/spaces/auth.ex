@@ -433,7 +433,7 @@ defmodule LiveShareSpaces.Authentication do
         else
           response = Poison.decode!(response.body)
           name = response["name"]
-          email = response["userName"]
+          email = response["email"]
           LiveShareSpaces.ProfileStore.create_profile(id, name, email)
           claims = create_user_payload(id, name, email, "cascade")
           {:ok, claims}

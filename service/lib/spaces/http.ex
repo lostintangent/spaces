@@ -80,6 +80,7 @@ defmodule LiveShareSpaces.HTTP do
   end
 
   get "/v0/load" do
+    IO.inspect(conn.auth_context)
     conn
     |> send_resp(
       :ok,

@@ -7,6 +7,7 @@ const BASE_URL = `${config.serviceUri}/v0`;
 
 const getAuthHeader = async () => {
   const t1 = Date.now();
+  await auth.API.waitForInitialLogin;
   const tokens = await auth.API.getTokensOrAskToSignIn();
   const t2 = Date.now();
 

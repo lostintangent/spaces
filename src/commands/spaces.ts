@@ -1,8 +1,10 @@
+import * as md5 from "md5";
 import { Store } from "redux";
 import { v4 } from "uuid";
-import { commands, env, QuickPickItem, window } from "vscode";
+import { commands, env, ProgressLocation, QuickPickItem, window } from "vscode";
 import { LiveShare } from "vsls";
 import { getTopSpaces } from "../api";
+import { ICallingService } from "../audio/ICallingService";
 import { config } from "../config";
 import { EXTENSION_NAME, JOIN_URL_PATTERN } from "../constants";
 import {
@@ -11,7 +13,9 @@ import {
 } from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
+  blockMember,
   clearMessages,
+  demoteToMember,
   joinSpace,
   leaveSpace,
   loadSpaces,
@@ -19,17 +23,19 @@ import {
   makeSpacePublic,
   muteAllSpaces,
   muteSpace,
+  promoteToFounder,
+  unblockMember,
   unmuteAllSpaces,
   unmuteSpace
 } from "../store/actions";
 import { IStore } from "../store/model";
-import { SpaceNode } from "../tree/nodes";
-
+import { MemberNode, SpaceNode } from "../tree/nodes";
 export function registerSpaceCommands(
   api: LiveShare,
   store: Store,
   storage: LocalStorage,
-  extensionPath: string
+  extensionPath: string,
+  callingService: ICallingService
 ) {
   commands.registerCommand(`${EXTENSION_NAME}.joinSpace`, async () => {
     if (!api.session.user) {
@@ -209,6 +215,101 @@ export function registerSpaceCommands(
     `${EXTENSION_NAME}.openReadme`,
     (node?: SpaceNode) => {
       previewSpaceReadme(node!.name);
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.promoteToFounder`,
+    (node?: MemberNode) => {
+      store.dispatch(
+        promoteToFounder({
+          space: node!.space.name,
+          member: node!.member.email
+        })
+      );
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.demoteToMember`,
+    (node?: MemberNode) => {
+      store.dispatch(
+        demoteToMember({ space: node!.space.name, member: node!.member.email })
+      );
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.blockMember`,
+    async (node?: MemberNode) => {
+      const response = await window.showErrorMessage(
+        `Are you sure you want to block ${node!.member.name} from the "${
+          node!.space.name
+        }" space?`,
+        "Block"
+      );
+      if (response === "Block") {
+        store.dispatch(
+          blockMember({ space: node!.space.name, member: node!.member.email })
+        );
+      }
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.unblockMember`,
+    async (node?: SpaceNode) => {
+      if (node!.space.blocked_members.length === 0) {
+        window.showInformationMessage(
+          "There aren't any blocked members in this space."
+        );
+        return;
+      }
+
+      const member = await window.showQuickPick(
+        node!.space.blocked_members.sort(),
+        { placeHolder: "Select the member to unblock..." }
+      );
+      if (member) {
+        store.dispatch(unblockMember({ space: node!.space.name, member }));
+      }
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.joinAudio`,
+    async (node?: SpaceNode) => {
+      window.withProgress(
+        {
+          location: ProgressLocation.Notification,
+          title: "Joining audio call..."
+        },
+        async () => {
+          await callingService.connectToCall(md5(node!.name), true);
+          commands.executeCommand("setContext", "spaces:audioCallActive", true);
+        }
+      );
+    }
+  );
+
+  commands.registerCommand(
+    `${EXTENSION_NAME}.leaveAudio`,
+    async (node?: SpaceNode) => {
+      window.withProgress(
+        {
+          location: ProgressLocation.Notification,
+          title: "Ending audio call..."
+        },
+        async () => {
+          await callingService.endAndCleanUpCurrentCall();
+
+          commands.executeCommand(
+            "setContext",
+            "spaces:audioCallActive",
+            false
+          );
+        }
+      );
     }
   );
 }

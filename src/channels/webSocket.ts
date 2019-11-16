@@ -5,11 +5,10 @@ import ws from "../ws";
 
 export function createWebSocketChannel(api: LiveShare, chatApi: ChatApi) {
   return eventChannel((emit: Function) => {
-    ws.init(api.session.user!.emailAddress!, (data: any) => {
-      const { name, members, sessions, messages, readme } = data;
-      chatApi.onMessageReceived(name, messages);
+    ws.init(api.session.user!.emailAddress!, (space: any) => {
+      chatApi.onMessageReceived(space.name, space.messages);
 
-      emit({ name, members, sessions, readme });
+      emit(space);
     });
 
     return () => {

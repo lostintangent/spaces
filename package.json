@@ -2,9 +2,9 @@
   "name": "spaces",
   "displayName": "Live Share Spaces",
   "publisher": "vsls-contrib",
-  "description": "Discover, share, and receive real-time assistance from developers across your favorite teams, classrooms and communities.",
+  "description": "Discover, share, and connect with developers across your favorite teams, classrooms and communities.",
   "icon": "images/icon.png",
-  "version": "0.0.1",
+  "version": "0.0.14",
   "engines": {
     "vscode": "^1.36.0"
   },
@@ -20,7 +20,9 @@
   ],
   "main": "./out/extension.js",
   "extensionDependencies": [
-    "MS-vsliveshare.vsliveshare-pack"
+    "ms-vsliveshare.vsliveshare",
+    "ms-vsliveshare.vsliveshare-audio",
+    "karigari.chat"
   ],
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "contributes": {
@@ -178,6 +180,102 @@
           "dark": "images/dark/readme.svg",
           "light": "images/light/readme.svg"
         }
+      },
+      {
+        "command": "liveshare.promoteToFounder",
+        "category": "Live Share Spaces",
+        "title": "Promote to Founder"
+      },
+      {
+        "command": "liveshare.demoteToMember",
+        "category": "Live Share Spaces",
+        "title": "Demote to Member"
+      },
+      {
+        "command": "liveshare.blockMember",
+        "category": "Live Share Spaces",
+        "title": "Block Member"
+      },
+      {
+        "command": "liveshare.unblockMember",
+        "category": "Live Share Spaces",
+        "title": "Unblock Member"
+      },
+      {
+        "command": "liveshare.inviteAllMembers",
+        "category": "Live Share Spaces",
+        "title": "Invite All Members",
+        "icon": {
+          "dark": "images/dark/invite.svg",
+          "light": "images/light/invite.svg"
+        }
+      },
+      {
+        "command": "liveshare.joinRequest",
+        "category": "Live Share Spaces",
+        "title": "Request to Join"
+      },
+      {
+        "command": "liveshare.addSpaceComment",
+        "title": "Add Comment",
+        "enablement": "!commentIsEmpty"
+      },
+      {
+        "command": "liveshare.replySpaceComment",
+        "title": "Reply",
+        "enablement": "!commentIsEmpty"
+      },
+      {
+        "command": "liveshare.editSpaceComment",
+        "title": "Edit",
+        "icon": {
+          "dark": "resources/edit_inverse.svg",
+          "light": "resources/edit.svg"
+        }
+      },
+      {
+        "command": "liveshare.deleteSpaceThread",
+        "title": "Delete",
+        "icon": {
+          "dark": "resources/close_inverse.svg",
+          "light": "resources/close.svg"
+        }
+      },
+      {
+        "command": "liveshare.deleteSpaceComment",
+        "title": "Delete",
+        "icon": {
+          "dark": "resources/close_inverse.svg",
+          "light": "resources/close.svg"
+        }
+      },
+      {
+        "command": "liveshare.saveSpaceComment",
+        "title": "Save"
+      },
+      {
+        "command": "liveshare.cancelSaveComment",
+        "title": "Cancel"
+      },
+      {
+        "command": "liveshare.clearSpacesComments",
+        "title": "Clear All Comments"
+      },
+      {
+        "command": "liveshare.startAudio",
+        "title": "Start Audio Call"
+      },
+      {
+        "command": "liveshare.endAudio",
+        "title": "End Audio Call"
+      },
+      {
+        "command": "liveshare.joinAudio",
+        "title": "Join Audio Call"
+      },
+      {
+        "command": "liveshare.leaveAudio",
+        "title": "Leave Audio Call"
       }
     ],
     "views": {
@@ -197,7 +295,7 @@
           "type": "boolean",
           "description": "Specifies whether to show space-contributed contacts in the Live Share Suggested Contacts tree."
         },
-        "liveshare.spaces.extensionContributionBehavior": {
+        "liveshare.spaces.extensionSuggestionBehavior": {
           "default": "join",
           "type": "string",
           "enum": [
@@ -206,6 +304,16 @@
             "prompt"
           ],
           "description": "Specifies how to respond when 3rd-party extensions declare they have an associated space."
+        },
+        "liveshare.spaces.workspaceSuggestionBehavior": {
+          "default": "join",
+          "type": "string",
+          "enum": [
+            "ignore",
+            "join",
+            "prompt"
+          ],
+          "description": "Specifies how to respond when a workspace declares they have an associated space."
         },
         "liveshare.spaces.mutedSpaces": {
           "default": [],
@@ -266,12 +374,44 @@
           "group": "founder@3"
         },
         {
-          "command": "liveshare.inviteMemberByEmail",
-          "when": "view == liveshare.spaces && viewItem =~ /^member/"
+          "command": "liveshare.inviteMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
+          "group": "base@1"
         },
         {
-          "command": "liveshare.inviteMember",
-          "when": "view == liveshare.spaces && viewItem == member.online"
+          "command": "liveshare.inviteMemberByEmail",
+          "when": "view == liveshare.spaces && viewItem =~ /^member/",
+          "group": "base@2"
+        },
+        {
+          "command": "liveshare.joinRequest",
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
+          "group": "base@3"
+        },
+        {
+          "command": "liveshare.joinAudio",
+          "when": "view == liveshare.spaces && !spaces:audioCallActive",
+          "group": "chat@2"
+        },
+        {
+          "command": "liveshare.leaveAudio",
+          "when": "view == liveshare.spaces && spaces:audioCallActive",
+          "group": "chat@2"
+        },
+        {
+          "command": "liveshare.promoteToFounder",
+          "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?.spaceFounder$/",
+          "group": "founder@1"
+        },
+        {
+          "command": "liveshare.demoteToMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?.founder.spaceFounder$/",
+          "group": "founder@1"
+        },
+        {
+          "command": "liveshare.blockMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^member(\\.online)?(\\.founder)?.spaceFounder$/",
+          "group": "founder@2"
         },
         {
           "command": "liveshare.inviteMemberByEmail",
@@ -280,7 +420,7 @@
         },
         {
           "command": "liveshare.inviteMember",
-          "when": "view == liveshare.spaces && viewItem == member.online",
+          "when": "view == liveshare.spaces && viewItem =~ /^member.online/",
           "group": "inline@2"
         },
         {
@@ -347,6 +487,21 @@
           "command": "liveshare.unmuteSpace",
           "when": "view == liveshare.spaces && viewItem =~ /^space.*muted$/",
           "group": "inline@2"
+        },
+        {
+          "command": "liveshare.inviteAllMembers",
+          "when": "view == liveshare.spaces && viewItem =~ /^group.members.founder$/",
+          "group": "founder@1"
+        },
+        {
+          "command": "liveshare.unblockMember",
+          "when": "view == liveshare.spaces && viewItem =~ /^group.members.founder$/",
+          "group": "founder@2"
+        },
+        {
+          "command": "liveshare.inviteAllMembers",
+          "when": "view == liveshare.spaces && viewItem =~ /^group.members.founder/$",
+          "group": "inline@1"
         }
       ],
       "view/title": [
@@ -381,6 +536,10 @@
           "when": "false"
         },
         {
+          "command": "liveshare.joinRequest",
+          "when": "false"
+        },
+        {
           "command": "liveshare.joinSpaceSession",
           "when": "false"
         },
@@ -399,19 +558,79 @@
         {
           "command": "liveshare.makeSpacePublic",
           "when": "false"
+        },
+        {
+          "command": "liveshare.promoteToFounder",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.demoteToMember",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.blockMember",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.unblockMember",
+          "when": "false"
+        },
+        {
+          "command": "liveshare.inviteAllMembers",
+          "when": "false"
+        }
+      ],
+      "comments/commentThread/title": [
+        {
+          "command": "liveshare.deleteSpaceThread",
+          "group": "navigation",
+          "when": "commentController == liveshare.spaces && !commentThreadIsEmpty"
+        }
+      ],
+      "comments/commentThread/context": [
+        {
+          "command": "liveshare.addSpaceComment",
+          "group": "inline",
+          "when": "commentController == liveshare.spaces && commentThreadIsEmpty"
+        },
+        {
+          "command": "liveshare.replySpaceComment",
+          "group": "inline",
+          "when": "commentController == liveshare.spaces && !commentThreadIsEmpty"
+        }
+      ],
+      "comments/comment/title": [
+        {
+          "command": "liveshare.editSpaceComment",
+          "group": "group@1",
+          "when": "commentController == liveshare.spaces"
+        },
+        {
+          "command": "liveshare.deleteSpaceComment",
+          "group": "group@2",
+          "when": "commentController == liveshare.spaces && comment == canDelete"
+        }
+      ],
+      "comments/comment/context": [
+        {
+          "command": "liveshare.saveSpaceComment",
+          "group": "inline@2",
+          "when": "commentController == liveshare.spaces"
         }
       ]
     }
   },
   "scripts": {
     "vscode:prepublish": "rm -rf out && webpack --mode production",
-    "compile": "webpack --mode none",
+    "compile": "webpack --mode development",
     "watch": "webpack --mode none --watch",
     "pretest": "tsc -p ./",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@types/color-string": "^1.5.0",
     "@types/glob": "^7.1.1",
+    "@types/md5": "^2.1.33",
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
     "@types/ramda": "^0.26.18",
@@ -429,10 +648,12 @@
   "dependencies": {
     "@types/keytar": "^4.4.0",
     "@types/uuid": "^3.4.5",
-    "@vs/vscode-account": "^1.0.711",
+    "@vs/vscode-account": "1.0.711",
     "axios": "^0.19.0",
+    "color-string": "^1.5.3",
     "elm": "^0.19.0-no-deps",
     "keytar": "^5.0.0-beta.0",
+    "md5": "^2.2.1",
     "ramda": "^0.26.1",
     "redux": "^4.0.4",
     "redux-saga": "^1.0.5",

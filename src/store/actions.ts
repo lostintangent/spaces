@@ -41,18 +41,24 @@ export const joinSpaceCompleted = (
   members: any,
   sessions: any,
   isMuted: boolean,
-  readme: string
+  readme: string,
+  founders: any,
+  isPrivate: boolean,
+  blocked_members: string[]
 ) =>
   action(ACTION_JOIN_SPACE_COMPLETED, {
     name,
     members,
     sessions,
     isMuted,
-    readme
+    readme,
+    founders,
+    isPrivate,
+    blocked_members
   });
 
-export const leaveSpace = (name: string) =>
-  action(ACTION_LEAVE_SPACE, { name });
+export const leaveSpace = (name: string, syncWithServer = true) =>
+  action(ACTION_LEAVE_SPACE, { name, syncWithServer });
 
 export const leaveSpaceCompleted = (name: string) =>
   action(ACTION_LEAVE_SPACE_COMPLETED, { name });
@@ -90,8 +96,20 @@ export const updateSpace = (
   name: string,
   members: IMember[],
   sessions: ISession[],
-  readme: string
-) => action(ACTION_SPACE_UPDATED, { name, members, sessions, readme });
+  readme: string,
+  founders: string[],
+  isPrivate: boolean,
+  blocked_members: string[]
+) =>
+  action(ACTION_SPACE_UPDATED, {
+    name,
+    members,
+    sessions,
+    readme,
+    founders,
+    isPrivate,
+    blocked_members
+  });
 
 export const clearMessages = createAction<string>("messages/clear");
 
@@ -110,3 +128,11 @@ export const makeSpacePublic = createAction("space/makePublic");
 export const joinSpaceFailed = createAction<string>("space/joinFailed");
 
 export const updateReadme = createAction("space/updateReadme");
+
+export const promoteToFounder = createAction("member/promote");
+
+export const demoteToMember = createAction("member/demote");
+
+export const blockMember = createAction("member/block");
+
+export const unblockMember = createAction("member/unblock");

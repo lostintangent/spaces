@@ -11,6 +11,7 @@ import { createAuthenticationChannel } from "../channels/authentication";
 import { ISessionStateChannel } from "../channels/sessionState";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
+import { ReadmeFileSystemProvider } from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   ACTION_CLEAR_ZOMBIE_SESSIONS,
@@ -18,15 +19,18 @@ import {
   ACTION_JOIN_SPACE,
   ACTION_LEAVE_SPACE,
   ACTION_LOAD_SPACES,
-  ACTION_LOAD_SPACES_COMPLETED,
   ACTION_SPACE_UPDATED,
+  blockMember,
   clearMessages,
   clearZombieSessions,
+  demoteToMember,
   loadSpaces,
   makeSpacePrivate,
   makeSpacePublic,
   muteAllSpaces,
   muteSpace,
+  promoteToFounder,
+  unblockMember,
   unmuteAllSpaces,
   unmuteSpace,
   updateReadme,
@@ -40,33 +44,42 @@ import {
   endActiveSession
 } from "./sessions";
 import {
+  blockMemberSaga,
   clearMessagesSaga,
+  demoteToMemberSaga,
   joinSpaceSaga,
-  leaveSpace,
+  leaveSpaceSaga,
   loadSpacesSaga,
   makeSpacePrivateSaga,
   makeSpacePublicSaga,
   muteAllSpacesSaga,
   muteSpaceSaga,
+  promoteToFounderSaga,
+  unblockMemberSaga,
   unmuteAllSpacesSaga,
   unmuteSpaceSaga,
   updateReadmeSaga,
   updateSpaceSaga
 } from "./spaces";
+import { workspaceSaga } from "./workspace";
 
 function* workerSagas(
   storage: LocalStorage,
   vslsApi: vsls.LiveShare,
   chatApi: ChatApi,
-  sessionStateChannel: ISessionStateChannel
+  sessionStateChannel: ISessionStateChannel,
+  fileSystemProvider: ReadmeFileSystemProvider
 ) {
   yield all([
     takeEvery(
       ACTION_JOIN_SPACE,
       joinSpaceSaga.bind(null, storage, vslsApi, chatApi)
     ),
-    takeEvery(ACTION_LEAVE_SPACE, leaveSpace.bind(null, storage, vslsApi)),
-    takeEvery(ACTION_SPACE_UPDATED, updateSpaceSaga.bind(null, vslsApi)),
+    takeEvery(ACTION_LEAVE_SPACE, leaveSpaceSaga.bind(null, storage, vslsApi)),
+    takeEvery(
+      ACTION_SPACE_UPDATED,
+      updateSpaceSaga.bind(null, vslsApi, fileSystemProvider)
+    ),
     takeEvery(clearMessages, clearMessagesSaga.bind(null, chatApi)),
 
     takeEvery(
@@ -89,6 +102,11 @@ function* workerSagas(
     takeEvery(makeSpacePublic, makeSpacePublicSaga),
     takeEvery(updateReadme, updateReadmeSaga),
 
+    takeEvery(promoteToFounder, promoteToFounderSaga),
+    takeEvery(demoteToMember, demoteToMemberSaga),
+    takeEvery(blockMember, blockMemberSaga),
+    takeEvery(unblockMember, unblockMemberSaga),
+
     takeLatest(
       ACTION_LOAD_SPACES,
       loadSpacesSaga.bind(null, storage, vslsApi, chatApi)
@@ -101,22 +119,25 @@ export function* rootSaga(
   storage: LocalStorage,
   vslsApi: vsls.LiveShare,
   chatApi: ChatApi,
-  sessionStateChannel: ISessionStateChannel
+  sessionStateChannel: ISessionStateChannel,
+  fileSystemProvider: ReadmeFileSystemProvider
 ) {
   const authChannel = createAuthenticationChannel(vslsApi);
-  let workersTask, extensionsTask;
-
+  let tasks = [];
   while (true) {
     const isSignedIn = yield take(authChannel);
     yield put(userAuthenticationChanged(isSignedIn));
 
     if (isSignedIn) {
-      workersTask = yield fork(
-        workerSagas,
-        storage,
-        vslsApi,
-        chatApi,
-        sessionStateChannel
+      tasks.push(
+        yield fork(
+          workerSagas,
+          storage,
+          vslsApi,
+          chatApi,
+          sessionStateChannel,
+          fileSystemProvider
+        )
       );
 
       if (config.mutedSpaces.includes("*")) {
@@ -127,12 +148,11 @@ export function* rootSaga(
 
       yield put(<any>clearZombieSessions());
 
-      yield take(ACTION_LOAD_SPACES_COMPLETED);
-
-      extensionsTask = yield fork(extensionsSaga);
+      tasks.push(yield fork(workspaceSaga, storage));
+      tasks.push(yield fork(extensionsSaga, storage));
     } else {
-      workersTask && workersTask.cancel();
-      extensionsTask && extensionsTask.cancel();
+      tasks.forEach(task => task.cancel());
+      tasks = [];
     }
   }
 }

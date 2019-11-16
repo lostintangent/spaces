@@ -1,8 +1,9 @@
 import { IAuthStrategy } from "@vs/vscode-account";
 import { applyMiddleware, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, extensions } from "vscode";
 import { getApi as getVslsApi } from "vsls";
+import { ICallingService } from "./audio/ICallingService";
 import { auth } from "./auth/auth";
 import {
   createSessionStateChannel,
@@ -12,6 +13,8 @@ import { ChatApi } from "./chatApi";
 import { registerCommands } from "./commands";
 import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
+import { ContactMessageManager } from "./contacts/messaging/ContactMessageManager";
+import { registerJoinRequest } from "./contacts/messaging/joinRequest";
 import { registerFileSystemProvider } from "./readmeFileSystemProvider";
 import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
@@ -32,7 +35,6 @@ export async function activate(context: ExtensionContext) {
   const api = (await getVslsApi())!;
   const chatApi = new ChatApi(api, store);
 
-  // need to cast `api` to `any` until new `vsls` npm package is published
   const lsAuthStrategies = (api as any).authStrategies || [];
   const authStrategies = lsAuthStrategies.filter((strategy: IAuthStrategy) => {
     const strategyName = strategy.name.toLowerCase();
@@ -43,14 +45,23 @@ export async function activate(context: ExtensionContext) {
   sessionStateChannel = createSessionStateChannel(api);
 
   registerTreeProvider(api, store, context.extensionPath);
-  registerFileSystemProvider(store, api);
+  const fileSystemProvider = registerFileSystemProvider(store, api);
+
+  const messageManager = new ContactMessageManager(api);
+  const joinRequest = registerJoinRequest(api, messageManager);
+
+  const callingService = extensions.getExtension<ICallingService>(
+    "ms-vsliveshare.vsliveshare-audio"
+  )!.exports;
 
   registerCommands(
     api,
     store,
     storage,
     context.extensionPath,
-    sessionStateChannel
+    sessionStateChannel,
+    joinRequest,
+    callingService
   );
   registerUriHandler(api, store);
 
@@ -58,7 +69,16 @@ export async function activate(context: ExtensionContext) {
     registerContactProvider(api, store);
   }
 
-  saga.run(rootSaga, storage, api, chatApi, sessionStateChannel);
+  //registerCommentController(api);
+
+  saga.run(
+    rootSaga,
+    storage,
+    api,
+    chatApi,
+    sessionStateChannel,
+    fileSystemProvider
+  );
 
   return chatApi;
 }

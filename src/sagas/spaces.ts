@@ -1,4 +1,4 @@
-import { call, put, select, take } from "redux-saga/effects";
+import { call, put, select, spawn, take } from "redux-saga/effects";
 import { commands, env, Uri, window } from "vscode";
 import { LiveShare } from "vsls";
 import * as api from "../api";
@@ -6,11 +6,16 @@ import { createWebSocketChannel } from "../channels/webSocket";
 import { ChatApi } from "../chatApi";
 import { config } from "../config";
 import { JOIN_URL_PATTERN } from "../constants";
+import {
+  previewSpaceReadme,
+  ReadmeFileSystemProvider
+} from "../readmeFileSystemProvider";
 import { LocalStorage } from "../storage/LocalStorage";
 import {
   joinSpace,
   joinSpaceCompleted,
   joinSpaceFailed,
+  leaveSpace,
   leaveSpaceCompleted,
   loadSpacesCompleted,
   muteAllSpaces,
@@ -49,12 +54,55 @@ export function* loadSpacesSaga(
   const channel = createWebSocketChannel(vslsApi, chatApi);
 
   while (true) {
-    const { name, members, sessions, readme } = yield take(channel);
-    yield put(<any>updateSpace(name, members, sessions, readme));
+    const {
+      name,
+      members,
+      sessions,
+      readme,
+      founders,
+      isPrivate,
+      blocked_members
+    } = yield take(channel);
+    yield put(<any>(
+      updateSpace(
+        name,
+        members,
+        sessions,
+        readme,
+        founders,
+        isPrivate,
+        blocked_members
+      )
+    ));
   }
 }
 
 const PRIVATE_SPACE_RESPONSE = "Redeem invitation URL";
+function* promptUserForInvitationUrl(name: string, key: string) {
+  let response = yield call(
+    // @ts-ignore
+    window.showErrorMessage,
+    "This space is private and requires an invitation URL in order to join.",
+    PRIVATE_SPACE_RESPONSE
+  );
+  if (response === PRIVATE_SPACE_RESPONSE) {
+    const clipboardContents = yield call(
+      env.clipboard.readText.bind(env.clipboard)
+    );
+    response = yield call(window.showInputBox, {
+      placeHolder:
+        "Specify the invitation URL or key in order to join this space.",
+      value: clipboardContents
+    });
+    if (response) {
+      key = JOIN_URL_PATTERN.test(response)
+        ? (<any>JOIN_URL_PATTERN.exec(response)).groups.key
+        : response;
+      yield put(joinSpace(name, key));
+    }
+  }
+}
+
 export function* joinSpaceSaga(
   storage: LocalStorage,
   vslsApi: LiveShare,
@@ -63,70 +111,95 @@ export function* joinSpaceSaga(
 ): any {
   const userInfo = vslsApi.session.user!;
 
-  try {
-    const { members, sessions, readme } = yield call(
-      api.joinSpace,
-      name,
-      userInfo.displayName,
-      userInfo.emailAddress!,
-      key
-    );
+  const { space, error } = yield call(
+    api.joinSpace,
+    name,
+    userInfo.displayName,
+    userInfo.emailAddress!,
+    key
+  );
 
-    storage.joinSpace(name);
-
-    const isMuted = isSpaceMuted(name);
-    yield put(joinSpaceCompleted(name, members, sessions, isMuted, readme));
-
-    chatApi.onSpaceJoined(name);
-  } catch {
+  if (error) {
     yield put(joinSpaceFailed(name));
 
-    let response = yield call(
-      // @ts-ignore
-      window.showErrorMessage,
-      "This space is private and requires an invitation URL in order to join.",
-      PRIVATE_SPACE_RESPONSE
-    );
-    if (response === PRIVATE_SPACE_RESPONSE) {
-      const clipboardContents = yield call(
-        env.clipboard.readText.bind(env.clipboard)
-      );
-      response = yield call(window.showInputBox, {
-        placeHolder:
-          "Specify the invitation URL or key in order to join this space.",
-        value: clipboardContents
-      });
-
-      if (response) {
-        key = JOIN_URL_PATTERN.test(response)
-          ? (<any>JOIN_URL_PATTERN.exec(response)).groups.key
-          : response;
-        yield put(joinSpace(name, key));
-      }
+    switch (error) {
+      case api.JoinRequestError.MemberBlocked:
+        return window.showErrorMessage(
+          "You've been blocked from this space. Reach out to a founder if you believe this was an error."
+        );
+      case api.JoinRequestError.SpacePrivate:
+        return yield spawn(promptUserForInvitationUrl, name, key);
     }
   }
+
+  storage.joinSpace(name);
+
+  const {
+    members,
+    sessions,
+    readme,
+    founders,
+    isPrivate,
+    blocked_members
+  } = space;
+  const isMuted = isSpaceMuted(name);
+  yield put(
+    joinSpaceCompleted(
+      name,
+      members,
+      sessions,
+      isMuted,
+      readme,
+      founders,
+      isPrivate,
+      blocked_members
+    )
+  );
+
+  if (readme.trim() !== "") {
+    previewSpaceReadme(name);
+  }
+
+  chatApi.onSpaceJoined(name);
 }
 
-export function* leaveSpace(
+export function* leaveSpaceSaga(
   storage: LocalStorage,
   vslsApi: LiveShare,
-  { name }: any
+  { name, syncWithServer }: any
 ) {
   storage.leaveSpace(name);
 
-  yield call(
-    api.leaveSpace,
-    name,
-    vslsApi.session.user!.displayName,
-    vslsApi.session.user!.emailAddress!
-  );
+  if (syncWithServer) {
+    yield call(
+      api.leaveSpace,
+      name,
+      vslsApi.session.user!.displayName,
+      vslsApi.session.user!.emailAddress!
+    );
+  }
+
   yield put(leaveSpaceCompleted(name));
 }
 
 export function* updateSpaceSaga(
   vslsApi: LiveShare,
-  { name, members, sessions: newSessions, readme }: any
+  fileSystemProvider: ReadmeFileSystemProvider,
+  {
+    name,
+    members,
+    sessions: newSessions,
+    readme,
+    founders,
+    isPrivate,
+    blocked_members
+  }: any
 ) {
+  if (blocked_members.includes(vslsApi.session.user!.emailAddress!)) {
+    window.showErrorMessage(`You've been blocked from the "${name}" space.`);
+    return yield put(leaveSpace(name, false));
+  }
+
   const spaces = yield select(s => s.spaces);
   const {
     helpRequests,
@@ -136,7 +209,20 @@ export function* updateSpaceSaga(
     isLoading
   }: ISpace = spaces.find((c: any) => c.name === name);
 
-  yield put(joinSpaceCompleted(name, members, newSessions, isMuted!, readme));
+  yield put(
+    joinSpaceCompleted(
+      name,
+      members,
+      newSessions,
+      isMuted!,
+      readme,
+      founders,
+      isPrivate,
+      blocked_members
+    )
+  );
+
+  fileSystemProvider.updateSpaceReadme(name);
 
   if (isLoading || isSpaceMuted(name)) {
     return;
@@ -223,4 +309,20 @@ export function* makeSpacePublicSaga({ payload }: any) {
 
 export function* updateReadmeSaga({ payload }: any) {
   yield call(api.updateReadme, payload.space, payload.readme);
+}
+
+export function* promoteToFounderSaga({ payload }: any) {
+  yield call(api.promoteMember, payload.space, payload.member);
+}
+
+export function* demoteToMemberSaga({ payload }: any) {
+  yield call(api.demoteMember, payload.space, payload.member);
+}
+
+export function* blockMemberSaga({ payload }: any) {
+  yield call(api.blockMember, payload.space, payload.member);
+}
+
+export function* unblockMemberSaga({ payload }: any) {
+  yield call(api.unblockMember, payload.space, payload.member);
 }

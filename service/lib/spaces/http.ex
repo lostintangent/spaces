@@ -80,20 +80,12 @@ defmodule LiveShareSpaces.HTTP do
   end
 
   get "/v0/load" do
-    result =
-      if Map.has_key?(conn.params, "names") do
-        conn.params
-        |> Map.get("names")
-        |> String.split(",")
-        |> Enum.filter(&(String.length(&1) > 0))
-        |> Enum.map(&URI.decode(&1))
-        |> Enum.map(&LiveShareSpaces.SpaceStore.space(&1))
-      else
-        []
-      end
-
+    IO.inspect(conn.auth_context)
     conn
-    |> send_resp(:ok, Poison.encode!(result))
+    |> send_resp(
+      :ok,
+      Poison.encode!(LiveShareSpaces.SpaceStore.spaces_with_member(conn.auth_context.email))
+    )
   end
 
   get "/v0/top_spaces" do
@@ -103,15 +95,14 @@ defmodule LiveShareSpaces.HTTP do
     |> send_resp(:ok, Poison.encode!(result))
   end
 
-  defp join_space(space_name, member, conn) do
-    LiveShareSpaces.SpaceStore.add_member(space_name, member)
+  defp join_space(space, member, conn) do
+    updated_space = LiveShareSpaces.SpaceStore.add_member(space, member)
 
-    LiveShareSpaces.Events.send(:member_joined, space_name, %{
+    LiveShareSpaces.Events.send(:member_joined, updated_space["name"], %{
       email: member["email"]
     })
 
-    space = LiveShareSpaces.SpaceStore.space(space_name)
-    send_resp(conn, :ok, Poison.encode!(space))
+    send_resp(conn, :ok, Poison.encode!(updated_space))
   end
 
   post "/v0/join" do
@@ -119,19 +110,25 @@ defmodule LiveShareSpaces.HTTP do
 
     space = LiveShareSpaces.SpaceStore.space(space_name)
 
-    is_private = space["isPrivate"] === true
+    member_blocked = Enum.member?(space["blocked_members"], member["email"])
 
-    key =
-      if Map.has_key?(conn.body_params, "key") do
-        conn.body_params["key"]
-      else
-        ""
-      end
-
-    if is_private and key !== space["key"] do
-      send_resp(conn, 403, "Unauthorized")
+    if member_blocked do
+      send_resp(conn, :forbidden, "Forbidden")
     else
-      join_space(space_name, member, conn)
+      is_private = space["isPrivate"] === true
+
+      key =
+        if Map.has_key?(conn.body_params, "key") do
+          conn.body_params["key"]
+        else
+          ""
+        end
+
+      if is_private and key !== space["key"] do
+        send_resp(conn, :unauthorized, "Unauthorized")
+      else
+        join_space(space, member, conn)
+      end
     end
   end
 
@@ -222,6 +219,35 @@ defmodule LiveShareSpaces.HTTP do
   post "/v0/space/:name/readme" do
     name = URI.decode(name)
     LiveShareSpaces.SpaceStore.update_readme(name, conn.body_params["readme"])
+    send_resp(conn, :ok, Poison.encode!(%{}))
+  end
+
+  post "/v0/space/:name/promote_member" do
+    name = URI.decode(name)
+    %{"member" => member} = conn.body_params
+    LiveShareSpaces.SpaceStore.promote_member(name, member)
+    send_resp(conn, :ok, Poison.encode!(%{}))
+  end
+
+  post "/v0/space/:name/demote_member" do
+    name = URI.decode(name)
+    %{"member" => member} = conn.body_params
+    LiveShareSpaces.SpaceStore.demote_member(name, member)
+    send_resp(conn, :ok, Poison.encode!(%{}))
+  end
+
+  post "/v0/space/:name/block_member" do
+    name = URI.decode(name)
+    %{"member" => member} = conn.body_params
+    LiveShareSpaces.SpaceStore.block_member(name, member)
+    LiveShareSpaces.Events.send(:member_left, name, %{email: member})
+    send_resp(conn, :ok, Poison.encode!(%{}))
+  end
+
+  post "/v0/space/:name/unblock_member" do
+    name = URI.decode(name)
+    %{"member" => member} = conn.body_params
+    LiveShareSpaces.SpaceStore.unblock_member(name, member)
     send_resp(conn, :ok, Poison.encode!(%{}))
   end
 

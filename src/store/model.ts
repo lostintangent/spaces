@@ -7,6 +7,7 @@ export interface IStore {
 }
 
 export interface ISpace {
+  founders: string[];
   isLoading?: boolean;
   isLeaving?: boolean;
   isExpanded?: boolean;
@@ -18,6 +19,7 @@ export interface ISpace {
   helpRequests: ISession[];
   codeReviews: ISession[];
   broadcasts: ISession[];
+  blocked_members: string[];
   key: string;
   readme?: string;
 }
@@ -60,8 +62,4 @@ export enum SessionType {
 export interface IMemberStatus {
   email: string;
   status: Status;
-}
-
-export enum MemberTitles {
-  Founder = "Founder"
 }

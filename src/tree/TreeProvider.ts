@@ -64,7 +64,7 @@ class SpacesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
     } else {
       if (element instanceof SpaceNode) {
         return [
-          new SpaceMembersNode(element.space, this.extensionPath),
+          new SpaceMembersNode(element.space, this.api, this.extensionPath),
           new SpaceHelpRequestsNode(element.space, this.extensionPath),
           new SpaceBroadcastsNode(element.space, this.extensionPath),
           new SpaceCodeReviewsNode(element.space, this.extensionPath)

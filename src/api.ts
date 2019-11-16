@@ -54,6 +54,11 @@ export async function loadSpaces(spaces: string[]): Promise<ISpace[]> {
   return data;
 }
 
+export enum JoinRequestError {
+  MemberBlocked = 403,
+  SpacePrivate = 401
+}
+
 export async function joinSpace(
   space: string,
   name: string,
@@ -66,10 +71,9 @@ export async function joinSpace(
       createSpaceRequestBody(space, name, email, key)
     );
 
-    const { members, sessions } = data;
-    return { members, sessions };
-  } catch (e) {
-    throw e;
+    return { space: data, error: null };
+  } catch ({ response: { status } }) {
+    return { space: null, error: status };
   }
 }
 
@@ -123,6 +127,22 @@ export async function makePublic(space: string) {
 
 export async function updateReadme(space: string, readme: string) {
   return await postAsync(spaceEndpoint(space, "readme"), { readme });
+}
+
+export async function promoteMember(space: string, member: string) {
+  return await postAsync(spaceEndpoint(space, "promote_member"), { member });
+}
+
+export async function demoteMember(space: string, member: string) {
+  return await postAsync(spaceEndpoint(space, "demote_member"), { member });
+}
+
+export async function blockMember(space: string, member: string) {
+  return await postAsync(spaceEndpoint(space, "block_member"), { member });
+}
+
+export async function unblockMember(space: string, member: string) {
+  return await postAsync(spaceEndpoint(space, "unblock_member"), { member });
 }
 
 function createSpaceRequestBody(

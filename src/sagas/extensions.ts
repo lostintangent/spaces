@@ -1,18 +1,12 @@
-import { call, put, select, take } from "redux-saga/effects";
+import { call, put, take } from "redux-saga/effects";
 import { window } from "vscode";
 import {
   createExtensionsChannel,
   ExtensionEventType
 } from "../channels/extensions";
-import { config } from "../config";
+import { config, SuggestionBehavior } from "../config";
+import { LocalStorage } from "../storage/LocalStorage";
 import { joinSpace, leaveSpace } from "../store/actions";
-import { ISpace } from "../store/model";
-
-enum ContributionBehavior {
-  ignore = "ignore",
-  join = "join",
-  prompt = "prompt"
-}
 
 enum PromptResponse {
   dontAskAgain = "Don't Ask Again",
@@ -20,23 +14,23 @@ enum PromptResponse {
   leave = "Leave"
 }
 
-export function* extensionsSaga() {
+export function* extensionsSaga(storage: LocalStorage) {
   const extensionsChannel = createExtensionsChannel();
 
   while (true) {
     const { id, type, spaces } = yield take(extensionsChannel);
 
     const isAddedEvent = type === ExtensionEventType.extensionAdded;
-    const existingSpaces: ISpace[] = yield select(store => store.spaces);
+    const existingSpaces: string[] = storage.getSpaces();
 
     for (let space of spaces) {
-      const spaceExists = existingSpaces.find(c => c.name === space);
+      const spaceExists = existingSpaces.find(s => s === space);
 
       if (isAddedEvent && !spaceExists) {
-        const contributionBehavior = config.extensionContributionBehavior;
-        if (contributionBehavior === ContributionBehavior.ignore) {
+        const contributionBehavior = config.extensionSuggestionBehavior;
+        if (contributionBehavior === SuggestionBehavior.ignore) {
           continue;
-        } else if (contributionBehavior === ContributionBehavior.prompt) {
+        } else if (contributionBehavior === SuggestionBehavior.prompt) {
           const response = yield call(
             // @ts-ignore
             window.showInformationMessage,
@@ -48,14 +42,14 @@ export function* extensionsSaga() {
           if (!response) {
             continue;
           } else if (response === PromptResponse.dontAskAgain) {
-            config.extensionContributionBehavior = ContributionBehavior.ignore;
+            config.extensionSuggestionBehavior = SuggestionBehavior.ignore;
             continue;
           }
         }
 
         yield put(joinSpace(space));
 
-        if (contributionBehavior === ContributionBehavior.join) {
+        if (contributionBehavior === SuggestionBehavior.join) {
           const response = yield call(
             // @ts-ignore
             window.showInformationMessage,

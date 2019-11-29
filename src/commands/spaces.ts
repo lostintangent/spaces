@@ -285,7 +285,8 @@ export function registerSpaceCommands(
           title: "Joining audio call..."
         },
         async () => {
-          await callingService.connectToCall(md5(node!.name), true);
+          const callId = md5(`http://vsls.space/${node!.name}`);
+          await callingService.connectToCall(callId, true);
           commands.executeCommand("setContext", "spaces:audioCallActive", true);
         }
       );

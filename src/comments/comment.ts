@@ -1,3 +1,4 @@
+import * as redux from "redux";
 import * as vscode from "vscode";
 import { LiveShare } from "vsls";
 
@@ -5,7 +6,7 @@ let commentId = 1;
 
 class SpaceComment implements vscode.Comment {
   id: number;
-  label: string | undefined;
+
   constructor(
     public body: string | vscode.MarkdownString,
     public mode: vscode.CommentMode,
@@ -18,17 +19,22 @@ class SpaceComment implements vscode.Comment {
 
 function replyNote(reply: vscode.CommentReply, author: string) {
   let thread = reply.thread;
+
   let newComment = new SpaceComment(
     reply.text,
     vscode.CommentMode.Preview,
     { name: author },
     thread
   );
+
   thread.comments = [...thread.comments, newComment];
 }
 
-let controller;
-export function registerCommentController(liveShare: LiveShare) {
+let controller: vscode.CommentController;
+export function registerCommentController(
+  liveShare: LiveShare,
+  store: redux.Store
+) {
   controller = vscode.comments.createCommentController(
     "liveshare.spaces",
     "Live Share Spaces"
@@ -40,29 +46,10 @@ export function registerCommentController(liveShare: LiveShare) {
     }
   };
 
-  //controller.createCommentThread()
-
   vscode.commands.registerCommand(
     "liveshare.addSpaceComment",
     (reply: vscode.CommentReply) => {
       replyNote(reply, liveShare.session.user!.displayName);
-    }
-  );
-
-  vscode.commands.registerCommand(
-    "liveshare.saveSpaceComment",
-    (comment: SpaceComment) => {
-      if (!comment.parent) {
-        return;
-      }
-
-      comment.parent.comments = comment.parent.comments.map(cmt => {
-        if ((cmt as SpaceComment).id === comment.id) {
-          cmt.mode = vscode.CommentMode.Preview;
-        }
-
-        return cmt;
-      });
     }
   );
 
@@ -76,6 +63,23 @@ export function registerCommentController(liveShare: LiveShare) {
       comment.parent.comments = comment.parent.comments.map(cmt => {
         if ((cmt as SpaceComment).id === comment.id) {
           cmt.mode = vscode.CommentMode.Editing;
+        }
+
+        return cmt;
+      });
+    }
+  );
+
+  vscode.commands.registerCommand(
+    "liveshare.saveSpaceComment",
+    (comment: SpaceComment) => {
+      if (!comment.parent) {
+        return;
+      }
+
+      comment.parent.comments = comment.parent.comments.map(cmt => {
+        if ((cmt as SpaceComment).id === comment.id) {
+          cmt.mode = vscode.CommentMode.Preview;
         }
 
         return cmt;

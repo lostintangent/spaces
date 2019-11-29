@@ -6,6 +6,21 @@ export interface IStore {
   spaces: ISpace[];
 }
 
+export interface IComment {
+  body: string;
+  author: string;
+}
+
+export interface ICommentThread {
+  repository: string;
+  file: string;
+  startLine: number;
+  endLine: number;
+  startColumn: number;
+  endColumn: number;
+  comments: IComment[];
+}
+
 export interface ISpace {
   founders: string[];
   isLoading?: boolean;
@@ -22,6 +37,7 @@ export interface ISpace {
   blocked_members: string[];
   key: string;
   readme?: string;
+  commentThreads: ICommentThread[];
 }
 
 export interface IMember {

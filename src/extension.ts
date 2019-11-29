@@ -24,8 +24,6 @@ import { registerUriHandler } from "./uriHandler";
 let sessionStateChannel: ISessionStateChannel;
 
 export async function activate(context: ExtensionContext) {
-  await config.ensureLiveShareInsiders();
-
   const storage = new LocalStorage(context.globalState);
 
   const saga = createSagaMiddleware();

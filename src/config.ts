@@ -1,4 +1,4 @@
-import { commands, ConfigurationTarget, workspace } from "vscode";
+import { ConfigurationTarget, workspace } from "vscode";
 import { LOCAL_SERVICE_URL, PROD_SERVICE_URL } from "./constants";
 
 const liveShareConfig = workspace.getConfiguration("liveshare");
@@ -20,10 +20,6 @@ export enum SuggestionBehavior {
 export const config = {
   getConfig() {
     return workspace.getConfiguration("liveshare.spaces");
-  },
-
-  async ensureLiveShareInsiders() {
-    await commands.executeCommand("liveshare.enable.vscode-account.auth");
   },
 
   get extensionSuggestionBehavior() {

@@ -26,6 +26,10 @@ To begin joining spaces, simply perform the following steps:
 
    <img width="600px" src="https://user-images.githubusercontent.com/116461/64935390-e3cfe700-d805-11e9-9ce9-8f4d381a16d0.png" />
 
+1. In addition to text chat, you can also join a voice call with everyone in the space, by right-clicking the space node and selecting `Join Audio Call`
+
+   <img width="248" src="https://user-images.githubusercontent.com/116461/69844433-17c18280-1221-11ea-8845-4f101f16188c.png" />
+
 1. To onboard to the new space (e.g. learn any guidelines, get help tips or links to resources), open the space's "readme" by right-clicking the space and selecting `Open Readme` or clicking the "book icon" next to the space's name in the `Spaces` tree
 
    <img width="600px" src="https://user-images.githubusercontent.com/116461/64935834-25619180-d808-11e9-9293-245fb248d0b5.png" />
@@ -56,9 +60,23 @@ At any time, you can also mute a space (or all spaces) directly from the `Spaces
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/64935647-44135880-d807-11e9-8361-a8e49b889d1c.png" />
 
-## Communication
+## Space Chat
 
-If you'd like to start up an audio call, click the `Start audio call...` node in the Live Share `Session Details` tree in order to start a voice chat with everyone else in the session.
+When you're in a space, you can chat with its members in two ways: text and audio. To start chatting by text, simply click on the chat bubble icon next to the space's node in the `Spaces` view, or right-click the space node and select `Open Chat`.
+
+   <img width="211" src="https://user-images.githubusercontent.com/116461/69844405-f19be280-1220-11ea-8e0b-d9a1f2bfa299.png" />
+
+Additionally, you can also chat with individual members in a space, by hovering over their name and clicking on the chat bubble.
+
+   <img width="230" src="https://user-images.githubusercontent.com/116461/69844375-c7e2bb80-1220-11ea-8989-3a5a13dc3dd0.png" />
+
+In order to join into a voice chat, you can right-click the space node in the tree and select `Join Audio Call`.
+
+   <img width="248" src="https://user-images.githubusercontent.com/116461/69844433-17c18280-1221-11ea-8845-4f101f16188c.png" />
+
+## Session Chat
+
+Once you're in a Live Share session with someone, you can click the `Start audio call...` node in the Live Share `Session Details` tree in order to start a voice chat with everyone else in the session. This is a distinct call from the audio call for the entire space, since it's scoped to the members of the session.
 
    <img width="250px" src="https://user-images.githubusercontent.com/116461/62504105-eae9eb00-b7ab-11e9-92e8-9fc279b33dbf.png">
 

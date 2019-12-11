@@ -1,4 +1,3 @@
-import { IAuthStrategy } from "@vs/vscode-account";
 import { applyMiddleware, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { ExtensionContext, extensions } from "vscode";
@@ -25,8 +24,6 @@ import { registerUriHandler } from "./uriHandler";
 let sessionStateChannel: ISessionStateChannel;
 
 export async function activate(context: ExtensionContext) {
-  await config.ensureLiveShareInsiders();
-
   const storage = new LocalStorage(context.globalState);
 
   const saga = createSagaMiddleware();
@@ -35,12 +32,8 @@ export async function activate(context: ExtensionContext) {
   const api = (await getVslsApi())!;
   const chatApi = new ChatApi(api, store);
 
-  const lsAuthStrategies = (api as any).authStrategies || [];
-  const authStrategies = lsAuthStrategies.filter((strategy: IAuthStrategy) => {
-    const strategyName = strategy.name.toLowerCase();
-    return strategyName.indexOf("anonymous") === -1;
-  });
-  await auth.init(context, authStrategies);
+  const lsAuthStrategies = (api as any).authStrategies;
+  await auth.init(context, lsAuthStrategies || []);
 
   sessionStateChannel = createSessionStateChannel(api);
 

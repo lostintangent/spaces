@@ -1,9 +1,10 @@
 import { applyMiddleware, createStore } from "redux";
 import createSagaMiddleware from "redux-saga";
-import { ExtensionContext, extensions } from "vscode";
+import { ExtensionContext, extensions, window } from "vscode";
 import { getApi as getVslsApi } from "vsls";
 import { ICallingService } from "./audio/ICallingService";
 import { auth } from "./auth/auth";
+import { initializeBranchRegistry } from "./broadcast/branchRegistry";
 import {
   createSessionStateChannel,
   ISessionStateChannel
@@ -14,6 +15,8 @@ import { config } from "./config";
 import { registerContactProvider } from "./contacts/ContactProvider";
 import { ContactMessageManager } from "./contacts/messaging/ContactMessageManager";
 import { registerJoinRequest } from "./contacts/messaging/joinRequest";
+import { initGit } from "./git";
+import { log } from "./logger";
 import { registerFileSystemProvider } from "./readmeFileSystemProvider";
 import { rootSaga } from "./sagas";
 import { LocalStorage } from "./storage/LocalStorage";
@@ -24,6 +27,8 @@ import { registerUriHandler } from "./uriHandler";
 let sessionStateChannel: ISessionStateChannel;
 
 export async function activate(context: ExtensionContext) {
+  log.setLoggingChannel(window.createOutputChannel("Spaces"));
+
   const storage = new LocalStorage(context.globalState);
 
   const saga = createSagaMiddleware();
@@ -34,6 +39,9 @@ export async function activate(context: ExtensionContext) {
 
   const lsAuthStrategies = (api as any).authStrategies;
   await auth.init(context, lsAuthStrategies || []);
+
+  initializeBranchRegistry(context);
+  initGit();
 
   sessionStateChannel = createSessionStateChannel(api);
 

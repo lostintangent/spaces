@@ -28,6 +28,11 @@
   "contributes": {
     "commands": [
       {
+        "command": "liveshare.registerFeatureBranchForBroadcast",
+        "title": "Register Feature Branch for Broadcast",
+        "category": "Live Share Spaces"
+      },
+      {
         "command": "liveshare.joinSpace",
         "category": "Live Share Spaces",
         "title": "Join Space",
@@ -648,10 +653,11 @@
   "dependencies": {
     "@types/keytar": "^4.4.0",
     "@types/uuid": "^3.4.5",
-    "@vs/vscode-account": "^1.0.1304",
+    "@vs/vscode-account": "1.0.1418",
     "axios": "^0.19.0",
     "color-string": "^1.5.3",
     "elm": "^0.19.0-no-deps",
+    "git-user-name": "^2.0.0",
     "keytar": "^5.0.0-beta.0",
     "md5": "^2.2.1",
     "ramda": "^0.26.1",

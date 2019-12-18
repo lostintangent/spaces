@@ -99,7 +99,7 @@ const startListenOnBranchChange = async (store: Store) => {
 
   onBranchChange(async ([prevBranch, currentBranch]) => {
     if (prevBranch) {
-      await stopLiveShareSession();
+      await stopLiveShareSession(true);
     }
 
     if (!currentBranch) {
@@ -112,11 +112,11 @@ const startListenOnBranchChange = async (store: Store) => {
       return;
     }
 
-    if (!registryData.isExplicitellyStopped) {
+    if (!registryData.isExplicitlyStopped) {
       return await startLiveShareSession(store, registryData.spaceName);
     }
 
-    if (registryData && registryData.isExplicitellyStopped) {
+    if (registryData && registryData.isExplicitlyStopped) {
       const resumeButton = "Resume branch";
       const unregisterButton = "Unregister branch";
       const answer = await vscode.window.showInformationMessage(

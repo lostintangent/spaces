@@ -15,7 +15,8 @@ export class ChatApi {
 
   getSpaces(): string[] {
     const state: IStore = this.store.getState();
-    return state.spaces.map(c => c.name);
+    const { spaces } = state;
+    return spaces.spaces.map(c => c.name);
   }
 
   getUserInfo() {
@@ -32,7 +33,8 @@ export class ChatApi {
   getUsers() {
     const state: IStore = this.store.getState();
     let allMembers: IMember[] = [];
-    state.spaces.forEach(c => {
+    const { spaces } = state;
+    spaces.spaces.forEach(c => {
       allMembers = [...allMembers, ...c.members];
     });
     return allMembers;

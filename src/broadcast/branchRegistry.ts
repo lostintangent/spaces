@@ -1,17 +1,6 @@
 import * as vscode from "vscode";
-import { ISpace } from "../store/model";
-
-interface IRegistryData {
-  isRunning: boolean;
-  isExplicitellyStopped: boolean;
-  spaceName: string;
-}
-
-const defaultRegistryData: IRegistryData = {
-  isRunning: false,
-  isExplicitellyStopped: false,
-  spaceName: ""
-};
+import { IBranchBroadcastRecord, ISpace } from "../store/model";
+import { defaultBranchBroadcastRecord } from "../store/reducers/branchBroadcastsReducer";
 
 export interface IBranchRegistrationOptions {
   branchName: string;
@@ -26,14 +15,14 @@ export const initializeBranchRegistry = (context: vscode.ExtensionContext) => {
 
 export const getBranchRegistryRecord = (
   branchName: string
-): IRegistryData | undefined => {
+): IBranchBroadcastRecord | undefined => {
   if (!memento) {
     throw new Error(
       "The memento storage is not initialized. Please call `initializeBranchRegistry()` first."
     );
   }
 
-  const registryData = memento.get<IRegistryData | undefined>(
+  const registryData = memento.get<IBranchBroadcastRecord | undefined>(
     getBranchRecordName(branchName)
   );
 
@@ -42,7 +31,7 @@ export const getBranchRegistryRecord = (
   }
 
   return {
-    ...defaultRegistryData,
+    ...defaultBranchBroadcastRecord,
     ...registryData
   };
 };
@@ -67,7 +56,7 @@ export const registerBranch = async (options: IBranchRegistrationOptions) => {
   }
 
   memento.update(getBranchRecordName(branchName), {
-    ...defaultRegistryData,
+    ...defaultBranchBroadcastRecord,
     spaceName: space.name
   });
 };
@@ -102,7 +91,7 @@ export const setBranchRunning = (branchName: string) => {
   }
 
   const registryData = {
-    ...defaultRegistryData,
+    ...defaultBranchBroadcastRecord,
     ...getBranchRegistryRecord(branchName),
     isRunning: true
   };
@@ -118,7 +107,7 @@ export const setBranchStopped = (branchName: string) => {
   }
 
   const registryData = {
-    ...defaultRegistryData,
+    ...defaultBranchBroadcastRecord,
     ...getBranchRegistryRecord(branchName),
     isRunning: false
   };
@@ -134,7 +123,7 @@ export const setBranchExplicitelyStopped = (branchName: string) => {
   }
 
   const registryData = {
-    ...defaultRegistryData,
+    ...defaultBranchBroadcastRecord,
     ...getBranchRegistryRecord(branchName),
     isExplicitellyStopped: true
   };
@@ -150,7 +139,7 @@ export const resetBranchExplicitelyStopped = (branchName: string) => {
   }
 
   const registryData = {
-    ...defaultRegistryData,
+    ...defaultBranchBroadcastRecord,
     ...getBranchRegistryRecord(branchName),
     isExplicitellyStopped: false
   };
@@ -167,5 +156,5 @@ export const isBranchExplicitellyStopped = (branchName: string) => {
 
   const registryData = getBranchRegistryRecord(branchName);
 
-  return !!(registryData && registryData.isExplicitellyStopped);
+  return !!(registryData && registryData.isExplicitlyStopped);
 };

@@ -28,7 +28,7 @@ export function registerSessionCommands(
     } else {
       const { spaces } = <IStore>store.getState();
       space = await window.showQuickPick(
-        spaces.map(n => n.name, {
+        spaces.spaces.map(n => n.name, {
           placeHolder: "Select the space to make this request within"
         })
       );

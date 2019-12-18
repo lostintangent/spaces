@@ -68,6 +68,8 @@ const handleSessionEnd = async (store: Store) => {
   }
 };
 
+let isIgnoreEndEvent = false;
+
 export const initLiveShare = async (store: Store, api: LiveShare) => {
   lsAPI = api;
 
@@ -76,11 +78,17 @@ export const initLiveShare = async (store: Store, api: LiveShare) => {
       return handleSessionStart(store);
     }
 
+    if (isIgnoreEndEvent) {
+      return;
+    }
+
     return await handleSessionEnd(store);
   });
 };
 
-export const stopLiveShareSession = async () => {
+export const stopLiveShareSession = async (
+  isIgnoreSessionEndEvent: boolean
+) => {
   if (!lsAPI) {
     throw new Error("No Live Share API found. Call `initLiveShare` first.");
   }
@@ -89,6 +97,12 @@ export const stopLiveShareSession = async () => {
     return;
   }
 
-  const result = await lsAPI.end();
-  console.log(result);
+  isIgnoreEndEvent = isIgnoreSessionEndEvent;
+
+  try {
+    const result = await lsAPI.end();
+    console.log(result);
+  } finally {
+    isIgnoreEndEvent = false;
+  }
 };

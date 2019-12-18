@@ -13,6 +13,7 @@ import {
   isBranchExist,
   switchToTheBranch
 } from "../../git";
+import { startLiveShareSession } from "../../liveshare";
 import { ISpace, IStore } from "../../store/model";
 import { Branch } from "../../typings/git";
 import { randomInt } from "../../utils/randomInt";
@@ -59,6 +60,7 @@ export const spacesToPickerOptions = (spaces: ISpace[]) => {
 };
 
 const registerTheBranchAndAskToSwitch = async (
+  store: Store,
   branchName: string,
   space: ISpace
 ) => {
@@ -77,7 +79,14 @@ const registerTheBranchAndAskToSwitch = async (
   );
 
   if (answer === startButton) {
-    await switchToTheBranch(branchName);
+    // If git branches need to be switched, do that.
+    // The LS session start/end will be handled automatically.
+    if (!currentBranch || currentBranch.name! !== branchName) {
+      await switchToTheBranch(branchName);
+      // if already on required branch, start LS session
+    } else {
+      await startLiveShareSession(store, space.name);
+    }
   }
 };
 
@@ -136,7 +145,7 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
 
     const { spaces } = <IStore>store.getState();
     const spacesQuestionResult = await vscode.window.showQuickPick(
-      spacesToPickerOptions(spaces),
+      spacesToPickerOptions(spaces.spaces),
       {
         placeHolder: "Select a space to broadcast to"
       }
@@ -153,7 +162,7 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
      */
     const isBranchPresent = await isBranchExist(featureBranch);
     if (isBranchPresent) {
-      return await registerTheBranchAndAskToSwitch(featureBranch, space);
+      return await registerTheBranchAndAskToSwitch(store, featureBranch, space);
     }
 
     /**
@@ -185,6 +194,6 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
       fromBranch
     );
 
-    return await registerTheBranchAndAskToSwitch(featureBranch, space);
+    return await registerTheBranchAndAskToSwitch(store, featureBranch, space);
   };
 };

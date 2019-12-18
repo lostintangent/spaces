@@ -63,17 +63,19 @@ export function* loadSpacesSaga(
       isPrivate,
       blocked_members
     } = yield take(channel);
-    yield put(<any>(
-      updateSpace(
-        name,
-        members,
-        sessions,
-        readme,
-        founders,
-        isPrivate,
-        blocked_members
+    yield put(
+      <any>(
+        updateSpace(
+          name,
+          members,
+          sessions,
+          readme,
+          founders,
+          isPrivate,
+          blocked_members
+        )
       )
-    ));
+    );
   }
 }
 

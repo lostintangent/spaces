@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { IRegisterBranchOptions } from "../broadcast/registerBranch";
+import { IRegisterBranchOptions } from "../broadcast/registerBranchForBroadcast";
 import { createCommand } from "./createCommand";
 
 export async function registerCommand(

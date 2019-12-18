@@ -4,7 +4,7 @@ import * as api from "../api";
 import { log } from "../logger";
 import { LocalStorage } from "../storage/LocalStorage";
 import { activeSessionEnded, sessionCreated } from "../store/actions";
-import { ISession } from "../store/model";
+import { ISession, IStore } from "../store/model";
 import { getCurrentSessionUrl } from "../utils";
 
 export function* createSession(
@@ -36,7 +36,7 @@ export function* createSession(
 }
 
 export function* endActiveSession(storage: LocalStorage) {
-  const activeSession = yield select(s => {
+  const activeSession = yield select((s: IStore) => {
     return s.spaces.activeSession;
   });
 

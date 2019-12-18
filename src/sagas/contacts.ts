@@ -7,6 +7,7 @@ import {
   ACTION_LOAD_SPACES_COMPLETED,
   statusesUpdated
 } from "../store/actions";
+import { IStore } from "../store/model";
 import { toStatus, uniqueMemberEmails } from "../utils";
 
 export const REBUILD_CONTACTS_ACTIONS = [
@@ -19,7 +20,9 @@ export function* rebuildContacts(api: LiveShare) {
   let contactChannel;
 
   try {
-    const spaces = yield select(s => s.spaces.spaces);
+    const spaces = yield select((s: IStore) => {
+      return s.spaces.spaces;
+    });
     const members = uniqueMemberEmails(spaces);
 
     const observedContacts = yield call(api.getContacts.bind(api), members);

@@ -1,10 +1,11 @@
 import { Store } from "redux";
 import * as vscode from "vscode";
-import {
-  isBranchAlreadyRegistered,
-  registerBranch,
-  unregisterBranch
-} from "../../broadcast/branchRegistry";
+import { Access } from "vsls";
+// import {
+//   isBranchAlreadyRegistered,
+//   registerBranch,
+//   unregisterBranch
+// } from "../../broadcast/branchRegistry";
 import { CommandId } from "../../constants";
 import {
   createBranch,
@@ -13,10 +14,15 @@ import {
   isBranchExist,
   switchToTheBranch
 } from "../../git";
-import { startLiveShareSession } from "../../liveshare";
+import {
+  addBranchBroadcast,
+  getBranchBroadcast,
+  removeBranchBroadcast
+} from "../../store/actions/branchBroadcastsActions";
 import { ISpace, IStore } from "../../store/model";
 import { Branch } from "../../typings/git";
 import { randomInt } from "../../utils/randomInt";
+import { startLiveShareSession } from "./liveshare";
 
 export interface IRegisterBranchOptions {}
 
@@ -64,7 +70,12 @@ const registerTheBranchAndAskToSwitch = async (
   branchName: string,
   space: ISpace
 ) => {
-  await registerBranch({ branchName, space });
+  await addBranchBroadcast({
+    branchName,
+    spaceName: space.name,
+    description: "",
+    access: Access.Owner
+  });
 
   const currentBranch = getCurrentBranch();
 
@@ -113,7 +124,8 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
 
     const featureBranch = branch.trim().toLowerCase();
 
-    if (isBranchAlreadyRegistered(featureBranch)) {
+    const existingBranchBroadcast = getBranchBroadcast(featureBranch);
+    if (existingBranchBroadcast) {
       const yesButton = "Register again";
       const answer = await vscode.window.showInformationMessage(
         `The branch *${featureBranch}* already registered for broadcast, do you want to register it again?`,
@@ -123,7 +135,7 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
         return;
       }
 
-      await unregisterBranch(featureBranch);
+      await removeBranchBroadcast(featureBranch);
     }
 
     /**

@@ -1,16 +1,14 @@
 import { Store } from "redux";
 import * as vscode from "vscode";
 import { Access, LiveShare } from "vsls";
+import { getCurrentBranch } from "../../git";
+import { createSession } from "../../store/actions";
 import {
-  getBranchRegistryRecord,
-  isBranchExplicitellyStopped,
-  resetBranchExplicitelyStopped,
-  setBranchExplicitelyStopped,
-  unregisterBranch
-} from "../broadcast/branchRegistry";
-import { getCurrentBranch } from "../git";
-import { createSession } from "../store/actions";
-import { SessionType } from "../store/model";
+  getBranchBroadcast,
+  removeBranchBroadcast,
+  setBranchBroadcastExplicitlyStopped
+} from "../../store/actions/branchBroadcastsActions";
+import { SessionType } from "../../store/model";
 
 let lsAPI: LiveShare | null = null;
 
@@ -23,7 +21,7 @@ export interface IStartLiveShareSessionOptions {
 
 export const startLiveShareSession = (store: Store, spaceName: string) => {
   store.dispatch(
-    <any>createSession(spaceName, SessionType.Broadcast, "", Access.Owner)
+    createSession(spaceName, SessionType.Broadcast, "", Access.Owner)
   );
 };
 
@@ -34,8 +32,9 @@ const handleSessionStart = (store: Store) => {
     return;
   }
 
-  if (isBranchExplicitellyStopped(currentBranch.name!)) {
-    resetBranchExplicitelyStopped(currentBranch.name!);
+  const existingBranchBroadcast = getBranchBroadcast(currentBranch.name!);
+  if (existingBranchBroadcast && existingBranchBroadcast.isExplicitlyStopped) {
+    setBranchBroadcastExplicitlyStopped(currentBranch.name!, false);
   }
 };
 
@@ -44,7 +43,7 @@ const handleSessionEnd = async (store: Store) => {
   if (!currentBranch) {
     throw new Error("Branch is running but no current branch found.");
   }
-  setBranchExplicitelyStopped(currentBranch.name!);
+  setBranchBroadcastExplicitlyStopped(currentBranch.name!, true);
   const unregisterButton = "Unregister branch";
   const resumeButton = "Resume branch";
   const answer = await vscode.window.showInformationMessage(
@@ -54,12 +53,12 @@ const handleSessionEnd = async (store: Store) => {
   );
 
   if (answer === unregisterButton) {
-    unregisterBranch(currentBranch.name!);
+    removeBranchBroadcast(currentBranch.name!);
   }
 
   if (answer === resumeButton) {
-    resetBranchExplicitelyStopped(currentBranch.name!);
-    const branchRegistryData = getBranchRegistryRecord(currentBranch.name!);
+    setBranchBroadcastExplicitlyStopped(currentBranch.name!, false);
+    const branchRegistryData = getBranchBroadcast(currentBranch.name!);
     if (!branchRegistryData) {
       return;
     }

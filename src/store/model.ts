@@ -1,3 +1,4 @@
+import { Access } from "vsls";
 import { IAuthenticationState } from "./reducers/authenticationReducer";
 import { IBranchBroadcastsState } from "./reducers/branchBroadcastsReducer";
 import { ISpacesState } from "./reducers/spacesReducer";
@@ -75,6 +76,8 @@ export interface IBranchBroadcastRecord {
   isExplicitlyStopped: boolean;
   spaceName: string;
   branchName: string;
+  description: string;
+  access: Access;
 }
 
 export enum SessionType {

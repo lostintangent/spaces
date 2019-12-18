@@ -1,13 +1,5 @@
-import { Store } from "redux";
 import * as vscode from "vscode";
-import {
-  getBranchRegistryRecord,
-  resetBranchExplicitelyStopped,
-  unregisterBranch
-} from "../broadcast/branchRegistry";
-import { startLiveShareSession, stopLiveShareSession } from "../liveshare";
 import { API, GitExtension } from "../typings/git";
-import { onBranchChange } from "./onBranchChange";
 
 export const getUserName = require("git-user-name") as () => string | undefined;
 
@@ -29,7 +21,7 @@ export const isBranchExist = async (branchName: string) => {
   }
 };
 
-export const initGit = () => {
+export const initializeGit = () => {
   let gitExtension = vscode.extensions.getExtension<GitExtension>("vscode.git");
 
   if (!gitExtension) {
@@ -90,57 +82,4 @@ export const switchToTheBranch = async (branchName: string) => {
 
   const repo = gitAPI.repositories[0];
   await repo.checkout(branchName);
-};
-
-const startListenOnBranchChange = async (store: Store) => {
-  if (!gitAPI) {
-    throw new Error("Initialize Git API first.");
-  }
-
-  onBranchChange(async ([prevBranch, currentBranch]) => {
-    if (prevBranch) {
-      await stopLiveShareSession(true);
-    }
-
-    if (!currentBranch) {
-      return;
-    }
-
-    const registryData = getBranchRegistryRecord(currentBranch);
-
-    if (!registryData) {
-      return;
-    }
-
-    if (!registryData.isExplicitlyStopped) {
-      return await startLiveShareSession(store, registryData.spaceName);
-    }
-
-    if (registryData && registryData.isExplicitlyStopped) {
-      const resumeButton = "Resume branch";
-      const unregisterButton = "Unregister branch";
-      const answer = await vscode.window.showInformationMessage(
-        "This branch is registered for broadcast but explicitely paused. Do you want to resume?",
-        unregisterButton,
-        resumeButton
-      );
-
-      if (!answer) {
-        return;
-      }
-
-      if (answer === resumeButton) {
-        resetBranchExplicitelyStopped(currentBranch);
-        return await startLiveShareSession(store, registryData.spaceName);
-      }
-
-      if (answer === unregisterButton) {
-        return unregisterBranch(currentBranch);
-      }
-    }
-  });
-};
-
-export const initializeGitListeners = async (store: Store) => {
-  await startListenOnBranchChange(store);
 };

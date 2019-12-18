@@ -1,4 +1,6 @@
-import { IBranchBroadcastRecord } from "../model";
+import { Access } from "vsls";
+import { store } from "../../store";
+import { IBranchBroadcastRecord, IStore } from "../model";
 
 export const BROADCAST_BRANCH_FETCH_DATA = "BROADCAST_BRANCH_FETCH_DATA";
 export const BROADCAST_BRANCH_ADD_BRANCH = "BROADCAST_BRANCH_ADD_BRANCH";
@@ -26,9 +28,11 @@ export const setBranchBroadcastDataAction = (
 
 export const addBranchBroadcastAction = (
   branchName: string,
-  spaceName: string
+  spaceName: string,
+  description: string,
+  access: Access
 ) => {
-  const payload = { branchName, spaceName };
+  const payload = { branchName, spaceName, description, access };
 
   return action<typeof BROADCAST_BRANCH_ADD_BRANCH, typeof payload>(
     BROADCAST_BRANCH_ADD_BRANCH,
@@ -72,3 +76,45 @@ export type AcceptedBranchBroadcastActions =
   | ReturnType<typeof removeBranchBroadcastAction>
   | ReturnType<typeof setBranchBroadcastExplicitlyStoppedAction>
   | ReturnType<typeof removeAllBranchBroadcastsAction>;
+
+interface IAddBranchBroadcastOptions {
+  branchName: string;
+  spaceName: string;
+  description: string;
+  access: Access;
+}
+
+export const addBranchBroadcast = (options: IAddBranchBroadcastOptions) => {
+  const { branchName, spaceName, description, access } = options;
+
+  store.dispatch(
+    addBranchBroadcastAction(branchName, spaceName, description, access)
+  );
+};
+
+export const removeBranchBroadcast = (branchName: string) => {
+  store.dispatch(removeBranchBroadcastAction(branchName));
+};
+
+export const setBranchBroadcastExplicitlyStopped = (
+  branchName: string,
+  isExplicitlyStopped: boolean
+) => {
+  store.dispatch(
+    setBranchBroadcastExplicitlyStoppedAction(branchName, isExplicitlyStopped)
+  );
+};
+
+export const getBranchBroadcast = (
+  branchName: string
+): IBranchBroadcastRecord | undefined => {
+  const state = store.getState() as IStore;
+  const { broadcastBranches } = state;
+  const { broadcasts } = broadcastBranches;
+
+  const result = broadcasts.find(broadcast => {
+    return broadcast.branchName === branchName;
+  });
+
+  return result;
+};

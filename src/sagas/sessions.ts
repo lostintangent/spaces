@@ -36,7 +36,9 @@ export function* createSession(
 }
 
 export function* endActiveSession(storage: LocalStorage) {
-  const activeSession = yield select(s => s.activeSession);
+  const activeSession = yield select(s => {
+    return s.spaces.activeSession;
+  });
 
   if (activeSession) {
     yield call(

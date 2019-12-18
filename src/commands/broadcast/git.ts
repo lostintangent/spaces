@@ -1,5 +1,6 @@
 import { Store } from "redux";
 import * as vscode from "vscode";
+import { ISessionStateChannel } from "../../channels/sessionState";
 import { onBranchChange } from "../../git/onBranchChange";
 import {
   getBranchBroadcast,
@@ -8,10 +9,13 @@ import {
 } from "../../store/actions/branchBroadcastsActions";
 import { startLiveShareSession, stopLiveShareSession } from "./liveshare";
 
-export const startListenOnBranchChange = async (store: Store) => {
+export const startListenOnBranchChange = async (
+  store: Store,
+  sessionStateChannel: ISessionStateChannel
+) => {
   onBranchChange(async ([prevBranch, currentBranch]) => {
     if (prevBranch) {
-      await stopLiveShareSession(true);
+      await stopLiveShareSession(true, sessionStateChannel);
     }
 
     if (!currentBranch) {

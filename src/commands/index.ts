@@ -20,5 +20,5 @@ export async function registerCommands(
   registerSpaceCommands(api, store, storage, extensionPath, callingService);
   registerSessionCommands(store, sessionStateChannel);
   registerInvitationCommands(api, joinRequest);
-  await registerBranchBroadcastCommands(api, store);
+  await registerBranchBroadcastCommands(api, store, sessionStateChannel);
 }

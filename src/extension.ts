@@ -81,5 +81,5 @@ export async function activate(context: ExtensionContext) {
 }
 
 export async function deactivate() {
-  return sessionStateChannel.endActiveSession();
+  return await sessionStateChannel.endActiveSession();
 }

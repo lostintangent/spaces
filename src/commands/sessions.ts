@@ -77,7 +77,7 @@ export function registerSessionCommands(
   commands.registerCommand(
     `${EXTENSION_NAME}.endSession`,
     async (node: SessionNode) => {
-      sessionStateChannel.endActiveSession();
+      await sessionStateChannel.endActiveSession();
     }
   );
 }

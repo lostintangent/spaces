@@ -19,7 +19,7 @@ export function* rebuildContacts(api: LiveShare) {
   let contactChannel;
 
   try {
-    const spaces = yield select(s => s.spaces);
+    const spaces = yield select(s => s.spaces.spaces);
     const members = uniqueMemberEmails(spaces);
 
     const observedContacts = yield call(api.getContacts.bind(api), members);

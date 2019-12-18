@@ -1,6 +1,7 @@
 import { Store } from "redux";
 import * as vscode from "vscode";
 import { Access, LiveShare } from "vsls";
+import { ISessionStateChannel } from "../../channels/sessionState";
 import { getCurrentBranch } from "../../git";
 import { createSession } from "../../store/actions";
 import {
@@ -86,21 +87,25 @@ export const initLiveShare = async (store: Store, api: LiveShare) => {
 };
 
 export const stopLiveShareSession = async (
-  isIgnoreSessionEndEvent: boolean
+  isIgnoreSessionEndEvent: boolean,
+  sessionStateChannel: ISessionStateChannel
 ) => {
-  if (!lsAPI) {
-    throw new Error("No Live Share API found. Call `initLiveShare` first.");
-  }
+  // if (!lsAPI) {
+  //   throw new Error("No Live Share API found. Call `initLiveShare` first.");
+  // }
 
-  if (!lsAPI.session.id) {
-    return;
-  }
+  // if (!lsAPI.session.id) {
+  //   return;
+  // }
 
   isIgnoreEndEvent = isIgnoreSessionEndEvent;
 
   try {
-    const result = await lsAPI.end();
-    console.log(result);
+    await sessionStateChannel.endActiveSession();
+    // const result = await lsAPI.end();
+    // console.log(result);
+  } catch (e) {
+    console.log(e);
   } finally {
     isIgnoreEndEvent = false;
   }

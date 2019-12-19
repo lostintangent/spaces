@@ -156,10 +156,10 @@
   dependencies:
     "@types/node" "*"
 
-"@vs/vscode-account@1.0.1277-g7fe5b925e8":
-  version "1.0.1277-g7fe5b925e8"
-  resolved "https://devdiv.pkgs.visualstudio.com/_packaging/VS/npm/registry/@vs/vscode-account/-/vscode-account-1.0.1277-g7fe5b925e8.tgz#836be71bf6b2b2743f8a255618d958b6ad31432c"
-  integrity sha1-g2vnG/aysnQ/iiVWGNlYtq0xQyw=
+"@vs/vscode-account@1.0.1418":
+  version "1.0.1418"
+  resolved "https://devdiv.pkgs.visualstudio.com/_packaging/VS/npm/registry/@vs/vscode-account/-/vscode-account-1.0.1418.tgz#4687d563a7d387e55ac2a98b7e635e47aaead3a3"
+  integrity sha1-RofVY6fTh+VawqmLfmNeR6rq06M=
   dependencies:
     "@types/atob" "^2.1.2"
     "@types/jwt-decode" "^2.2.1"

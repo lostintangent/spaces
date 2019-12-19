@@ -1,24 +1,31 @@
 import { buffers, eventChannel } from "redux-saga";
 import { LiveShare, Session } from "vsls";
+import { ChatApi } from "../chatApi";
 import { onPropertyChanged } from "../utils";
 
 const isSignedIn = (api: LiveShare) => !!api.session.user;
 
-export function createAuthenticationChannel(api: LiveShare) {
+export function createAuthenticationChannel(
+  vslsApi: LiveShare,
+  chatApi: ChatApi
+) {
   let originalSessionObject: Session;
+
   return eventChannel((emit: Function) => {
-    originalSessionObject = api.session;
+    originalSessionObject = vslsApi.session;
 
     // @ts-ignore (session is a readonly property)
-    api.session = onPropertyChanged(api.session, "user", () => {
-      emit(isSignedIn(api));
+    vslsApi.session = onPropertyChanged(vslsApi.session, "user", () => {
+      chatApi.onUserChanged(vslsApi.session.user);
+      emit(isSignedIn(vslsApi));
     });
 
-    emit(isSignedIn(api));
+    chatApi.onUserChanged(vslsApi.session.user);
+    emit(isSignedIn(vslsApi));
 
     return () => {
       // @ts-ignore (session is a readonly property)
-      api.session = originalSessionObject;
+      vslsApi.session = originalSessionObject;
     };
   }, buffers.sliding(1));
 }

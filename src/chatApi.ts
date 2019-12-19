@@ -4,8 +4,9 @@ import * as api from "./api";
 import { IMember, IStore } from "./store/model";
 import ws from "./ws";
 
-// This is the interface for the integration with the Team Chat extension
+// This is the interface for the integration with the Live Share Chat extension
 export class ChatApi {
+  userChangedCallback: any;
   messageCallback: any;
   infoMessageCallback: any;
   spaceCallback: any;
@@ -46,6 +47,10 @@ export class ChatApi {
     ws.sendMessage(spaceName, content);
   }
 
+  setUserChangedCallback(callback: any) {
+    this.userChangedCallback = callback;
+  }
+
   setMessageCallback(callback: any) {
     this.messageCallback = callback;
   }
@@ -60,6 +65,15 @@ export class ChatApi {
 
   setSpaceCallback(callback: any) {
     this.spaceCallback = callback;
+  }
+
+  onUserChanged(userInfo: vsls.UserInfo | null) {
+    if (this.userChangedCallback && userInfo) {
+      this.userChangedCallback({
+        name: userInfo.displayName,
+        email: userInfo.emailAddress
+      });
+    }
   }
 
   onMessageReceived(name: string, messages: any) {

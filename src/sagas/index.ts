@@ -122,7 +122,7 @@ export function* rootSaga(
   sessionStateChannel: ISessionStateChannel,
   fileSystemProvider: ReadmeFileSystemProvider
 ) {
-  const authChannel = createAuthenticationChannel(vslsApi);
+  const authChannel = createAuthenticationChannel(vslsApi, chatApi);
   let tasks = [];
   while (true) {
     const isSignedIn = yield take(authChannel);

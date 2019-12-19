@@ -84,13 +84,17 @@ const branchBroadcastsReducerInternal: redux.Reducer<
 
       const record = broadcasts[recordIndex];
 
+      const before = broadcasts.slice(0, recordIndex);
+
+      const after = broadcasts.slice(recordIndex + 1);
+
       const newBroadcasts = [
-        ...broadcasts.slice(0, recordIndex),
+        ...before,
         {
           ...record,
           isExplicitlyStopped
         },
-        ...broadcasts.slice(recordIndex)
+        ...after
       ];
 
       return {

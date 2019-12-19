@@ -4,7 +4,8 @@ import { ISessionStateChannel } from "../../channels/sessionState";
 import { registerCommand } from "../common/registerCommand";
 import { startListenOnBranchChange } from "./git";
 import { initLiveShare } from "./liveshare";
-import { registerBranchForBroadcastFactory } from "./registerBranchForBroadcast";
+import { registerBranchForBroadcastCommandFactory } from "./registerBranchBroadcastCommand";
+import { unregisterBranchBroadcastCommandFactory } from "./unregisterBranchBroadcastCommand";
 
 export const registerBranchBroadcastCommands = async (
   api: LiveShare,
@@ -15,7 +16,12 @@ export const registerBranchBroadcastCommands = async (
   await startListenOnBranchChange(store, sessionStateChannel);
 
   registerCommand(
-    "liveshare.registerFeatureBranchForBroadcast",
-    registerBranchForBroadcastFactory(store)
+    "liveshare.registerBranchBroadcast",
+    registerBranchForBroadcastCommandFactory(store)
+  );
+
+  registerCommand(
+    "liveshare.unregisterBranchBroadcast",
+    unregisterBranchBroadcastCommandFactory(sessionStateChannel)
   );
 };

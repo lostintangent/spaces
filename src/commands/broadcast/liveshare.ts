@@ -3,13 +3,14 @@ import * as vscode from "vscode";
 import { Access, LiveShare } from "vsls";
 import { ISessionStateChannel } from "../../channels/sessionState";
 import { getCurrentBranch } from "../../git";
+import { log } from "../../logger";
 import { createSession } from "../../store/actions";
 import {
   getBranchBroadcast,
   removeBranchBroadcast,
   setBranchBroadcastExplicitlyStopped
 } from "../../store/actions/branchBroadcastsActions";
-import { SessionType } from "../../store/model";
+import { IBranchBroadcastRecord, SessionType } from "../../store/model";
 
 let lsAPI: LiveShare | null = null;
 
@@ -20,9 +21,13 @@ export interface IStartLiveShareSessionOptions {
   access: Access;
 }
 
-export const startLiveShareSession = (store: Store, spaceName: string) => {
+export const startLiveShareSession = (
+  store: Store,
+  branchRecord: IBranchBroadcastRecord
+) => {
+  const { spaceName, description } = branchRecord;
   store.dispatch(
-    createSession(spaceName, SessionType.Broadcast, "", Access.Owner)
+    createSession(spaceName, SessionType.Broadcast, description, Access.Owner)
   );
 };
 
@@ -64,7 +69,7 @@ const handleSessionEnd = async (store: Store) => {
       return;
     }
 
-    startLiveShareSession(store, branchRegistryData.spaceName);
+    startLiveShareSession(store, branchRegistryData);
   }
 };
 
@@ -90,22 +95,12 @@ export const stopLiveShareSession = async (
   isIgnoreSessionEndEvent: boolean,
   sessionStateChannel: ISessionStateChannel
 ) => {
-  // if (!lsAPI) {
-  //   throw new Error("No Live Share API found. Call `initLiveShare` first.");
-  // }
-
-  // if (!lsAPI.session.id) {
-  //   return;
-  // }
-
   isIgnoreEndEvent = isIgnoreSessionEndEvent;
 
   try {
     await sessionStateChannel.endActiveSession();
-    // const result = await lsAPI.end();
-    // console.log(result);
   } catch (e) {
-    console.log(e);
+    log.info(e);
   } finally {
     isIgnoreEndEvent = false;
   }

@@ -28,7 +28,7 @@ export const startListenOnBranchChange = async (
     }
 
     if (!registryData.isExplicitlyStopped) {
-      return await startLiveShareSession(store, registryData.spaceName);
+      return await startLiveShareSession(store, registryData);
     }
 
     if (registryData && registryData.isExplicitlyStopped) {
@@ -46,7 +46,7 @@ export const startListenOnBranchChange = async (
 
       if (answer === resumeButton) {
         setBranchBroadcastExplicitlyStopped(currentBranch, false);
-        return await startLiveShareSession(store, registryData.spaceName);
+        return await startLiveShareSession(store, registryData);
       }
 
       if (answer === unregisterButton) {

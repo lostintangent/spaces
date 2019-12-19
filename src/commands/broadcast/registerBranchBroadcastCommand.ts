@@ -1,11 +1,6 @@
 import { Store } from "redux";
 import * as vscode from "vscode";
 import { Access } from "vsls";
-// import {
-//   isBranchAlreadyRegistered,
-//   registerBranch,
-//   unregisterBranch
-// } from "../../broadcast/branchRegistry";
 import { CommandId } from "../../constants";
 import {
   createBranch,
@@ -68,12 +63,13 @@ export const spacesToPickerOptions = (spaces: ISpace[]) => {
 const registerTheBranchAndAskToSwitch = async (
   store: Store,
   branchName: string,
+  description: string | undefined,
   space: ISpace
 ) => {
   await addBranchBroadcast({
     branchName,
     spaceName: space.name,
-    description: "",
+    description: description || "",
     access: Access.Owner
   });
 
@@ -96,12 +92,18 @@ const registerTheBranchAndAskToSwitch = async (
       await switchToTheBranch(branchName);
       // if already on required branch, start LS session
     } else {
-      await startLiveShareSession(store, space.name);
+      const branchRecord = getBranchBroadcast(branchName);
+
+      if (!branchRecord) {
+        throw new Error("Brnach is registered but not found.");
+      }
+
+      await startLiveShareSession(store, branchRecord);
     }
   }
 };
 
-export const registerBranchForBroadcastFactory = (store: Store) => {
+export const registerBranchForBroadcastCommandFactory = (store: Store) => {
   return async (options: IRegisterBranchOptions = {}) => {
     const currentBranch = getCurrentBranch();
 
@@ -110,16 +112,15 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
     }
 
     const [value, selection] = getBranchName(currentBranch);
-    const inputMessage = "Specify Feature Branch for Broadcast";
+    const inputMessage = "Select Branch for Broadcast";
     const branch = await vscode.window.showInputBox({
-      placeHolder: "",
       prompt: inputMessage,
       value,
       valueSelection: selection
     });
 
     if (!branch) {
-      throw new Error("No feature branch specified.");
+      throw new Error("No branch selected.");
     }
 
     const featureBranch = branch.trim().toLowerCase();
@@ -155,6 +156,10 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
       }
     }
 
+    const description = await vscode.window.showInputBox({
+      prompt: "Describe what you want to build in this branch"
+    });
+
     const { spaces } = <IStore>store.getState();
     const spacesQuestionResult = await vscode.window.showQuickPick(
       spacesToPickerOptions(spaces.spaces),
@@ -174,7 +179,12 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
      */
     const isBranchPresent = await isBranchExist(featureBranch);
     if (isBranchPresent) {
-      return await registerTheBranchAndAskToSwitch(store, featureBranch, space);
+      return await registerTheBranchAndAskToSwitch(
+        store,
+        featureBranch,
+        description,
+        space
+      );
     }
 
     /**
@@ -206,6 +216,11 @@ export const registerBranchForBroadcastFactory = (store: Store) => {
       fromBranch
     );
 
-    return await registerTheBranchAndAskToSwitch(store, featureBranch, space);
+    return await registerTheBranchAndAskToSwitch(
+      store,
+      featureBranch,
+      description,
+      space
+    );
   };
 };

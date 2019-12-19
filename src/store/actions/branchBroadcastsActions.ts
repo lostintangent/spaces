@@ -118,3 +118,17 @@ export const getBranchBroadcast = (
 
   return result;
 };
+
+export const getBranchBroadcasts = (): IBranchBroadcastRecord[] => {
+  const state = store.getState() as IStore;
+  const { broadcastBranches } = state;
+  const { broadcasts } = broadcastBranches;
+
+  const result = [...broadcasts];
+
+  return result;
+};
+
+export const removeAllBranchBroadcasts = () => {
+  store.dispatch(removeAllBranchBroadcastsAction());
+};

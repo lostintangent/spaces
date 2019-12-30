@@ -29,12 +29,12 @@
     "commands": [
       {
         "command": "liveshare.registerBranchBroadcast",
-        "title": "Register Branch Broadcast",
+        "title": "Broadcast Branch",
         "category": "Live Share Spaces"
       },
       {
         "command": "liveshare.unregisterBranchBroadcast",
-        "title": "Unregister Branch Broadcast",
+        "title": "Stop Broadcasting Branch",
         "category": "Live Share Spaces"
       },
       {

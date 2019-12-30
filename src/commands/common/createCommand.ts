@@ -9,11 +9,10 @@ export const createCommand = (command: Function) => {
     } catch (e) {
       log.error(e);
 
-      if (e instanceof CancellationError) {
-        return await vscode.window.showInformationMessage(e.message);
+      const isCancellationError = (e instanceof CancellationError);
+      if (!isCancellationError) {
+        await vscode.window.showErrorMessage(e.message);
       }
-
-      await vscode.window.showErrorMessage(e.message);
     }
   };
 };

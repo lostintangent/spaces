@@ -95,9 +95,9 @@ export function registerSpaceCommands(
       const userInfo = api.session.user;
 
       if (!node) {
-        const { spaces: spaces } = <IStore>store.getState();
+        const { spaces: spacesState } = <IStore>store.getState();
         space = await window.showQuickPick(
-          spaces.map(n => n.name, {
+          spacesState.spaces.map(n => n.name, {
             placeHolder: "Select the space to leave"
           })
         );
@@ -125,9 +125,9 @@ export function registerSpaceCommands(
   async function getOrRequestSpaceName(placeHolder: string, node?: SpaceNode) {
     let space;
     if (!node) {
-      const { spaces } = <IStore>store.getState();
+      const { spaces: spacesState } = <IStore>store.getState();
       space = await window.showQuickPick(
-        spaces.map(n => n.name, {
+        spacesState.spaces.map(n => n.name, {
           placeHolder
         })
       );

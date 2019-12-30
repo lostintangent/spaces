@@ -11,7 +11,7 @@ export class Authentication {
   ) {
     this.authAPI = await (vscodeAccountAPI as any).activateInternal(
       context,
-      "vsls-contrib",
+      "vsls-contrib.spaces",
       [...strategies],
       getKeytar()
     );

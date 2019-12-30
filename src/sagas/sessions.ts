@@ -1,9 +1,10 @@
 import { call, put, select } from "redux-saga/effects";
 import { LiveShare } from "vsls";
 import * as api from "../api";
+import { log } from "../logger";
 import { LocalStorage } from "../storage/LocalStorage";
 import { activeSessionEnded, sessionCreated } from "../store/actions";
-import { ISession } from "../store/model";
+import { ISession, IStore } from "../store/model";
 import { getCurrentSessionUrl } from "../utils";
 
 export function* createSession(
@@ -35,7 +36,9 @@ export function* createSession(
 }
 
 export function* endActiveSession(storage: LocalStorage) {
-  const activeSession = yield select(s => s.activeSession);
+  const activeSession = yield select((s: IStore) => {
+    return s.spaces.activeSession;
+  });
 
   if (activeSession) {
     yield call(
@@ -53,7 +56,11 @@ export function* cleanZombieSession(storage: LocalStorage) {
   const session: any = storage.getActiveSession();
 
   if (session) {
-    yield call(api.deleteSession, session.name, session.id);
-    storage.clearActiveSession();
+    try {
+      yield call(api.deleteSession, session.name, session.id);
+      storage.clearActiveSession();
+    } catch (e) {
+      log.error(e);
+    }
   }
 }

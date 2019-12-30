@@ -1,9 +1,12 @@
+import { Access } from "vsls";
+import { IAuthenticationState } from "./reducers/authenticationReducer";
+import { IBranchBroadcastsState } from "./reducers/branchBroadcastsReducer";
+import { ISpacesState } from "./reducers/spacesReducer";
+
 export interface IStore {
-  isLoading: boolean;
-  isSignedIn: boolean;
-  isMuted?: boolean;
-  activeSession?: IActiveSession;
-  spaces: ISpace[];
+  spaces: ISpacesState;
+  authentication: IAuthenticationState;
+  broadcastBranches: IBranchBroadcastsState;
 }
 
 export interface IComment {
@@ -35,7 +38,7 @@ export interface ISpace {
   codeReviews: ISession[];
   broadcasts: ISession[];
   blocked_members: string[];
-  key: string;
+  key: string | null;
   readme?: string;
   commentThreads: ICommentThread[];
 }
@@ -67,6 +70,14 @@ export interface ISession {
   description: string;
   url: string;
   type: SessionType;
+}
+
+export interface IBranchBroadcastRecord {
+  isExplicitlyStopped: boolean;
+  spaceName: string;
+  branchName: string;
+  description: string;
+  access: Access;
 }
 
 export enum SessionType {

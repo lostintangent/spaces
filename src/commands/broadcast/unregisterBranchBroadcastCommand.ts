@@ -1,10 +1,8 @@
 import * as vscode from "vscode";
 import { ISessionStateChannel } from "../../channels/sessionState";
+import { CancellationError } from "../../errors/CancellationError";
 import { getCurrentBranch } from "../../git";
-import {
-  getBranchBroadcasts,
-  removeBranchBroadcast
-} from "../../store/actions/branchBroadcastsActions";
+import { getBranchBroadcasts, removeBranchBroadcast } from "../../store/actions/branchBroadcastsActions";
 import { IBranchBroadcastRecord } from "../../store/model";
 import { stopLiveShareSession } from "./liveshare";
 
@@ -39,7 +37,7 @@ export const unregisterBranchBroadcastCommandFactory = (
     );
 
     if (!spacesQuestionResult) {
-      throw new Error("Unregister branch broadcast cancelled.");
+      throw new CancellationError("Unregister branch broadcast cancelled.");
     }
 
     for (let answerBranch of spacesQuestionResult) {
@@ -48,7 +46,7 @@ export const unregisterBranchBroadcastCommandFactory = (
     }
 
     vscode.window.showInformationMessage(
-      `Branch(s) successfully unregistered for broadcast.`
+      `Branch(es) successfully unregistered from broadcast.`
     );
 
     const currentBranch = getCurrentBranch();

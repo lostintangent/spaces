@@ -26,7 +26,8 @@
   ],
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "contributes": {
-    "commands": [{
+    "commands": [
+      {
         "command": "liveshare.registerBranchBroadcast",
         "title": "Register Branch Broadcast",
         "category": "Live Share Spaces"
@@ -288,10 +289,12 @@
       }
     ],
     "views": {
-      "liveshare": [{
-        "id": "liveshare.spaces",
-        "name": "Spaces"
-      }]
+      "liveshare": [
+        {
+          "id": "liveshare.spaces",
+          "name": "Spaces"
+        }
+      ]
     },
     "configuration": {
       "type": "object",
@@ -339,7 +342,8 @@
       }
     },
     "menus": {
-      "view/item/context": [{
+      "view/item/context": [
+        {
           "command": "liveshare.openReadme",
           "when": "view == liveshare.spaces && viewItem =~ /^space/",
           "group": "base@1"
@@ -510,7 +514,8 @@
           "group": "inline@1"
         }
       ],
-      "view/title": [{
+      "view/title": [
+        {
           "command": "liveshare.joinSpace",
           "when": "view == liveshare.spaces && liveshare:state != SignedOut",
           "group": "navigation@1"
@@ -531,7 +536,8 @@
           "group": "navigation@3"
         }
       ],
-      "commandPalette": [{
+      "commandPalette": [
+        {
           "command": "liveshare.inviteMember",
           "when": "false"
         },
@@ -584,12 +590,15 @@
           "when": "false"
         }
       ],
-      "comments/commentThread/title": [{
-        "command": "liveshare.deleteSpaceThread",
-        "group": "navigation",
-        "when": "commentController == liveshare.spaces && !commentThreadIsEmpty"
-      }],
-      "comments/commentThread/context": [{
+      "comments/commentThread/title": [
+        {
+          "command": "liveshare.deleteSpaceThread",
+          "group": "navigation",
+          "when": "commentController == liveshare.spaces && !commentThreadIsEmpty"
+        }
+      ],
+      "comments/commentThread/context": [
+        {
           "command": "liveshare.addSpaceComment",
           "group": "inline",
           "when": "commentController == liveshare.spaces && commentThreadIsEmpty"
@@ -600,7 +609,8 @@
           "when": "commentController == liveshare.spaces && !commentThreadIsEmpty"
         }
       ],
-      "comments/comment/title": [{
+      "comments/comment/title": [
+        {
           "command": "liveshare.editSpaceComment",
           "group": "group@1",
           "when": "commentController == liveshare.spaces"
@@ -611,11 +621,13 @@
           "when": "commentController == liveshare.spaces && comment == canDelete"
         }
       ],
-      "comments/comment/context": [{
-        "command": "liveshare.saveSpaceComment",
-        "group": "inline@2",
-        "when": "commentController == liveshare.spaces"
-      }]
+      "comments/comment/context": [
+        {
+          "command": "liveshare.saveSpaceComment",
+          "group": "inline@2",
+          "when": "commentController == liveshare.spaces"
+        }
+      ]
     }
   },
   "scripts": {

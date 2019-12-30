@@ -2,24 +2,15 @@ import { Store } from "redux";
 import * as vscode from "vscode";
 import { Access } from "vsls";
 import { CommandId } from "../../constants";
-import {
-  createBranch,
-  getCurrentBranch,
-  getUserName,
-  isBranchExist,
-  switchToTheBranch
-} from "../../git";
-import {
-  addBranchBroadcast,
-  getBranchBroadcast,
-  removeBranchBroadcast
-} from "../../store/actions/branchBroadcastsActions";
+import { CancellationError } from "../../errors/CancellationError";
+import { createBranch, getCurrentBranch, getUserName, isBranchExist, switchToTheBranch } from "../../git";
+import { addBranchBroadcast, getBranchBroadcast, removeBranchBroadcast } from "../../store/actions/branchBroadcastsActions";
 import { ISpace, IStore } from "../../store/model";
 import { Branch } from "../../typings/git";
 import { randomInt } from "../../utils/randomInt";
 import { startLiveShareSession } from "./liveshare";
 
-export interface IRegisterBranchOptions {}
+export interface IRegisterBranchOptions { }
 
 const getBranchName = (branch: Branch): [string, [number, number]] => {
   const { name } = branch;
@@ -81,7 +72,7 @@ const registerTheBranchAndAskToSwitch = async (
   const startButton = `${buttonPrefix}Start Broadcasting`;
 
   const answer = await vscode.window.showInformationMessage(
-    `The *${branchName}* was successfully registered for broadcast.`,
+    `The "${branchName}" was successfully registered for broadcast.`,
     startButton
   );
 
@@ -95,7 +86,7 @@ const registerTheBranchAndAskToSwitch = async (
       const branchRecord = getBranchBroadcast(branchName);
 
       if (!branchRecord) {
-        throw new Error("Brnach is registered but not found.");
+        throw new Error("Branch is registered but not found.");
       }
 
       await startLiveShareSession(store, branchRecord);
@@ -120,7 +111,7 @@ export const registerBranchForBroadcastCommandFactory = (store: Store) => {
     });
 
     if (!branch) {
-      throw new Error("No branch selected.");
+      throw new CancellationError("No branch selected.");
     }
 
     const featureBranch = branch.trim().toLowerCase();
@@ -129,7 +120,7 @@ export const registerBranchForBroadcastCommandFactory = (store: Store) => {
     if (existingBranchBroadcast) {
       const yesButton = "Register again";
       const answer = await vscode.window.showInformationMessage(
-        `The branch *${featureBranch}* already registered for broadcast, do you want to register it again?`,
+        `The branch "${featureBranch}" is already registered for broadcast. Do you want to update the registration?`,
         yesButton
       );
       if (answer !== yesButton) {
@@ -143,9 +134,9 @@ export const registerBranchForBroadcastCommandFactory = (store: Store) => {
      * If branch is `master` we need to conferm the user intention.
      */
     if (featureBranch === "master") {
-      const yesButton = "Broadcast *master* branch";
+      const yesButton = "Broadcast \"master\" branch";
       const answer = await vscode.window.showInformationMessage(
-        "Are you sure you want to broadcast *master* branch?",
+        "Are you sure you want to broadcast \"master\" branch?",
         yesButton
       );
 
@@ -169,7 +160,7 @@ export const registerBranchForBroadcastCommandFactory = (store: Store) => {
     );
 
     if (!spacesQuestionResult) {
-      throw new Error("No Space selected.");
+      throw new CancellationError("No Space selected.");
     }
 
     const { space } = spacesQuestionResult;
@@ -194,15 +185,15 @@ export const registerBranchForBroadcastCommandFactory = (store: Store) => {
     let fromBranch = "master";
     if (featureBranch !== currentBranchName && currentBranchName !== "master") {
       const message = `Are you sure you want to start the feature branch not from master branch?`;
-      const masterOption = "Start from *master*";
-      const featureBranchOption = `Start from *${currentBranchName}*`;
+      const masterOption = "Start from \"master\"";
+      const featureBranchOption = `Start from "${currentBranchName}"`;
       const pickerOptions = [masterOption, featureBranchOption];
       const answer = await vscode.window.showQuickPick(pickerOptions, {
         placeHolder: message
       });
 
       if (!answer) {
-        throw new Error("The feature branch registration was cancelled.");
+        throw new CancellationError("The feature branch registration was cancelled.");
       }
 
       fromBranch = answer === masterOption ? "master" : featureBranch;

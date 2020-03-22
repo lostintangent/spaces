@@ -81,6 +81,7 @@ defmodule LiveShareSpaces.HTTP do
 
   get "/v0/load" do
     IO.inspect(conn.auth_context)
+
     conn
     |> send_resp(
       :ok,
@@ -96,13 +97,17 @@ defmodule LiveShareSpaces.HTTP do
   end
 
   defp join_space(space, member, conn) do
-    updated_space = LiveShareSpaces.SpaceStore.add_member(space, member)
+    unless LiveShareSpaces.SpaceStore.member?(space, member["email"]) do
+      updated_space = LiveShareSpaces.SpaceStore.add_member(space, member)
 
-    LiveShareSpaces.Events.send(:member_joined, updated_space["name"], %{
-      email: member["email"]
-    })
+      LiveShareSpaces.Events.send(:member_joined, updated_space["name"], %{
+        email: member["email"]
+      })
 
-    send_resp(conn, :ok, Poison.encode!(updated_space))
+      send_resp(conn, :ok, Poison.encode!(updated_space))
+    else
+      send_resp(conn, :ok, Poison.encode!(space))
+    end
   end
 
   post "/v0/join" do

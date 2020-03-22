@@ -232,12 +232,7 @@ defmodule LiveShareSpaces.SpaceStore do
   defp add_member_helper(space, member) do
     current_members = space |> Map.get("members", [])
     member_email = member["email"]
-
-    existing_member =
-      Enum.member?(
-        current_members |> Enum.map(&Map.get(&1, "email")),
-        member_email
-      )
+    existing_member = member?(space, member_email)
 
     if existing_member do
       space
@@ -261,6 +256,13 @@ defmodule LiveShareSpaces.SpaceStore do
     update(
       space,
       &add_member_helper(&1, member)
+    )
+  end
+
+  def member?(space, member_email) do
+    Enum.member?(
+      space |> Map.get("members", []) |> Enum.map(&Map.get(&1, "email")),
+      member_email
     )
   end
 

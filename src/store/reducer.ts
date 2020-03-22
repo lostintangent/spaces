@@ -53,24 +53,26 @@ export const reducer: redux.Reducer = (
     case ACTION_JOIN_SPACE:
       return {
         ...state,
-        spaces: sorted([
-          ...state.spaces,
-          {
-            name: action.name,
-            members: [],
-            broadcasts: [],
-            helpRequests: [],
-            codeReviews: [],
-            isLoading: true,
-            isLeaving: false,
-            isExpanded: false,
-            founders: [],
-            blocked_members: [],
-            isPrivate: !!action.key,
-            key: action.key,
-            isMuted: true
-          }
-        ])
+        spaces: state.spaces.find(({ name }) => name === action.name)
+          ? state.spaces
+          : sorted([
+              ...state.spaces,
+              {
+                name: action.name,
+                members: [],
+                broadcasts: [],
+                helpRequests: [],
+                codeReviews: [],
+                isLoading: true,
+                isLeaving: false,
+                isExpanded: false,
+                founders: [],
+                blocked_members: [],
+                isPrivate: !!action.key,
+                key: action.key,
+                isMuted: true
+              }
+            ])
       };
 
     case ACTION_JOIN_SPACE_COMPLETED:

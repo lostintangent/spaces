@@ -20,7 +20,8 @@ class ContactProvider implements ContactServiceProvider {
 
   constructor(private store: Store) {
     this.store.subscribe(() => {
-      const { spaces } = <IStore>this.store.getState();
+      const { spaces: spacesState } = <IStore>this.store.getState();
+      const { spaces } = spacesState;
       const contacts = <Contact[]>uniqueMemberContacts(spaces);
       this.notifySuggestedContacts(contacts);
     });

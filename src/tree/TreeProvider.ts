@@ -49,15 +49,19 @@ class SpacesTreeProvider implements TreeDataProvider<TreeNode>, Disposable {
   getChildren(element?: TreeNode): ProviderResult<TreeNode[]> {
     const state: IStore = this.store.getState();
 
+    const { authentication, spaces: SpacesState } = state;
+    const { isSignedIn } = authentication;
+    const { isLoading, spaces } = SpacesState;
+
     if (!element) {
-      if (!state.isSignedIn) {
+      if (!isSignedIn) {
         return [new SignInNode()];
-      } else if (state.isLoading) {
+      } else if (isLoading) {
         return [new LoadingNode()];
-      } else if (state.spaces.length === 0) {
+      } else if (spaces.length === 0) {
         return [new NoSpacesNode()];
       } else {
-        return state.spaces.map(
+        return spaces.map(
           space => new SpaceNode(space, this.api, this.extensionPath)
         );
       }

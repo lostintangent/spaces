@@ -4,7 +4,7 @@
   "publisher": "vsls-contrib",
   "description": "Discover, share, and connect with developers across your favorite teams, classrooms and communities.",
   "icon": "images/icon.png",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.36.0"
   },
@@ -27,6 +27,16 @@
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "contributes": {
     "commands": [
+      {
+        "command": "liveshare.registerBranchBroadcast",
+        "title": "Broadcast Branch",
+        "category": "Live Share Spaces"
+      },
+      {
+        "command": "liveshare.unregisterBranchBroadcast",
+        "title": "Stop Broadcasting Branch",
+        "category": "Live Share Spaces"
+      },
       {
         "command": "liveshare.joinSpace",
         "category": "Live Share Spaces",
@@ -652,6 +662,7 @@
     "axios": "^0.19.0",
     "color-string": "^1.5.3",
     "elm": "^0.19.0-no-deps",
+    "git-user-name": "^2.0.0",
     "keytar": "^5.0.0-beta.0",
     "md5": "^2.2.1",
     "ramda": "^0.26.1",

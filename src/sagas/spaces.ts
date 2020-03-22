@@ -22,7 +22,7 @@ import {
   muteSpace,
   updateSpace
 } from "../store/actions";
-import { IMember, ISession, ISpace } from "../store/model";
+import { IMember, ISession, ISpace, IStore } from "../store/model";
 import { sessionTypeDisplayName } from "../utils";
 
 function isSpaceMuted(name: string) {
@@ -63,17 +63,19 @@ export function* loadSpacesSaga(
       isPrivate,
       blocked_members
     } = yield take(channel);
-    yield put(<any>(
-      updateSpace(
-        name,
-        members,
-        sessions,
-        readme,
-        founders,
-        isPrivate,
-        blocked_members
+    yield put(
+      <any>(
+        updateSpace(
+          name,
+          members,
+          sessions,
+          readme,
+          founders,
+          isPrivate,
+          blocked_members
+        )
       )
-    ));
+    );
   }
 }
 
@@ -200,7 +202,7 @@ export function* updateSpaceSaga(
     return yield put(leaveSpace(name, false));
   }
 
-  const spaces = yield select(s => s.spaces);
+  const spaces = yield select((s: IStore) => s.spaces.spaces);
   const {
     helpRequests,
     broadcasts,

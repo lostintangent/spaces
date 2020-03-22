@@ -11,7 +11,6 @@ import {
   ACTION_SESSION_CREATED,
   ACTION_SPACE_NODE_EXPANDED,
   ACTION_STATUSES_UPDATED,
-  ACTION_USER_AUTHENTICATION_CHANGED,
   blockMember,
   demoteToMember,
   joinSpaceFailed,
@@ -24,31 +23,40 @@ import {
   unmuteAllSpaces,
   unmuteSpace,
   updateReadme
-} from "./actions";
+} from "../actions";
 import {
+  IActiveSession,
   IMember,
   IMemberStatus,
   ISession,
   ISpace,
-  IStore,
   SessionType,
   Status
-} from "./model";
+} from "../model";
 
-const initialState: IStore = {
+export interface ISpacesState {
+  isLoading: boolean;
+  spaces: ISpace[];
+  activeSession?: IActiveSession;
+  isMuted?: boolean;
+}
+
+export const sorted = R.sortBy(R.prop("name"));
+
+export const setDefaultStatus = (m: IMember) => ({
+  ...m,
+  status: Status.offline
+});
+
+export const initialSpacesState: ISpacesState = {
   isLoading: true,
-  isSignedIn: false,
   spaces: []
 };
 
-const sorted = R.sortBy(R.prop("name"));
-
-const setDefaultStatus = (m: IMember) => ({ ...m, status: Status.offline });
-
-export const reducer: redux.Reducer = (
-  state: IStore = initialState,
+export const spacesReducer: redux.Reducer = (
+  state: ISpacesState = initialSpacesState,
   action
-) => {
+): ISpacesState => {
   switch (action.type) {
     case ACTION_JOIN_SPACE:
       return {
@@ -70,11 +78,11 @@ export const reducer: redux.Reducer = (
                 blocked_members: [],
                 isPrivate: !!action.key,
                 key: action.key,
-                isMuted: true
+                isMuted: true,
+                commentThreads: []
               }
             ])
       };
-
     case ACTION_JOIN_SPACE_COMPLETED:
       return {
         ...state,
@@ -104,13 +112,11 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case joinSpaceFailed.toString():
       return {
         ...state,
         spaces: state.spaces.filter(space => space.name !== action.payload)
       };
-
     case ACTION_LEAVE_SPACE:
       return {
         ...state,
@@ -125,20 +131,17 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case ACTION_LEAVE_SPACE_COMPLETED:
       return {
         ...state,
         spaces: state.spaces.filter(space => space.name !== action.name)
       };
-
     case ACTION_LOAD_SPACES:
       return {
         ...state,
         isLoading: true,
         spaces: []
       };
-
     case ACTION_LOAD_SPACES_COMPLETED:
       // memberSorter sorts members and adds the default status value
       const memberSorter = (c: any) => ({
@@ -159,7 +162,6 @@ export const reducer: redux.Reducer = (
         isLoading: false,
         spaces: R.map(memberSorter, sorted(action.spaces))
       };
-
     case ACTION_STATUSES_UPDATED:
       return {
         ...state,
@@ -179,7 +181,6 @@ export const reducer: redux.Reducer = (
           state.spaces
         )
       };
-
     case ACTION_SESSION_CREATED: {
       const type = action.activeSession.session.type;
       let sessionType: string = "helpRequests";
@@ -188,7 +189,6 @@ export const reducer: redux.Reducer = (
       } else if (type === SessionType.CodeReview) {
         sessionType = "codeReviews";
       }
-
       return {
         ...state,
         activeSession: action.activeSession,
@@ -208,7 +208,6 @@ export const reducer: redux.Reducer = (
         })
       };
     }
-
     case ACTION_ACTIVE_SESSION_ENDED: {
       const activeSession = state.activeSession!;
       let sessionType: string = "helpRequests";
@@ -217,10 +216,9 @@ export const reducer: redux.Reducer = (
       } else if (activeSession.session.type === SessionType.CodeReview) {
         sessionType = "codeReviews";
       }
-
       return {
         ...state,
-        activeSession: null,
+        activeSession: void 0,
         spaces: state.spaces.map(space => {
           if (space.name === activeSession.space) {
             return {
@@ -236,11 +234,9 @@ export const reducer: redux.Reducer = (
         })
       };
     }
-
     case ACTION_SPACE_NODE_EXPANDED:
       const property =
         action.nodeType === "members" ? "isExpanded" : "isHelpRequestsExpanded";
-
       return {
         ...state,
         spaces: state.spaces.map(space => {
@@ -254,13 +250,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
-    case ACTION_USER_AUTHENTICATION_CHANGED:
-      return {
-        ...state,
-        isSignedIn: action.isSignedIn
-      };
-
     case muteSpace.toString():
       return {
         ...state,
@@ -275,7 +264,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case unmuteSpace.toString():
       return {
         ...state,
@@ -290,7 +278,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case muteAllSpaces.toString():
       return {
         ...state,
@@ -302,7 +289,6 @@ export const reducer: redux.Reducer = (
           };
         })
       };
-
     case unmuteAllSpaces.toString():
       return {
         ...state,
@@ -314,7 +300,6 @@ export const reducer: redux.Reducer = (
           };
         })
       };
-
     case makeSpacePrivate.toString():
       return {
         ...state,
@@ -330,7 +315,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case makeSpacePublic.toString():
       return {
         ...state,
@@ -346,7 +330,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case updateReadme.toString():
       return {
         ...state,
@@ -361,7 +344,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case promoteToFounder.toString():
       return {
         ...state,
@@ -376,7 +358,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case demoteToMember.toString():
       return {
         ...state,
@@ -393,7 +374,6 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
     case blockMember.toString():
       return {
         ...state,
@@ -409,8 +389,7 @@ export const reducer: redux.Reducer = (
           }
         })
       };
-
-    case unblockMember.toString():
+    case unblockMember.toString(): {
       return {
         ...state,
         spaces: state.spaces.map(space => {
@@ -426,8 +405,10 @@ export const reducer: redux.Reducer = (
           }
         })
       };
+    }
 
-    default:
+    default: {
       return state;
+    }
   }
 };

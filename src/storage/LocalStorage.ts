@@ -4,7 +4,7 @@ const SPACES_STORAGE_KEY = "liveshare.spaces";
 const SESSION_STORAGE_KEY = "liveshare.session";
 
 export class LocalStorage {
-  constructor(private storage: Memento) {}
+  constructor(private storage: Memento) { }
 
   public getSpaces() {
     return this.storage.get<string[]>(SPACES_STORAGE_KEY, []);

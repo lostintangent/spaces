@@ -10,6 +10,7 @@ const MUTED_SPACES = "mutedSpaces";
 const SUGGESTED_CONTACTS_SETTING = "showSuggestedContacts";
 const INSIDERS = "insiders";
 const SERVICE_URI_SETTING = "serviceUri";
+const CUSTOM_SERVICE_URI_SETTING = "customServiceUri";
 
 export enum SuggestionBehavior {
   ignore = "ignore",
@@ -52,7 +53,13 @@ export const config = {
 
   get serviceUri() {
     const value = this.getConfig().get<string>(SERVICE_URI_SETTING)!;
-
-    return value === "prod" ? PROD_SERVICE_URL : LOCAL_SERVICE_URL;
+    switch (value) {
+      case "prod":
+        return PROD_SERVICE_URL;
+      case "local":
+        return LOCAL_SERVICE_URL;
+      default:
+        return this.getConfig().get<string>(CUSTOM_SERVICE_URI_SETTING)!;
+    }
   }
 };

@@ -335,9 +335,15 @@
           "type": "string",
           "enum": [
             "prod",
-            "local"
+            "local",
+            "custom"
           ],
           "description": "Specifies the services endpoint URI"
+        },
+        "liveshare.spaces.customServiceUri": {
+          "default": "",
+          "type": "string",
+          "description": "Specifies the URI of a custom service endpoint when Service Uri is set to 'custom'"
         }
       }
     },

@@ -100,8 +100,7 @@ defmodule LiveShareSpaces.Authentication do
   def valid_issuer?(arg) do
     case arg do
       {:ok, claims} ->
-        if claims.fields["iss"] ==
-             "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0" do
+        if Strings.starts_with(claims.fields["iss"], "https://login.microsoftonline.com/") do
           {:ok, claims}
         else
           {:error, "Invalid AAD issuer."}
@@ -429,7 +428,7 @@ defmodule LiveShareSpaces.Authentication do
           )
 
         if response.status_code != 200 do
-          {:error, "Could not get LS profile for email."}
+          {:error, "Could not get LS profile for email"}
         else
           response = Poison.decode!(response.body)
           name = response["name"]

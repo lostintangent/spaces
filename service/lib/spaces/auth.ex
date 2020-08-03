@@ -433,6 +433,15 @@ defmodule LiveShareSpaces.Authentication do
           response = Poison.decode!(response.body)
           name = response["name"]
           email = response["email"]
+
+          # if no `email` present and the provider is `github`, we can infer the default
+          # user email - `github-userId`+`github-username`@users.noreply.github.com
+          if email == nil and response["provider"] == "github" do
+            providerId = response["providerId"]
+            name = response["name"]
+            email = "#{providerId}+#{name}@users.noreply.github.com"
+          end
+
           LiveShareSpaces.ProfileStore.create_profile(id, name, email)
           claims = create_user_payload(id, name, email, "cascade")
           {:ok, claims}
@@ -445,7 +454,8 @@ defmodule LiveShareSpaces.Authentication do
       {:ok, token, id} ->
         profile = LiveShareSpaces.ProfileStore.get_profile(id)
 
-        if profile != nil and String.contains?(profile["email"], "@") do
+        profile_has_email = profile != nil and profile["email"] != nil
+        if profile_has_email and String.contains?(profile["email"], "@") do
           name = profile["name"]
           email = profile["email"]
           claims = create_user_payload(id, name, email, "cascade")

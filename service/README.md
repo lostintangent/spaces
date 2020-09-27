@@ -2,7 +2,11 @@
 
 This hosts the code for the service, written in Elixir.
 
-## Usage
+- [Development](#development)
+- [Deployment](#deployment)
+  - [Logs](#logs)
+
+## Development
 
 Requires Elixir and Mix.
 
@@ -56,6 +60,18 @@ docker run -it -p 4000:4000 8149677643a1 /bin/sh
 
 ## Deployment
 
+This app is deployed to Azure App Service. To start a new deployment, run:
+
 ```
 sh deploy.sh
 ```
+
+### Logs
+
+Use this [direct link](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/41d63c49-c2fb-4a5b-86ee-ba56db9b3af5/resourceGroups/vslsCommunitiesResourceGroup/providers/Microsoft.Web/sites/vslsCommunitiesWebapp/logStream) to see live logs from the app.
+
+Or, use the following steps:
+
+- Open Azure Portal
+- Open Azure App Service and find this app (`vslsCommunitiesWebapp`)
+- Click **Log stream** from the left sidebar (under Monitoring section) to see live logs

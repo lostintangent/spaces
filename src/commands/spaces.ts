@@ -69,13 +69,11 @@ export function registerSpaceCommands(
     });
 
     list.onDidAccept(() => {
-      const userInfo = api.session.user;
       let space = list.selectedItems[0].label;
-      if (space && userInfo && userInfo.emailAddress) {
+      if (space) {
         let key;
         if (JOIN_URL_PATTERN.test(space)) {
           const { groups }: any = JOIN_URL_PATTERN.exec(space);
-
           space = groups.space;
           key = groups.key;
         }
@@ -105,7 +103,7 @@ export function registerSpaceCommands(
         space = node.name;
       }
 
-      if (space && userInfo && userInfo.emailAddress) {
+      if (space) {
         store.dispatch(<any>leaveSpace(space));
       }
     }

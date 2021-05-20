@@ -1,6 +1,7 @@
 # Live Share Spaces
 
-[![Join space](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls) [![Join space](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls?insiders)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls?insiders)
+<!--
+[![Join space](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls) [![Join space](https://vslscommunitieswebapp.azurewebsites.net/badge/vsls?insiders)](http://vslscommunitieswebapp.azurewebsites.net/join_redirect/vsls?insiders)-->
 
 Live Share Spaces enables you to join one or more "spaces", and begin discovering, communicating and collaborating with other developers in real-time. A "space" is nothing more than a name, that allows you to find other people that share common interests and/or context (almost like a Twitter hash tag). A space can represent a team, ad-hoc group (e.g. a hack-a-thon team, a classroom), a language/framework ecosystem (e.g. `elixir`, `redux`), an online forum (e.g. `dev.to/javascript`) and everything in-between. Since spaces can represent literally anything, they can be as broad or as focused as necessary, as long as they help facilitate meaningful collaboration.
 
